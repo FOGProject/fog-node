@@ -42,6 +42,12 @@ module.exports.permissions = {
       read: false,
       update: false
     },
+    setting: {
+      create: false,
+      destroy: false,
+      read: false,
+      update: false,
+    },
     workflow: {
       create: false,
       destroy: false,
