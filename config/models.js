@@ -9,6 +9,6 @@ module.exports.models = {
   datastore: 'fogdb',
   cascadeOnDestroy: true,
   dataEncryptionKeys: {
-    default: 'f1dfd5ef4388080113dddfbedf6aa7bc9fa4cc1e62806ce29ee634b9fe03c787'
+    default: 'aca76a3a84019cab3b2537459a39e73205372f50481979f29ce023e8529b473c'
   }
 };

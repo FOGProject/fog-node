@@ -16,7 +16,7 @@ module.exports = async function(req, res, next) {
         if (err || !user) return next();
         user = user.toJSON();
         await req.login(user, async function(err) {
-          if (err) return next();
+          if (err) return next(err);
           next();
         });
       });

@@ -93,19 +93,6 @@ module.exports = {
           if (value.length > 7) return true;
           return 'Please enter a password at least 8 characters long';
         }
-      },
-      {
-        name: 'passwordConfirm',
-        type: 'password',
-        message: 'Please confirm the password for the Administrator account:',
-        when: (answer) => {
-          return answer.password;
-        },
-        validate: (value, answers) => {
-          if (value === answers.password) return true;
-          delete answers.password;
-          return 'Passwords do not match';
-        }
       }
     ];
     inquirer.prompt(questions).then(next);

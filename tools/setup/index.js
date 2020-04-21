@@ -156,22 +156,22 @@ async.waterfall([
   auth: {
     bcrypt: {
       rounds: 10
-    }
-  },
-  jwt: {
-    secret: '${payload.auth.jwt.secret}',
-    options: {
-      expiresIn: '1d'
     },
-    session: false,
-    cookie: {
-      maxAge: 24 * 1000 * 60 * 60,
-      signed: true,
-      //domain: '.fogserver.example.com',
-      //httpOnly: true,
-      //sameSite: true,
-      //secure: true
-    }
+    jwt: {
+      secret: '${payload.auth.jwt.secret}',
+      options: {
+        expiresIn: '1d'
+      },
+      session: false,
+      cookie: {
+        maxAge: 24 * 1000 * 60 * 60,
+        signed: true,
+        //domain: '.fogserver.example.com',
+        //httpOnly: true,
+        //sameSite: true,
+        //secure: true
+      }
+    },
   },
   datastores: {
     fogdb: {
