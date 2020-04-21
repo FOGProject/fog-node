@@ -1,0 +1,75 @@
+<!-- Sidebar items -->
+<div class="sidebar">
+  <!-- Sidebar user panel -->
+  <% if (req.user) { %>
+  <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+    <div class="info">
+      <a href="/user/me" class="d-block"><%= req.user.username %></a>
+    </div>
+  </div>
+  <!-- Sidebar Menu -->
+  <nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+      <li class="nav-header">MAIN NAVIGATION</li>
+      <% for (var i = 0; i < menuItems.length; i++) { %>
+      <% if (!menuItems[i].subLinks) { %>
+      <li class="nav-item">
+        <a href="<%= menuItems[i].link %>" class="nav-link">
+          <i class="fa <%= menuItems[i].icon %>"></i>&nbsp;
+          <%= menuItems[i].text %>
+        </a>
+      </li>
+      <% } else { %>
+      <li class="nav-item has-treeview">
+        <a href="#" class="nav-link">
+          <i class="fa <%= menuItems[i].icon %>"></i>
+          <p>
+            <%= menuItems[i].plural %>&nbsp;
+            <i class="right fa fa-angle-left"></i>
+          </p>
+        </a>
+        <ul class="nav nav-treeview">
+          <li class="nav-item">
+            <a href="<%= menuItems[i].link %>">
+              <i class="fa fa-circle-o nav-icon"></i>&nbsp;
+              List all <%= menuItems[i].plural %>
+            </a>
+          </li>
+          <% for (var j = 0; j < menuItems[i].subLinks.length; j++) { %>
+          <li class="nav-item">
+            <a href="<%= menuItems[i].subLinks[j].link %>">
+              <i class="fa fa-circle-o nav-icon"></i>&nbsp;
+              <%= menuItems[i].subLinks[j].text %>
+            </a>
+          </li>
+          <% } %>
+        </ul>
+      </li>
+      <% }%>
+      <% } %>
+      <li class="nav-header">PLUGIN OPTIONS</li>
+      <li class="nav-header">RESOURCES</li>
+      <li class="nav-item">
+        <a href="https://sourceforge.net/donate/index.php?group_id=201099" class="nav-link" target="_blank">
+          <i class="fa fa-money"></i> Donate
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="https://news.fogproject.org" class="nav-link" target="_blank">
+          <i class="fa fa-bullhorn"></i> News
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="https://forums.fogproject.org" class="nav-link" target="_blank">
+          <i class="fa fa-users"></i> Forums
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="https://wiki.fogproject.org" class="nav-link" target="_blank">
+          <i class="fa fa-book"></i> Wiki
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <% } %>
+</div>

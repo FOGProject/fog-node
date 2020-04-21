@@ -1,0 +1,40 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1><%= header %></h1>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><%= header %></h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove" data-toggle="tooltip" title="Remove">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <% items.forEach(async function(item) { %>
+              <p class="row"><%= item.name ? item.name : item.username %></p>
+              <p class="row"><%= item.description || 'No Description' %></p>
+            <% }) %>
+          </div>
+          <div class="card-footer">
+            <!-- Place Holder -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>
