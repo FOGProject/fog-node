@@ -43,3 +43,26 @@ passport.use(new LocalStrategy(
     });
   })
 );
+passport.use(new LocalStrategy(
+  {usernameField: 'email'},
+  async function(username, password, done) {
+    await User.findOne({
+      where: {
+        or: [
+          {username: username},
+          {email: username}
+        ]
+      }
+    }).populateAll().exec(async function(err, user) {
+      if (err) return done(err, false, {message: 'Error occurred finding user'});
+      if (!user) return done(null, false, {message: 'Invalid Username'});
+      await bcrypt.compare(password, user.password, async function(err, val) {
+        if (err) return done(err, false, {message: 'Error occurred comparing password'});
+        if (!val) return done(null, false, {message: 'Invalid Password'});
+        user.isLocalAuth = true;
+        user = user.toJSON();
+        done(null, user, {message: 'Login Successful'});
+      });
+    });
+  })
+);

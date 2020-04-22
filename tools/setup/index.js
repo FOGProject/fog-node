@@ -200,6 +200,19 @@ async.waterfall([
       console.log('Database schema applied');
       next();
     });
+  },
+  // Inform user of their username/password setting
+  (next) => {
+    header.printSection('Setup Complete');
+    console.log(`Configuration and installation are now complete`);
+    console.log(`You will likely want to configure a DNS name for this server`);
+    header.printSection('Login Information');
+    console.log('To login, you may use either the username or the email');
+    console.log('URL: http://localhost:1337');
+    console.log('Username: Administrator');
+    console.log(`Email: ${payload.admin.email}`);
+    console.log(`Password: ${payload.admin.password}`);
+    next();
   }
 ], (err, result) => {
   if (err) console.log(chalk.bgRed(err));
