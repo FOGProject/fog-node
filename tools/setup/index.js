@@ -182,7 +182,8 @@ async.waterfall([
       password: '${payload.datastores.fogdb.password}',
       database: '${payload.datastores.fogdb.database}'
     }
-  }
+  },
+  schema: 1
 };`;
     fs.writeFileSync(localCfg, rawtext, (err) => {
       if (err) return next(err);

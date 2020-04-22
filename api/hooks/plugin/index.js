@@ -11,7 +11,7 @@ module.exports = function definePluginHook(sails) {
      * Runs when this Sails app loads/lifts.
      */
     initialize: async function() {
-      sails.log.info('Initializing custom hook (`plugin`)');
+      sails.log.info('Initializing Plugins');
       await sails.helpers.plugin.scanPlugins();
     }
   };
