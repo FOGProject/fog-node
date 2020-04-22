@@ -32,7 +32,8 @@ async.waterfall([
       status.stop();
       console.log(pendingText);
       pendingText = `Revision ${fromRev} -> ${toRev}\t `;
-      pendingText += `${chalk.cyan((upgrade ? 'APPLYING: ' : 'REVERSING: ') description)}`;
+      let temp = (upgrade ? 'APPLYING: ' : 'REVERSING: ');
+      pendingText += chalk.cyan(`${temp} ${description}`);
       status = new Spinner(pendingText);
       status.start();
     }, (err) => {

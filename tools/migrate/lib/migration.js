@@ -69,7 +69,7 @@ module.exports = {
             typeof revisions[i].down !== 'function'
           ) return next(`Malformed migration file for schema ${i+1}`);
         }
-        revisions.eachSeries((rev, next) => {
+        revisions.forEach((rev, next) => {
           let toRev = rev._meta.schema;
           if (!upgrade) toRev--;
           step(upgrade, current, toRev, rev._meta.description);
@@ -80,7 +80,7 @@ module.exports = {
               return next(err);
             }
             current = toRev;
-            setting.set(db, 'schema': {revision: toRev}, next);
+            setting.set(db, 'schema', {revision: toRev}, next);
           });
         });
         db.close();
