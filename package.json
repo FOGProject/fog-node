@@ -33,7 +33,9 @@
     "sails-hook-orm": "^2.1.1",
     "sails-hook-sockets": "^2.0.0",
     "sails-mongo": "^1.1.0",
-    "select2": "^4.0.13"
+    "select2": "^4.0.13",
+    "tftp-server": "^1.1.0",
+    "wol": "^1.0.7"
   },
   "devDependencies": {
     "eslint": "5.16.0"

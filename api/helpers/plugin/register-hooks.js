@@ -29,7 +29,7 @@ module.exports = {
     sails.log.info(`Registering [${name}] hooks`);
     await fs.exists(configFile, async (exists) => {
       if (!exists) {
-        sails.log.error('Plugin config file does not exist');
+        sails.log.debug(`Plugin [${name}] config file [${configFile}] does not exist`);
         return exits.success();
       }
 
@@ -37,10 +37,10 @@ module.exports = {
       await fs.readFile(configFile, 'utf8', async (err, data) => {
         if (err) {
           sails.log.error(err);
-          return exits.success();
+          return exits.error(err);
         }
         if (!data) {
-          sails.log.error('No data is present');
+          sails.log.debug('No data is present');
           return exits.success();
         }
 
