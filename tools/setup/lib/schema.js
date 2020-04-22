@@ -23,7 +23,7 @@ module.exports = {
     adminUser.password = adminPassword;
     sails.load(cfg, async (err) => {
       if (err) return next(err);
-      await sails.models.setting.findOrCreate({name: 'schema'}, {name: 'schema', value: JSON.stringify({revision: cfg.schema})}, async (err, setting) => {
+      await sails.models.setting.findOrCreate({name: 'schema'}, {name: 'schema', value: `{"revision": ${cfg.schema}}`}, async (err, setting) => {
         if (err) return next(err);
         await sails.models.role.findOrCreate({name: adminRole.name}, adminRole, async (err, role) => {
           if (err) return next(err);
