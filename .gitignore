@@ -45,6 +45,8 @@
 #
 ################################################
 
+# Prevent models from being uploaded anymore.
+config/models.js
 config/local.js
 config.json
 
