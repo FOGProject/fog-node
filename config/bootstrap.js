@@ -26,5 +26,4 @@ module.exports.bootstrap = async function() {
   //   // etc.
   // ]);
   // ```
-
 };

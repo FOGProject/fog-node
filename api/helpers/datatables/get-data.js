@@ -30,7 +30,6 @@ module.exports = {
       options = params.options || {},
       columns = params.columns || {},
       query = req.query;
-    sails.log.info(query);
 
     if (!model || !sails.models[model]) {
       return {

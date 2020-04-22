@@ -23,7 +23,14 @@ passport.deserializeUser(async function(id, done) {
 });
 passport.use(new LocalStrategy(
   async function(username, password, done) {
-    await User.findOne({username: username}).populateAll().exec(async function(err, user) {
+    await User.findOne({
+      where: {
+        or: [
+          {username: username},
+          {email: username}
+        ]
+      }
+    }).populateAll().exec(async function(err, user) {
       if (err) return done(err, false, {message: 'Error occurred finding user'});
       if (!user) return done(null, false, {message: 'Invalid Username'});
       await bcrypt.compare(password, user.password, async function(err, val) {
