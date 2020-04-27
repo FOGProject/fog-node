@@ -16,7 +16,6 @@
     "datatables": "^1.10.18",
     "figlet": "^1.3.0",
     "flat": "^5.0.0",
-    "fog-plugin-wol": "github:fogproject/fog-plugin-wol",
     "font-awesome": "^4.7.0",
     "grunt": "1.0.4",
     "hoek": "^6.1.3",
