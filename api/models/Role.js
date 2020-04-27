@@ -59,6 +59,16 @@ module.exports = {
       required: true
     }
   },
+  customToJSON: function() {
+    if (this.isAdmin) {
+      this.permissions = deepMap(sails.config.permissions, function(v, k) {
+        return true;
+      });
+    } else {
+      this.permissions = filterPermissions(this.permissions);
+    }
+    return this;
+  },
   beforeCreate: function(values, next) {
     if (values.isAdmin) {
       values.permissions = deepMap(sails.config.permissions, function(v, k) {
