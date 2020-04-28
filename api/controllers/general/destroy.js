@@ -7,7 +7,9 @@ module.exports = {
       params = req.allParams(),
       id = params.id,
       model = params.model;
-    id = Array.from(id);
+    if (!Array.isArray(id)) {
+      id = [id];
+    }
     return await sails.models[model].destroy({id}).fetch();
   }
 };
