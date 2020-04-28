@@ -1,10 +1,17 @@
 const supertest = require('supertest');
-var request = supertest;
-var token = '';
 describe('Route tests::', function() {
+  var token = '';
+  var hook = (method = 'get') =>
+    (args) =>
+      supertest(sails.hooks.http.app)[method](args);
+  var request = {
+    post: hook('post'),
+    get: hook('get'),
+    put: hook('put'),
+    delete: hook('delete')
+  };
   describe('/api/v1 test::', function() {
     it ('Should return message', function(done) {
-      request = supertest(sails.hooks.http.app);
       request
         .get('/api/v1')
         .expect(200)
@@ -46,17 +53,61 @@ describe('Route tests::', function() {
           token = req.body.token;
           if (!token) return done('No token received');
           done();
-        })
-        .set('Authorization', token, done);
+        });
     });
   });
-  describe('/api/v1/user list test::', function() {
-    it ('Should return status 200 now that we have token', function(done) {
-      request
-        .get('/api/v1/user')
-        .set('Authorization', token)
-        .expect(200)
-        .expect('Content-type', /json/, done);
+  hook = (method = 'get') =>
+    (args) =>
+      supertest(sails.hooks.http.app)[method](args)
+        .set('Authorization', token);
+  var request = {
+    post: hook('post'),
+    get: hook('get'),
+    put: hook('put'),
+    delete: hook('delete')
+  };
+  // These are Authenticated Requests.
+  describe('Below are the authenticated request tests::', function() {
+    describe('User list test::', function() {
+      it ('Should return status 200 now that we have token', function(done) {
+        request
+          .get('/api/v1/user')
+          .expect(200)
+          .expect('Content-type', /json/, done);
+      });
+    });
+    let userid;
+    describe('User create test::', function() {
+      it ('Should be able to create a new user::', function(done) {
+        request
+          .post('/api/v1/user')
+          .send({
+            email: 'testmochauser@testuser.test',
+            username: 'testmochauser',
+            password: 'testmochauser'
+          })
+          .expect(200, (err, info) => {
+            userid = info.body.id;
+            done();
+          });
+      });
+    });
+    describe('User update test::', function() {
+      it ('Should be able to update the test user::', function(done) {
+        request
+          .put(`/api/v1/user/${userid}`)
+          .send({
+            email: 'testmocha3@testuser.test'
+          })
+          .expect(200, done);
+      });
+    });
+    describe('User destroy test::', function() {
+      it ('Should be able to delete the test user::', function(done) {
+        request
+          .delete(`/api/v1/user/${userid}`)
+          .expect(200, done);
+      });
     });
   });
 });
