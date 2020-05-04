@@ -5,11 +5,12 @@ passport.serializeUser(async function(user, done) {
   done(null, user);
 });
 passport.deserializeUser(async function(user, done) {
-  await User.findOne({id: user.id}).populateAll().exec(async function(err, user) {
-    if (err) return done(err, false);
-    if (!user) return done(null, false);
-    user = user.toJSON();
-    done(null, user);
+  if (!user.id) {
+    return done(null, user);
+  }
+  await User.findOne({id: user.id}).populateAll().exec(async function(err, u) {
+    if (err || !u) return done(err, false);
+    done(null, u);
   });
 });
 passport.use(new LocalStrategy(
@@ -28,6 +29,7 @@ passport.use(new LocalStrategy(
         if (err) return done(err, false, {message: 'Error occurred comparing password'});
         if (!match) return done(null, false, {message: 'Invalid Password'});
         user.isLocalAuth = true;
+        user.displayName = user.displayName || user.username;
         done(null, user, {message: 'Login Successful'});
       });
     });

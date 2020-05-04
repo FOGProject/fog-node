@@ -5,22 +5,15 @@ module.exports = {
   friendlyName: 'Token',
   description: 'Token auth.',
   exits: {
-    badRequest: {
-      responseType: 'badRequest',
-      description: 'Bad request'
-    },
-    invalidCredentials: {
-      responseType: 'forbidden',
-      description: 'Invalid Credentials'
-    },
     success: {
       description: 'Login Successful'
     }
   },
-  fn: async function (inputs) {
+  fn: async function (inputs, exits) {
     let req = this.req,
-      res = this.res,
-      token = await jwt.sign({user: req.user}, jwtConfig.secret, jwtConfig.options);
-    return {token};
+      res = this.res;
+    await jwt.sign({user: req.user}, jwtConfig.secret, jwtConfig.options, async (err, token) => {
+      return exits.success({token});
+    });
   }
 };

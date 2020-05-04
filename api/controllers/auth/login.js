@@ -12,26 +12,20 @@ module.exports = {
     let req = this.req,
       res = this.res;
     await passport.authenticate(sails.config.globals.authenticationMechanisms, async function(err, user, info) {
-      if (err || !user) {
-        if (req.wantsJSON) {
-          res.forbidden();
-          return res.end();
-        } else {
-          return res.redirect('/login');
-        }
-      }
+      if (err) return exits.error(err);
+      if (!user) return;
       await req.login(user, async function(err) {
-        //if (err) return res.serverError(err);
+        if (err) return exits.error(err);
         await jwt.sign(
           {user},
           sails.config.auth.jwt.secret,
           sails.config.auth.jwt.options,
           async function(err, token) {
-            //if (err) return res.serverError(err);
-            if (!token) return res.ok('Invalid token created');
+            if (err) return exits.error(err);
+            if (!token) return exits.error('Invalid token created');
             if (req.param('remember-me') == 'on') res.cookie('jwt', token, sails.config.auth.jwt.cookie);
             if (req.wantsJSON) return exits.success({token});
-            res.redirect('/');
+            return res.redirect('/');
           }
         );
       });

@@ -38,6 +38,9 @@ module.exports = {
       required: true,
       unique: true
     },
+    displayName: {
+      type: 'string'
+    },
     email: {
       type: 'string',
       required: true,
