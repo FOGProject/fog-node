@@ -5,22 +5,14 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 const bcrypt = require('bcryptjs'),
-  hashPW = function(password, next) {
-    bcrypt.hash(password, sails.config.auth.bcrypt.rounds, function(err, hash) {
-      if (err) return next(err);
-      next(null, hash);
-    });
-  };
-const flatten = require('flat'),
+  flatten = require('flat'),
   filterPermissions = function(permissions) {
     if (!permissions) permissions = {};
     let toValidate = flatten(permissions);
-
     // Filter out unknown permissions
     for (var i = 0; i < toValidate.length; i++) {
       if (!_.get(sails.config.permissions, toValidate[i])) _.set(permissions, toValidate[i], undefined);
     }
-
     // Merge in the default permissions, ensuring all values are set
     // Note that the 'right' object being merged overrides any values set
     // by the 'left' object.
@@ -28,7 +20,6 @@ const flatten = require('flat'),
   },
   deepMap = function(obj, cb) {
     let out = {};
-
     Object.keys(obj).forEach(function(k) {
       let val;
       if (obj[k] !== null && typeof obj[k] === 'object') {
@@ -36,10 +27,8 @@ const flatten = require('flat'),
       } else {
         val = cb(obj[k], k);
       }
-
       out[k] = val;
     });
-
     return out;
   };
 module.exports = {
@@ -87,16 +76,10 @@ module.exports = {
       return permissions;
     };
     this.permissions = concatRoles(this.roles);
-    return _.omit(this, ['password']);
-  },
-  comparePassword: function(candidatePassword, next) {
-    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
-      if (err) return next(err);
-      next(null, isMatch);
-    });
+    return _.omit(this, ['password','roles']);
   },
   beforeCreate: function(values, next) {
-    hashPW(values.password, function(err, hash) {
+    bcrypt.hash(values.password, sails.config.auth.bcrypt.rounds, (err, hash) => {
       if (err) return next(err);
       values.password = hash;
       next();
@@ -104,7 +87,7 @@ module.exports = {
   },
   beforeUpdate: function(values, next) {
     if (!values.hasOwnProperty('password')) return next();
-    hashPW(values.password, function(err, hash) {
+    bcrypt.hash(values.password, sails.config.auth.bcrypt.rounds, (err, hash) => {
       if (err) return next(err);
       values.password = hash;
       next();

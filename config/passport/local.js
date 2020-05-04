@@ -33,11 +33,10 @@ passport.use(new LocalStrategy(
     }).populateAll().exec(async function(err, user) {
       if (err) return done(err, false, {message: 'Error occurred finding user'});
       if (!user) return done(null, false, {message: 'Invalid Username'});
-      await bcrypt.compare(password, user.password, async function(err, val) {
+      await bcrypt.compare(password, user.password, (err, match) => {
         if (err) return done(err, false, {message: 'Error occurred comparing password'});
-        if (!val) return done(null, false, {message: 'Invalid Password'});
+        if (!match) return done(null, false, {message: 'Invalid Password'});
         user.isLocalAuth = true;
-        user = user.toJSON();
         done(null, user, {message: 'Login Successful'});
       });
     });

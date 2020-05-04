@@ -9,6 +9,10 @@ module.exports = async function(req, res, next) {
     }
   } else {
     if (req.isAuthenticated()) {
+      if (req.wantsJSON) {
+        res.ok('Already logged in');
+        return res.end();
+      }
       return res.redirect('/');
     }
   }
