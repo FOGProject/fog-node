@@ -313,5 +313,8 @@ module.exports.globals = {
         }
       ],
     },
-  ]
+  ],
+  authenticationMechanisms: [
+    'local'
+  ],
 };

@@ -11,7 +11,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let req = this.req,
       res = this.res;
-    await passport.authenticate('local', async function(err, user, info) {
+    await passport.authenticate(sails.config.globals.authenticationMechanisms, async function(err, user, info) {
       if (err || !user) {
         if (req.wantsJSON) {
           res.forbidden();
@@ -21,18 +21,9 @@ module.exports = {
         }
       }
       await req.login(user, async function(err) {
-        let id = (
-          user.id ?
-          user.id :
-          (
-            user.sub ?
-            user.sub :
-            user
-          )
-        );
         //if (err) return res.serverError(err);
         await jwt.sign(
-          {user: id},
+          {user},
           sails.config.auth.jwt.secret,
           sails.config.auth.jwt.options,
           async function(err, token) {

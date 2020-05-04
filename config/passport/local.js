@@ -2,19 +2,10 @@ const passport = require('passport'),
   LocalStrategy = require('passport-local').Strategy,
   bcrypt = require('bcryptjs');
 passport.serializeUser(async function(user, done) {
-  let id = (
-    user.id ?
-    user.id :
-    (
-      user.sub ?
-      user.sub :
-      user
-    )
-  );
-  done(null, id);
+  done(null, user);
 });
-passport.deserializeUser(async function(id, done) {
-  await User.findOne({id}).populateAll().exec(async function(err, user) {
+passport.deserializeUser(async function(user, done) {
+  await User.findOne({id: user.id}).populateAll().exec(async function(err, user) {
     if (err) return done(err, false);
     if (!user) return done(null, false);
     user = user.toJSON();
