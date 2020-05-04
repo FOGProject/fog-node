@@ -32,7 +32,7 @@ before(function(done) {
     );
   });
 });
-after(function(done) {
+after((done) => {
   Role.destroy({name: 'Mocha_Test_Admin'}, (err) => {
     if (err) return done(err);
     User.destroy({username: 'mochatestadmin'}, (err) => {
