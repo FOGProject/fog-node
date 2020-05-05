@@ -1,20 +1,13 @@
 const passport = require('passport');
-module.exports = async function(req, res, next) {
+module.exports = async (req, res, next) => {
   try {
-    await passport.authenticate('jwt-cookiecombo', async function(err, user, info) {
-      if (err || !user) return next();
-      if (!user.id) {
-        return await req.login(user, async function(err) {
-          if (err) return next(err);
-          return next();
-        });
-      }
-      await User.findOne({id: user.id}).populateAll().exec(async function(err, u) {
-        if (err || !u) return next();
-        await req.login(u, async function(err) {
-          if (err) return next(err);
-          next();
-        });
+    await passport.authenticate(sails.config.globals.jwtAuthMechanisms, {session: false}, async (err, user, info) => {
+      if (err) return next(err);
+      if (!user) return next();
+      user = user.toJSON();
+      await req.login(user, async (err) => {
+        if (err) return next(err);
+        next();
       });
     })(req, res);
   } catch (e) {

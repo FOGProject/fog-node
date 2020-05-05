@@ -12,7 +12,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let req = this.req,
       res = this.res;
-    await jwt.sign({user: req.user}, jwtConfig.secret, jwtConfig.options, async (err, token) => {
+    await jwt.sign({user: req.user.id}, jwtConfig.secret, jwtConfig.options, async (err, token) => {
       return exits.success({token});
     });
   }

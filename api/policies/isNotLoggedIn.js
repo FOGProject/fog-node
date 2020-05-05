@@ -1,4 +1,4 @@
-module.exports = async function(req, res, next) {
+module.exports = async (req, res, next) => {
   if (req.isSocket) {
     if (req.session &&
       req.session.passport &&

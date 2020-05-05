@@ -13,11 +13,10 @@ module.exports = {
       res = this.res;
     await passport.authenticate(sails.config.globals.authenticationMechanisms, async function(err, user, info) {
       if (err) return exits.error(err);
-      if (!user) return;
       await req.login(user, async function(err) {
         if (err) return exits.error(err);
         await jwt.sign(
-          {user},
+          {user: user.id},
           sails.config.auth.jwt.secret,
           sails.config.auth.jwt.options,
           async function(err, token) {

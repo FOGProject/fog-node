@@ -317,4 +317,7 @@ module.exports.globals = {
   authenticationMechanisms: [
     'local'
   ],
+  jwtAuthMechanisms: [
+    'jwt-cookiecombo'
+  ],
 };
