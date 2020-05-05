@@ -25,7 +25,6 @@ passport.use(new JWTStrategy(opts,
       if (user) {
         user.isLocalAuth = true;
         user.isJWTAuth = true;
-        user = user.toJSON();
       }
       done(null, user);
     });
