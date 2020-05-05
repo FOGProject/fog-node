@@ -4,7 +4,7 @@
   <% if (req.user) { %>
   <div class="user-panel mt-3 pb-3 mb-3 d-flex">
     <div class="info">
-      <a href="<%= (req.user.isLocalAuth ? '/user/me' : '#') %>" class="d-block"><%= req.user.displayName %></a>
+      <a href="<%= (req.user.isLocalAuth ? '/user/me' : '#') %>" class="d-block"><%= req.user.displayName || req.user.username %></a>
     </div>
   </div>
   <!-- Sidebar Menu -->
