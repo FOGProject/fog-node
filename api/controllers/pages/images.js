@@ -19,6 +19,10 @@ module.exports = {
     return {
       items: images,
       header: 'Image List',
+      theads: [
+        'Name',
+        'Path'
+      ],
       content: images,
       title: 'Image List'
     };

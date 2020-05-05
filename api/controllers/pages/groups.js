@@ -19,6 +19,10 @@ module.exports = {
     return {
       items: groups,
       header: 'Group List',
+      theads: [
+        'Name',
+        'Description'
+      ],
       content: groups,
       title: 'Group List'
     };

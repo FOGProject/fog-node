@@ -24,10 +24,19 @@
             </div>
           </div>
           <div class="card-body">
-            <% items.forEach(async (item) => { %>
-              <p class="row"><%= item.name ? item.name : item.username %></p>
-              <p class="row"><%= item.description || 'No Description' %></p>
-            <% }) %>
+            <div class="container">
+              <table id="listtable" class="display table table-bordered table-striped listtable no-footer dtr-inline collapsed" role="grid">
+                <thead>
+                  <tr class="header" role="row">
+                    <% for (var i = 0;i < theads.length;i++) { %>
+                    <th><%= theads[i] %></th>
+                    <% } %>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
           </div>
           <div class="card-footer">
             <!-- Place Holder -->

@@ -28,7 +28,10 @@ module.exports = function(grunt) {
             'bootstrap/dist/js/bootstrap.bundle.min.js',
             'datatables/media/js/jquery.dataTables.min.js',
             'jquery/dist/jquery.min.js',
-            'select2/dist/js/select2.full.min.js'
+            'select2/dist/js/select2.full.min.js',
+            'lodash/lodash.min.js',
+            'vue/dist/vue.min.js',
+            'vue-router/dist/vue-router.min.js'
           ],
           dest: '.tmp/public/js'
         },

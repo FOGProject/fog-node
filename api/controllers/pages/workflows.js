@@ -19,6 +19,10 @@ module.exports = {
     return {
       items: workflows,
       header: 'Workflow List',
+      theads: [
+        'Name',
+        'Description'
+      ],
       content: workflows,
       title: 'Workflow List'
     };

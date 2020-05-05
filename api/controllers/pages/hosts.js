@@ -19,6 +19,10 @@ module.exports = {
     return {
       items: hosts,
       header: 'Host List',
+      theads: [
+        'Name',
+        'Description'
+      ],
       content: hosts,
       title: 'Host List'
     };

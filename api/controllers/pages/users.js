@@ -19,6 +19,11 @@ module.exports = {
     return {
       items: users,
       header: 'User List',
+      theads: [
+        'Display Name',
+        'Username',
+        'Email'
+      ],
       content: users,
       title: 'User List'
     };

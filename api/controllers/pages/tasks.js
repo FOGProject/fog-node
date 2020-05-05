@@ -19,6 +19,9 @@ module.exports = {
     return {
       items: tasks,
       header: 'Task List',
+      theads: [
+        'Name'
+      ],
       content: tasks,
       title: 'Task List'
     };

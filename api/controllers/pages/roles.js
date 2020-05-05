@@ -19,6 +19,10 @@ module.exports = {
     return {
       items: roles,
       header: 'Role List',
+      theads: [
+        'Name',
+        'Description'
+      ],
       content: roles,
       title: 'Role List'
     };
