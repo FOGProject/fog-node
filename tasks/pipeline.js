@@ -69,6 +69,7 @@ var jsFilesToInject = [
   'js/vue/dist/vue.min.js',
   'js/vue-router/dist/vue-router.min.js',
   'js/bootstrap/dist/js/bootstrap.bundle.min.js',
+  'js/pace-js/pace.min.js',
 
   // Bring in `.js` files for any other client-side JavaScript dependencies.
   // (e.g. Lodash, Vue.js, jQuery, Bootstrap, Ember, Angular, etc.)
@@ -78,7 +79,10 @@ var jsFilesToInject = [
   // All of the rest of your custom client-side js files will be injected here,
   // in no particular order.  To customize the ordering, add additional items
   // here, _above_ this one.
-  'js/**/*.js'
+  'js/**/*.js',
+
+  'fog/fog.common.js',
+  'fog/**/*.js'
 ];
 
 

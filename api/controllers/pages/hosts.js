@@ -14,16 +14,14 @@ module.exports = {
   },
   fn: async function (inputs) {
     let req = this.req,
-      res = this.res,
-      hosts = await Host.find().populateAll();
+      res = this.res;
     return {
-      items: hosts,
       header: 'Host List',
       theads: [
         'Name',
         'Description'
       ],
-      content: hosts,
+      model: 'host',
       title: 'Host List'
     };
   }

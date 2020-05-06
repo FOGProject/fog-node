@@ -14,16 +14,14 @@ module.exports = {
   },
   fn: async function (inputs) {
     let req = this.req,
-      res = this.res,
-      images = await Image.find().populateAll();
+      res = this.res;
     return {
-      items: images,
       header: 'Image List',
       theads: [
         'Name',
         'Path'
       ],
-      content: images,
+      model: 'image',
       title: 'Image List'
     };
   }

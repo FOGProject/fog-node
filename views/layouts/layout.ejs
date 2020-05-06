@@ -38,12 +38,15 @@
     -->
 
     <!--STYLES-->
+    <link rel="stylesheet" href="/styles/@pnotify/core/dist/PNotify.css">
+    <link rel="stylesheet" href="/styles/@pnotify/mobile/dist/PNotifyMobile.css">
     <link rel="stylesheet" href="/styles/admin-lte/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="/styles/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/styles/datatables/media/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="/styles/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="/styles/icheck-bootstrap/icheck-bootstrap.min.css">
     <link rel="stylesheet" href="/styles/importer.css">
+    <link rel="stylesheet" href="/styles/pace-js/themes/blue/pace-theme-minimal.css">
     <!--STYLES END-->
   </head>
 
@@ -137,12 +140,19 @@
     <script src="/js/vue/dist/vue.min.js"></script>
     <script src="/js/vue-router/dist/vue-router.min.js"></script>
     <script src="/js/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/pace-js/pace.min.js"></script>
     <script src="/dependencies/cloud.js"></script>
     <script src="/dependencies/parasails.js"></script>
+    <script src="/js/@pnotify/core/dist/PNotify.js"></script>
+    <script src="/js/@pnotify/mobile/dist/PNotifyMobile.js"></script>
     <script src="/js/admin-lte/dist/js/adminlte.min.js"></script>
     <script src="/js/datatables/media/js/jquery.dataTables.min.js"></script>
+    <script src="/js/icheck/icheck.min.js"></script>
+    <script src="/js/inputmask/dist/jquery.inputmask.min.js"></script>
     <script src="/js/pages/list.page.js"></script>
     <script src="/js/select2/dist/js/select2.full.min.js"></script>
+    <script src="/fog/fog.common.js"></script>
     <!--SCRIPTS END-->
+    <script type="text/javascript"><%- partial(`../pages/partials/${model}.js`) %></script>
   </body>
 </html>

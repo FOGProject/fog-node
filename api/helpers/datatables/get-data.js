@@ -27,7 +27,7 @@ module.exports = {
       res = inputs.res,
       params = req.allParams(),
       model = params.model,
-      options = params.options || {},
+      options = params.options || params || {},
       columns = params.columns || {},
       query = req.query;
 
@@ -55,7 +55,7 @@ module.exports = {
     ];
 
     // Merge both Object, columns and _columns into _columns
-    await _.assign(_columns, columns);
+    _.assign(_columns, columns);
 
     // default datatable options
     let _options = {
@@ -75,10 +75,11 @@ module.exports = {
       ]
     };
 
+
     // If we passed options, let the query override as needed.
-    await _.assign(options, query);
+    _.assign(_options, query);
     // Merge both Object, options and _options into _options
-    await _.assign(_options, options);
+    _.assign(_options, options);
 
     let _response = {
       draw: _options.draw,
@@ -95,7 +96,7 @@ module.exports = {
       select = [];
 
     if (_.isArray(_options.columns)) {
-      await _options.columns.forEach(async function(column, index) {
+      _options.columns.forEach(function(column, index) {
         // This handles the column search
         if (_.isNull(column.data) || !column.searchable) {
           return true;
@@ -153,7 +154,7 @@ module.exports = {
     }
 
     var sortColumn = {};
-    await _.forEach(_options.order, async function(value, key) {
+    _.forEach(_options.order, async function(value, key) {
       var sortBy = _options.columns[value.column].data;
       if (_.includes(sortBy, '.')) {
         let dir = value.dir.toUpperCase();

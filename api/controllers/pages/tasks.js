@@ -14,15 +14,13 @@ module.exports = {
   },
   fn: async function (inputs) {
     let req = this.req,
-      res = this.res,
-      tasks = await Task.find().populateAll();
+      res = this.res;
     return {
-      items: tasks,
       header: 'Task List',
       theads: [
         'Name'
       ],
-      content: tasks,
+      model: 'task',
       title: 'Task List'
     };
   }

@@ -14,16 +14,14 @@ module.exports = {
   },
   fn: async function (inputs) {
     let req = this.req,
-      res = this.res,
-      workflows = await Workflow.find().populateAll();
+      res = this.res;
     return {
-      items: workflows,
       header: 'Workflow List',
       theads: [
         'Name',
         'Description'
       ],
-      content: workflows,
+      model: 'workflow',
       title: 'Workflow List'
     };
   }

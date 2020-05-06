@@ -14,17 +14,15 @@ module.exports = {
   },
   fn: async function (inputs) {
     let req = this.req,
-      res = this.res,
-      users = await User.find().populateAll();
+      res = this.res;
     return {
-      items: users,
       header: 'User List',
       theads: [
         'Display Name',
         'Username',
         'Email'
       ],
-      content: users,
+      model: 'user',
       title: 'User List'
     };
   }

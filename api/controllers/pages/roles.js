@@ -14,16 +14,14 @@ module.exports = {
   },
   fn: async function (inputs) {
     let req = this.req,
-      res = this.res,
-      roles = await Role.find().populateAll();
+      res = this.res;
     return {
-      items: roles,
       header: 'Role List',
       theads: [
         'Name',
         'Description'
       ],
-      content: roles,
+      model: 'role',
       title: 'Role List'
     };
   }

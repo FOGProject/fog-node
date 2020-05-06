@@ -62,6 +62,7 @@ module.exports.routes = {
 
   // Datatables
   'GET /api/v1/:model/datatable':            {action: 'general/datatable'},
+  'POST /api/v1/:model/datatable':           {action: 'general/datatable'},
 
   // Dashboard View
   'GET /':                                   {action: 'pages/dashboard'},

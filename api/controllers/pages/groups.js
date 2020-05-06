@@ -14,16 +14,14 @@ module.exports = {
   },
   fn: async function (inputs) {
     let req = this.req,
-      res = this.res,
-      groups = await Group.find().populateAll();
+      res = this.res;
     return {
-      items: groups,
       header: 'Group List',
       theads: [
         'Name',
         'Description'
       ],
-      content: groups,
+      model: 'group',
       title: 'Group List'
     };
   }
