@@ -9,7 +9,8 @@ module.exports = {
   fn: async function () {
     // Respond with view.
     return {
-      title: 'Login'
+      title: 'Login',
+      model: 'login'
     };
   }
 };

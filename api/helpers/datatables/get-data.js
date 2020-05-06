@@ -170,6 +170,7 @@ module.exports = {
     if (+_options.skip) findOpts.skip = +_options.skip;
     if (!_.isEmpty(sortColumn)) findOpts.sort = sortColumn;
     if (+_options.length) findOpts.limit = +_options.length;
+    if (findOpts.limit === -1) delete findOpts.limit;
 
     if (!_.isEmpty(_response['error'])) {
       delete _response.data;
