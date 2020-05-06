@@ -1,5 +1,16 @@
 <!-- Sidebar items -->
 <div class="sidebar">
+  <!-- Sidebar search element -->
+  <form class="form-inline mt-3 pb-3 mb-3 d-flex">
+    <div class="input-group">
+      <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
+      <div class="input-group-append">
+        <button class="btn btn-sidebar" type="submit">
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+    </div>
+  </form>
   <!-- Sidebar user panel -->
   <% if (req.user) { %>
   <div class="user-panel mt-3 pb-3 mb-3 d-flex">
@@ -15,8 +26,8 @@
       <% if (!menuItems[i].subLinks) { %>
       <li class="nav-item">
         <a href="<%= menuItems[i].link %>" class="nav-link">
-          <i class="fa <%= menuItems[i].icon %>"></i>&nbsp;
-          <%= menuItems[i].text %>
+          <i class="fa <%= menuItems[i].icon %>"></i>
+          <p><%= menuItems[i].text %></p>
         </a>
       </li>
       <% } else { %>
@@ -51,22 +62,26 @@
       <li class="nav-header">RESOURCES</li>
       <li class="nav-item">
         <a href="https://sourceforge.net/donate/index.php?group_id=201099" class="nav-link" target="_blank">
-          <i class="fa fa-money"></i> Donate
+          <i class="fa fa-money"></i>
+          <p>Donate</p>
         </a>
       </li>
       <li class="nav-item">
         <a href="https://news.fogproject.org" class="nav-link" target="_blank">
-          <i class="fa fa-bullhorn"></i> News
+          <i class="fa fa-bullhorn"></i>
+          <p>News</p>
         </a>
       </li>
       <li class="nav-item">
         <a href="https://forums.fogproject.org" class="nav-link" target="_blank">
-          <i class="fa fa-users"></i> Forums
+          <i class="fa fa-users"></i>
+          <p>Forums</p>
         </a>
       </li>
       <li class="nav-item">
         <a href="https://wiki.fogproject.org" class="nav-link" target="_blank">
-          <i class="fa fa-book"></i> Wiki
+          <i class="fa fa-book"></i>
+          <p>Wiki</p>
         </a>
       </li>
     </ul>

@@ -16,7 +16,6 @@
     "datatables": "^1.10.18",
     "figlet": "^1.4.0",
     "flat": "^5.0.0",
-    "fog-plugin-activedirectory": "github:fogproject/fog-plugin-activedirectory",
     "font-awesome": "^4.7.0",
     "grunt": "1.1.0",
     "hoek": "^6.1.3",

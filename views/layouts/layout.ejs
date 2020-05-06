@@ -43,7 +43,6 @@
     <link rel="stylesheet" href="/styles/admin-lte/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="/styles/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/styles/datatables/media/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="/styles/fog-default-ui.min.css">
     <link rel="stylesheet" href="/styles/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="/styles/icheck-bootstrap/icheck-bootstrap.min.css">
     <link rel="stylesheet" href="/styles/importer.css">
@@ -52,7 +51,7 @@
   </head>
 
   <% if (req.user) { %>
-  <body>
+  <body class="sidebar-mini sidebar-collapsed">
     <div class="wrapper">
       <!-- Header -->
       <%- partial('./partials/navbar.ejs') %>
@@ -62,6 +61,17 @@
       <div class="content-wrapper">
         <%- body %>
       </div>
+      <!-- Main Footer -->
+      <footer class="main-footer">
+        <div class="float-right d-none d-sm d-sm-block">
+          <b>Channel</b> Alpha |&nbsp;
+          <b>Version</b> <a href="/">2.0.0-alpha</a>
+        </div>
+        <b>Copyright &copy; 2007-2020&nbsp;
+          <a href="https://fogproject.org">FOG Project</a>
+        </b>&nbsp;
+        All rights reserved.
+      </footer>
     </div>
   <% } else  { %>
   <body class="hold-transition login-page">
