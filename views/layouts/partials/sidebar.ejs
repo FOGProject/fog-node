@@ -1,5 +1,6 @@
 <!-- Sidebar items -->
 <div class="sidebar">
+  <% if (req.user) { %>
   <!-- Sidebar search element -->
   <form class="form-inline mt-3 pb-3 mb-3 d-flex">
     <div class="input-group">
@@ -12,10 +13,12 @@
     </div>
   </form>
   <!-- Sidebar user panel -->
-  <% if (req.user) { %>
   <div class="user-panel mt-3 pb-3 mb-3 d-flex">
     <div class="info">
-      <a href="<%= (req.user.isLocalAuth ? '/user/me' : '#') %>" class="d-block"><%= req.user.displayName || req.user.username %></a>
+      <a href="<%= (req.user.isLocalAuth ? '/user/me' : '#') %>" class="d-block">
+        <i class="fa fa-user"></i>&nbsp;
+        <%= req.user.displayName || req.user.username %>
+      </a>
     </div>
   </div>
   <!-- Sidebar Menu -->
