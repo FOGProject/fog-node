@@ -28,7 +28,6 @@ module.exports = function(grunt) {
             'bootstrap/dist/js/bootstrap.bundle.min.js*',
             'datatables/media/js/jquery.dataTables.min.js',
             'jquery/dist/jquery.min.js',
-            'icheck/icheck.min.js',
             'inputmask/dist/jquery.inputmask.min.js',
             'lodash/lodash.min.js',
             'pace-js/pace.min.js',
@@ -50,7 +49,7 @@ module.exports = function(grunt) {
             'datatables/media/images/**',
             'font-awesome/css/font-awesome.min.css',
             'icheck-bootstrap/icheck-bootstrap.min.css',
-            'select2/dist/css/select2.min.js',
+            'select2/dist/css/select2.min.css',
             'pace-js/themes/blue/pace-theme-minimal.css',
             '@pnotify/core/dist/PNotify.css',
             '@pnotify/mobile/dist/PNotifyMobile.css'
