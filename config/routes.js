@@ -64,6 +64,10 @@ module.exports.routes = {
   'GET /api/v1/:model/datatable':            {action: 'general/datatable'},
   'POST /api/v1/:model/datatable':           {action: 'general/datatable'},
 
+  // Datatables COlumns
+  'GET /api/v1/:model/columns':              {action: 'general/columns'},
+  'POST /api/v1/:model/columns':             {action: 'general/columns'},
+
   // Dashboard View
   'GET /':                                   {action: 'pages/dashboard'},
 

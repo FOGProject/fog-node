@@ -6,8 +6,9 @@ parasails.registerPage('list', {
     _.extend(this, SAILS_LOCALS);
   },
   mounted: async function() {
-    //…
   },
   methods: {
+    registerTable: function(table, onSelect, opts) {
+    }
   }
 });

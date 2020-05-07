@@ -79,6 +79,8 @@ var jsFilesToInject = [
   // All of the rest of your custom client-side js files will be injected here,
   // in no particular order.  To customize the ordering, add additional items
   // here, _above_ this one.
+  //'js/datatables.net/js/jquery.dataTables.min.js',
+  'js/datatables.net-bs4/js/dataTables.bootstrap4.min.js',
   'js/**/*.js',
 
   'fog/fog.common.js',

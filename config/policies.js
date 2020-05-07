@@ -18,6 +18,7 @@ module.exports.policies = {
   'general/update':        ['isLoggedIn','isAuthenticated','update'],
   'general/destroy':       ['isLoggedIn','isAuthenticated','destroy'],
   'general/datatable':     ['isLoggedIn','isAuthenticated','read'],
+  'general/columns':       ['isLoggedIn','isAuthenticated','read'],
 
 
   // Group Policies

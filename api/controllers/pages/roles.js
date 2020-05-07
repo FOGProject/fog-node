@@ -19,7 +19,8 @@ module.exports = {
       header: 'Role List',
       theads: [
         'Name',
-        'Description'
+        'Description',
+        'Is Admin?'
       ],
       model: 'role',
       title: 'Role List'
