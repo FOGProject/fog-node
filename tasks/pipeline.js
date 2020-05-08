@@ -79,8 +79,21 @@ var jsFilesToInject = [
   // All of the rest of your custom client-side js files will be injected here,
   // in no particular order.  To customize the ordering, add additional items
   // here, _above_ this one.
-  //'js/datatables.net/js/jquery.dataTables.min.js',
+  'js/datatables.net/js/jquery.dataTables.min.js',
   'js/datatables.net-bs4/js/dataTables.bootstrap4.min.js',
+  'js/datatables.net-autofill/js/dataTables.autoFill.min.js',
+  'js/datatables.net-buttons/js/dataTables.buttons.min.js',
+  'js/datatables.net-buttons/js/buttons.colVis.min.js',
+  'js/datatables.net-buttons/js/buttons.flash.min.js',
+  'js/datatables.net-buttons/js/buttons.print.min.js',
+  'js/datatables.net-colreorder/js/dataTables.colReorder.min.js',
+  'js/datatables.net-keytable/js/dataTables.keyTable.min.js',
+  'js/datatables.net-responsive/js/dataTables.responsive.min.js',
+  'js/datatables.net-rowgroup/js/dataTables.rowGroup.min.js',
+  'js/datatables.net-rowreorder/js/dataTables.rowReorder.min.js',
+  'js/datatables.net-scroller/js/dataTables.scroller.min.js',
+  'js/datatables.net-searchpanes/js/dataTables.searchPanes.min.js',
+  'js/datatables.net-select/js/dataTables.select.min.js',
   'js/**/*.js',
 
   'fog/fog.common.js',

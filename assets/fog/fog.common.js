@@ -46,8 +46,6 @@ $.fn.registerTable = function(onSelect, opts) {
     processing: true
   });
 
-  console.log(opts);
-
   let table = $(this).DataTable(opts);
 
   if (onSelect !== undefined && typeof onSelect === 'functin') {
