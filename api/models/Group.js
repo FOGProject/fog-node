@@ -11,6 +11,9 @@ module.exports = {
       required: true,
       unique: true
     },
+    description: {
+      type: 'string'
+    },
     priority: {
       type: 'number',
       min: 0,

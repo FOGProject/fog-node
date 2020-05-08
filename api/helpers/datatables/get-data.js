@@ -91,8 +91,11 @@ module.exports = {
     if (_.isArray(_options.columns)) {
       _options.columns.forEach((column, index) => {
         if (_.isNull(column.data) || !column.searchable) return true;
-        var columnType = model.attributes[column.data].type;
-        if (columnType === 'boolean') return true;
+        var columnType = false;
+        if (!_.isUndefined(model.attributes[column.data])) {
+          columnType = model.attributes[column.data].type;
+        }
+        if (false === columnType || 'boolean' === columnType) return true;
         if (_.isBoolean(column.reverse)) {
           var joinedModel = _.split(column.data, '.', 2)[0],
             association = _.find(model.associations, ['alias', joinedModel]);
@@ -120,8 +123,9 @@ module.exports = {
           }
         } else if (_.isString(column.search.value)) {
           var col = column.data.split('.')[0];
+          var regexp = new RegExp(column.search.value, 'i');
           if (!_.isEqual(column.search.value, '')) {
-            whereQuery[col] = column.search.value;
+            whereQuery[col] = regexp;
           }
         } else if (_.isNumber(column.search.value)) {
           var col = column.data.split('.')[0];
@@ -134,9 +138,9 @@ module.exports = {
         // This handles the global search function of this column
         var col = column.data.split('.')[0];
         var filter = {};
-        filter[col] = {
-          contains: _options.search.value
-        };
+        if (!_.isEqual(_options.search.value, '')) {
+          filter[col].contains = _options.search.value;
+        }
         select.push(col);
         where.push(filter);
       });

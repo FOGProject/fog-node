@@ -38,6 +38,9 @@ module.exports = {
       required: true,
       unique: true
     },
+    description: {
+      type: 'string'
+    },
     displayName: {
       type: 'string'
     },

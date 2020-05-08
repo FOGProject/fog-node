@@ -47,7 +47,7 @@
     "sails-hook-grunt": "^4.0.1",
     "sails-hook-orm": "^2.1.1",
     "sails-hook-sockets": "^2.0.0",
-    "sails-mongo": "github:anterodev/sails-mongo",
+    "sails-mongo": "^1.1.0",
     "select2": "^4.0.13",
     "vue": "^2.6.11",
     "vue-router": "^3.1.6"
