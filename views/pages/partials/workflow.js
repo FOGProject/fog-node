@@ -5,7 +5,7 @@
       [0, 'asc']
     ],
     columns: [
-      {data: 'name'},
+      {data: 'title'},
       {data: 'description'}
     ],
     rowId: 'id',

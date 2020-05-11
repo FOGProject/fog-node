@@ -200,6 +200,10 @@
     <script src="/js/select2/dist/js/select2.full.min.js"></script>
     <script src="/fog/fog.common.js"></script>
     <!--SCRIPTS END-->
-    <script type="text/javascript"><%- partial(`../pages/partials/${model}.js`) %></script>
+    <% if (partialname) { %>
+    <script type="text/javascript">
+    <%- partial(partialname) %>
+    </script>
+    <% } %>
   </body>
 </html>
