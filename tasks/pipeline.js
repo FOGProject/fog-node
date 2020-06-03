@@ -64,7 +64,7 @@ var jsFilesToInject = [
   // Load `sails.io` before everything else.
   'dependencies/sails.io.js',
 
-  'js/lodash/lodash.min.js',
+  'dependencies/lodash.js',
   'js/jquery/dist/jquery.min.js',
   'js/vue/dist/vue.min.js',
   'js/vue-router/dist/vue-router.min.js',

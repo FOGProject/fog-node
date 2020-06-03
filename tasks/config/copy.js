@@ -29,7 +29,6 @@ module.exports = function(grunt) {
             'bootstrap/dist/js/bootstrap.bundle.min.js*',
             'jquery/dist/jquery.min.js',
             'inputmask/dist/jquery.inputmask.min.js',
-            'lodash/lodash.min.js',
             'pace-js/pace.min.js',
             '@pnotify/core/dist/PNotify.js',
             '@pnotify/mobile/dist/PNotifyMobile.js',

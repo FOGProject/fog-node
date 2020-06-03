@@ -1,4 +1,4 @@
-$.registerTable = (e, onSelect, opts) => {
+$.registerTable = function(e, onSelect, opts) {
   $(e).registerTable(onSelect, opts);
 };
 $.fn.registerTable = function(onSelect, opts) {
