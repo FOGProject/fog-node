@@ -34,7 +34,8 @@ module.exports = function(grunt) {
             '@pnotify/mobile/dist/PNotifyMobile.js',
             'select2/dist/js/select2.full.min.js',
             'vue/dist/vue.min.js',
-            'vue-router/dist/vue-router.min.js'
+            'vue-router/dist/vue-router.min.js',
+            //'chart.js/dist/Chart.min.js'
           ],
           dest: '.tmp/public/js'
         },

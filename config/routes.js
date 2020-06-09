@@ -99,4 +99,7 @@ module.exports.routes = {
 
   // Logout view
   '/logout':                                 {action: 'auth/logout'},
+
+  // System Information
+  '/systeminformation':                      {action: 'system/info'},
 };

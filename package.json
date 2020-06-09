@@ -12,6 +12,7 @@
     "bcryptjs": "^2.4.3",
     "bootstrap": "^4.5.0",
     "chalk": "^4.0.0",
+    "check-disk-space": "^2.1.0",
     "clui": "^0.3.6",
     "datatables.net-autofill-bs4": "^2.3.5",
     "datatables.net-buttons-bs4": "^1.6.2",
@@ -49,6 +50,7 @@
     "sails-hook-sockets": "^2.0.0",
     "sails-mongo": "^1.2.0",
     "select2": "^4.0.13",
+    "systeminformation": "^4.26.9",
     "vue": "^2.6.11",
     "vue-router": "^3.3.2"
   },

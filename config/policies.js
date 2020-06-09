@@ -46,5 +46,8 @@ module.exports.policies = {
   '*':                     ['isLoggedIn','isAuthenticated'],
 
   // Allow API Backend to work
-  'api':                   true
+  'api':                   true,
+
+  // System info
+  'system/info':           true
 };
