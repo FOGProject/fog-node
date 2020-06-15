@@ -1,17 +1,20 @@
 (function($) {
+  let free = $('#free').val(),
+    used = $('#used').val(),
+    hFree = $.readableBytes(free),
+    hUsed = $.readableBytes(used);
   // Disk Usage
   let diskUsageCanvas = $('#diskUsage').get(0).getContext('2d'),
     diskUsageData = {
       labels: [
-        'Free',
-        'Used',
-        'Total'
+        `Free: ${hFree}`,
+        `Used: ${hUsed}`
       ],
       datasets: [
         {
           data: [
-            $('#free').val(),
-            $('#used').val()
+            free,
+            used
           ],
           backgroundColor: [
             '#28a745',
@@ -23,8 +26,16 @@
     },
     diskUsageOpts = {
       responsive: true,
+      plugins: {
+        labels: {
+          render: 'percentage',
+          precision: 0,
+          fontColor: '#ffffff',
+          fontSize: 12
+        }
+      },
       legend: {
-        display: false
+        position: 'bottom'
       },
       tooltips: {
         callbacks: {
@@ -36,7 +47,7 @@
             var percentage = parseFloat((currentValue/total*100).toFixed(1));
             var hText = $.readableBytes(currentValue);
             return `${hText} (${percentage}%)`;
-          }
+          },
         }
       }
     },

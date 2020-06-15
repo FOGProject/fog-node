@@ -12,6 +12,7 @@
     "bcryptjs": "^2.4.3",
     "bootstrap": "^4.5.0",
     "chalk": "^4.0.0",
+    "chartjs-plugin-labels": "^1.1.0",
     "check-disk-space": "^2.1.0",
     "clui": "^0.3.6",
     "datatables.net-autofill-bs4": "^2.3.5",

@@ -55,10 +55,6 @@ module.exports = {
         {
           name: 'Used: ' + readableBytes(used),
           color: 'danger'
-        },
-        {
-          name: 'Total: ' + readableBytes(size),
-          color: 'primary'
         }
       ];
       partial = path.join(partialPath, `${data.model}.js`);

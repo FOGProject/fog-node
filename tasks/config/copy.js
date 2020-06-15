@@ -35,7 +35,22 @@ module.exports = function(grunt) {
             'select2/dist/js/select2.full.min.js',
             'vue/dist/vue.min.js',
             'vue-router/dist/vue-router.min.js',
-            //'chart.js/dist/Chart.min.js'
+          ],
+          dest: '.tmp/public/js'
+        },
+        {
+          expand: true,
+          cwd: './node_modules/chart.js/dist/',
+          src: [
+            'Chart.bundle.min.js'
+          ],
+          dest: '.tmp/public/js'
+        },
+        {
+          expand: true,
+          cwd: './node_modules/chartjs-plugin-labels/src/',
+          src: [
+            'chartjs-plugin-labels.js'
           ],
           dest: '.tmp/public/js'
         },

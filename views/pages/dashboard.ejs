@@ -1,5 +1,10 @@
 <section class="content-header">
   <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Dashboard</h1>
+      </div>
+    </div>
   </div>
 </section>
 <section class="content">
@@ -7,7 +12,7 @@
     <% // Overview boxes %>
     <div class="row">
       <div class="col-12">
-        <div class="card">
+        <div class="card card-outline card-info">
           <div class="card-header">
             <h3 class="card-title">System Overview</h3>
             <div class="card-tools">
@@ -19,75 +24,59 @@
               </button>
             </div>
           </div>
-          <div class="card-body">
-            <div class="container">
-              <div class="row">
-                <div class="col-md-4">
-                  <div class="card">
-                     <div class="card-header">
-                       <h3 class="card-title">Server Information</h3>
-                     </div>
-                     <div class="card-body">
-                       <div class="row">
-                         <div class="col-md-4">
-                           <strong>Server IP</strong>
-                         </div>
-                         <div class="col-md-8">
-                           <%= webserver %>
-                         </div>
-                       </div>
-                       <div class="row">
-                         <div class="col-md-4">
-                           <strong>CPU Load</strong>
-                         </div>
-                         <div class="col-md-8">
-                           <%= loadaverage %>
-                         </div>
-                       </div>
-                       <div class="row">
-                         <div class="col-md-4">
-                           <strong>Uptime</strong>
-                         </div>
-                         <div class="col-md-8">
-                           <%= uptime %>
-                         </div>
-                       </div>
-                     </div>
-                  </div>
+          <div class="card-body row">
+            <div class="col-sm-4">
+              <div class="card card-outline card-info">
+                <div class="card-header">
+                  <h3 class="card-title">Server Information</h3>
                 </div>
-                <div class="col-md-4">
-                  <div class="card">
-                    <div class="card-header">
-                      <h3 class="card-title">Activity</h3>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-sm-5">
+                      <strong>Server IP</strong>
                     </div>
-                    <div class="card-body">
+                    <div class="col-sm-6">
+                      <%= webserver %>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-5">
+                      <strong>CPU Load</strong>
+                    </div>
+                    <div class="col-sm-6">
+                      <%= loadaverage %>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-5">
+                      <strong>Uptime</strong>
+                    </div>
+                    <div class="col-sm-6">
+                      <%= uptime %>
                     </div>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <div class="card">
-                    <div class="card-header">
-                      <h3 class="card-title">Disk Usage</h3>
-                    </div>
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-md-8">
-                          <div class="chart-responsive">
-                            <canvas id="diskUsage" class="chartjs-render-monitor"></canvas>
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <input type="hidden" id="free" value="<%= free %>">
-                          <input type="hidden" id="used" value="<%= used %>">
-                          <input type="hidden" id="size" value="<%= size %>">
-                          <ul class="chart-legend clearfix">
-                            <% legend.forEach(async (item) => { %>
-                            <li><i class="fa fa-circle text-<%= item.color %>"></i> <%= item.name %></li>
-                            <% }); %>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="card card-outline card-info">
+                <div class="card-header">
+                  <h3 class="card-title">Activity</h3>
+                </div>
+                <div class="card-body">
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="card card-outline card-info">
+                <div class="card-header">
+                  <h3 class="card-title">Disk Usage</h3>
+                </div>
+                <div class="card-body">
+                  <div class="chart-responsive">
+                    <input type="hidden" id="free" value="<%= free %>">
+                    <input type="hidden" id="used" value="<%= used %>">
+                    <canvas id="diskUsage" class="chartjs-render-monitor"></canvas>
                   </div>
                 </div>
               </div>
@@ -100,7 +89,7 @@
     <% // Imaging History %>
     <div class="row">
       <div class="col-12">
-        <div class="card">
+        <div class="card card-outline card-info">
           <div class="card-header">
             <h3 class="card-title">Imaging History</h3>
             <div class="card-tools">
@@ -121,7 +110,7 @@
     <% // Bandwidth %>
     <div class="row">
       <div class="col-12">
-        <div class="card">
+        <div class="card card-outline card-info">
           <div class="card-header">
             <h3 class="card-title">Bandwidth</h3>
             <div class="card-tools">
