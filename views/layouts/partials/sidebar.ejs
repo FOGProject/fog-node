@@ -1,24 +1,26 @@
 <!-- Sidebar items -->
 <div class="sidebar">
   <% if (req.user) { %>
-  <!-- Sidebar search element -->
-  <form class="form-inline mt-3 pb-3 mb-3 d-flex">
-    <div class="input-group">
-      <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
-      <div class="input-group-append">
-        <button class="btn btn-sidebar" type="submit">
-          <i class="fa fa-search"></i>
-        </button>
-      </div>
-    </div>
-  </form>
   <!-- Sidebar user panel -->
   <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+    <div class="image">
+    </div>
     <div class="info">
       <a href="<%= (req.user.isLocalAuth ? '/user/me' : '#') %>" class="d-block">
         <i class="fa fa-user"></i>&nbsp;
         <%= req.user.displayName || req.user.username %>
       </a>
+    </div>
+  </div>
+  <!-- Sidebar Search -->
+  <div class="form-inline">
+    <div class="input-group" data-widget="sidebar-search">
+      <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
+      <div class="input-group-append">
+        <button class="btn btn-sidebar">
+          <i class="fa fa-search fa-fw"></i>
+        </button>
+      </div>
     </div>
   </div>
   <!-- Sidebar Menu -->

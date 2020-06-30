@@ -94,6 +94,7 @@ var jsFilesToInject = [
   'js/datatables.net-scroller/js/dataTables.scroller.min.js',
   'js/datatables.net-searchpanes/js/dataTables.searchPanes.min.js',
   'js/datatables.net-select/js/dataTables.select.min.js',
+  'admin-lte/dist/js/adminlte.min.js',
   'js/**/*.js',
 
   'fog/fog.common.js',

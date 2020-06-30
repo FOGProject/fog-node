@@ -45,12 +45,12 @@
     "pdfmake": "^0.1.65",
     "pnotify": "^5.1.2",
     "progress-stream": "^2.0.0",
+    "react-select": "^3.1.0",
     "sails": "^1.2.4",
     "sails-hook-grunt": "^4.0.1",
     "sails-hook-orm": "^3.0.1",
     "sails-hook-sockets": "^2.0.0",
     "sails-mongo": "^1.2.0",
-    "select2": "^4.0.13",
     "systeminformation": "^4.26.9",
     "vue": "^2.6.11",
     "vue-router": "^3.3.4"

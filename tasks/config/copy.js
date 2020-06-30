@@ -25,7 +25,6 @@ module.exports = function(grunt) {
           expand: true,
           cwd: './node_modules',
           src: [
-            'admin-lte/dist/js/adminlte.min.js*',
             'bootstrap/dist/js/bootstrap.bundle.min.js*',
             'jquery/dist/jquery.min.js',
             'inputmask/dist/jquery.inputmask.min.js',
@@ -37,6 +36,15 @@ module.exports = function(grunt) {
             'vue-router/dist/vue-router.min.js',
           ],
           dest: '.tmp/public/js'
+        },
+        {
+          expand: true,
+          cwd: './node_modules',
+          src: [
+            'admin-lte/dist/js/adminlte.min.js*',
+            'admin-lte/build/js/**/*/js'
+          ],
+          dest: '.tmp/public/'
         },
         {
           expand: true,
