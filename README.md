@@ -24,3 +24,4 @@ TODO:
  Build launchctl script (macos)
  Build Service/Task Scheduler to start script (windows)
  Test
+ Testing again
