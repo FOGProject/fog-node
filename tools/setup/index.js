@@ -7,14 +7,6 @@ const chalk = require('chalk'),
   httpCfg = path.join(cfgPath, 'http.js'),
   modelsCfg = path.join(cfgPath, 'models.js'),
   localCfg = path.join(cfgPath, 'local.js'),
-  authCfg = path.join(cfgPath, 'auth.js'),
-  authOpts = require(authCfg) || {
-    auth: {
-      bcrypt: {
-        rounds: 10
-      }
-    }
-  },
   inquire = require('./lib/inquire'),
   schema = require('./lib/schema'),
   secure = require('./lib/secure'),
@@ -158,15 +150,15 @@ async.waterfall([
     });
 
     /**
-     * auth.js
+     * local.js
      */
     rawtext = `module.exports = {
   auth: {
     bcrypt: {
-      rounds: ${authOpts.auth.bcrypt.rounds},
+      rounds: 10
     },
     jwt: {
-      secret: '${authOpts.auth.jwt.secret || payload.auth.jwt.secret}',
+      secret: '${payload.auth.jwt.secret}',
       options: {
         expiresIn: '1d'
       },
@@ -179,14 +171,8 @@ async.waterfall([
         //sameSite: true,
         //secure: true
       }
-    }
-  }
-}`;
-
-    /**
-     * local.js
-     */
-    rawtext = `module.exports = {
+    },
+  },
   datastores: {
     fogdb: {
       adapter: 'sails-mongo',
