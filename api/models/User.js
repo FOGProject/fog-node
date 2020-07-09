@@ -30,7 +30,10 @@ const bcrypt = require('bcryptjs'),
       out[k] = val;
     });
     return out;
-  };
+  },
+  path = require('path'),
+  authCfg = path.join('..','..','config','auth'),
+  authOpts = require(authCfg);
 module.exports = {
   attributes: {
     username: {
@@ -85,7 +88,7 @@ module.exports = {
     return _.omit(this, ['password','roles']);
   },
   beforeCreate: function(values, next) {
-    bcrypt.hash(values.password, sails.config.auth.bcrypt.rounds, (err, hash) => {
+    bcrypt.hash(values.password, authOpts.auth.bcrypt.rounds, (err, hash) => {
       if (err) return next(err);
       values.password = hash;
       next();
@@ -93,7 +96,7 @@ module.exports = {
   },
   beforeUpdate: function(values, next) {
     if (!values.hasOwnProperty('password')) return next();
-    bcrypt.hash(values.password, sails.config.auth.bcrypt.rounds, (err, hash) => {
+    bcrypt.hash(values.password, authOpts.auth.bcrypt.rounds, (err, hash) => {
       if (err) return next(err);
       values.password = hash;
       next();
