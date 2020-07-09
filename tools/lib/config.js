@@ -5,6 +5,8 @@ const _ = require('@sailshq/lodash'),
   sailsApp = new Sails(),
   appPath = path.join(__dirname, '..', '..'),
   pkgPath = path.join(appPath, 'package.json'),
+  cfgPath = path.join(appPath, 'config'),
+  localCfg = path.join(cfgPath, 'local.js'),
   safeReadJSON = function(filepath) {
     if (!fs.existsSync(filepath)) return {};
     let raw;
@@ -19,10 +21,10 @@ const _ = require('@sailshq/lodash'),
 
 module.exports = {
   appPath: appPath,
-  preferences: require(`${appPath}/config/local.js`),
   package: safeReadJSON(pkgPath),
   sailsApp: sailsApp,
   getMergedSettings: () => {
-    return _.merge(module.exports.preferences, module.exports.package);
+    let preferences = require(localCfg);
+    return _.merge(preferences, module.exports.package);
   },
 }
