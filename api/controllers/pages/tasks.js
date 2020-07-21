@@ -30,7 +30,6 @@ module.exports = {
       };
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
-      sails.log.info(partial);
       data.partialname = partial;
     }
     return data;
