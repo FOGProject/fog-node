@@ -5,8 +5,8 @@
       [0, 'asc']
     ],
     columns: [
-      {data: 'username'},
       {data: 'displayName'},
+      {data: 'username'},
       {data: 'email'}
     ],
     rowId: 'id',
