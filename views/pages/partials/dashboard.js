@@ -56,4 +56,71 @@
       data: diskUsageData,
       options: diskUsageOpts
     });
+  // Task History
+  let taskHistoryChart = undefined;
+  function respondCanvas() {
+    // Call a function to redraw other content (texts, images, etc)
+    if (typeof taskHistoryChart === 'undefined') {
+      var c = $('#taskHistory');
+      var ctx = c.get(0).getContext('2d');
+      var ctxOpts = {
+        type: 'line',
+        data: chartData,
+        options: {
+          responsive: true,
+          scales: {
+            xAxes: [{
+              type: 'time',
+              time: {
+                unit: 'day'
+              }
+            }],
+            yAxes: [{
+              ticks: {
+                beginAtZero: true,
+                min: 0,
+                precision: 0
+              }
+            }]
+          }
+        }
+      }
+      var container = c.parent();
+
+      var $container = $(container);
+      c.attr('width', $container.width());
+      c.attr('height', $container.height());
+      taskHistoryChart = new Chart(ctx, ctxOpts);
+    } else {
+      taskHistoryChart.data = chartData;
+      taskHistoryChart.update(0);
+    }
+
+    setTimeout(updateHistory, 3000);
+  }
+  function updateHistory() {
+    $.ajax({
+      url: '/task-history',
+      type: 'get',
+      dataType: 'json',
+      success: function(data) {
+        chartData = {
+          labels: data.dates,
+          datasets: [
+            {
+              label: 'Tasks',
+              data: data.data,
+              fill: false
+            }
+          ]
+        };
+
+        max = Math.max.apply(Math, data.data);
+
+        respondCanvas();
+      }
+    });
+  };
+  updateHistory();
+
 })(jQuery);

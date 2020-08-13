@@ -86,12 +86,12 @@
       </div>
     </div>
     <% // End System Overview %>
-    <% // Imaging History %>
+    <% // Task History %>
     <div class="row">
       <div class="col-12">
         <div class="card card-outline card-info">
           <div class="card-header">
-            <h3 class="card-title">Imaging History</h3>
+            <h3 class="card-title">Task History</h3>
             <div class="card-tools">
               <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
                 <i class="fa fa-minus"></i>
@@ -102,11 +102,14 @@
             </div>
           </div>
           <div class="card-body">
+            <div class="chart-responsive">
+              <canvas id="taskHistory" class="chartjs-render-monitor"></canvas>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <% // End Imaging History %>
+    <% // End Task History %>
     <% // Bandwidth %>
     <div class="row">
       <div class="col-12">

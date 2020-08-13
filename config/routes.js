@@ -70,6 +70,7 @@ module.exports.routes = {
 
   // Dashboard View
   'GET /':                                   {action: 'pages/dashboard'},
+  'GET /task-history':                       {action: 'task-history'},
 
   // Group Views
   'GET /groups':                             {action: 'pages/groups'},

@@ -49,5 +49,6 @@ module.exports.policies = {
   'api':                   true,
 
   // System info
-  'system/info':           true
+  'system/info':           true,
+  'task-history':          ['isLoggedIn','isAuthenticated']
 };
