@@ -50,5 +50,6 @@ module.exports.policies = {
 
   // System info
   'system/info':           true,
+  'system/bandwidth':      true,
   'task-history':          ['isLoggedIn','isAuthenticated']
 };

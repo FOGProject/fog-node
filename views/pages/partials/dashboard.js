@@ -58,14 +58,14 @@
     });
   // Task History
   let taskHistoryChart = undefined;
-  function respondCanvas() {
+  function historyCanvas() {
     // Call a function to redraw other content (texts, images, etc)
     if (typeof taskHistoryChart === 'undefined') {
-      var c = $('#taskHistory');
-      var ctx = c.get(0).getContext('2d');
-      var ctxOpts = {
+      var history = $('#taskHistory');
+      var htx = history.get(0).getContext('2d');
+      var htxOpts = {
         type: 'line',
-        data: chartData,
+        data: taskChartData,
         options: {
           responsive: true,
           scales: {
@@ -85,14 +85,14 @@
           }
         }
       }
-      var container = c.parent();
+      var historyContainer = history.parent();
 
-      var $container = $(container);
-      c.attr('width', $container.width());
-      c.attr('height', $container.height());
-      taskHistoryChart = new Chart(ctx, ctxOpts);
+      var $historyContainer = $(historyContainer);
+      history.attr('width', $historyContainer.width());
+      history.attr('height', $historyContainer.height());
+      taskHistoryChart = new Chart(htx, htxOpts);
     } else {
-      taskHistoryChart.data = chartData;
+      taskHistoryChart.data = taskChartData;
       taskHistoryChart.update(0);
     }
 
@@ -104,7 +104,7 @@
       type: 'get',
       dataType: 'json',
       success: function(data) {
-        chartData = {
+        taskChartData = {
           labels: data.dates,
           datasets: [
             {
@@ -117,10 +117,133 @@
 
         max = Math.max.apply(Math, data.data);
 
-        respondCanvas();
+        historyCanvas();
       }
     });
   };
   updateHistory();
 
+  // Bandwidth
+  let bandwidthChart,
+    bandwidthinterval,
+    bandwidthajax;
+  function addBandwidthData(chart, label, data) {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+      dataset.data.push(data);
+    });
+    chart.update();
+  }
+  function remBandwidthData(chart) {
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+      dataset.data.pop();
+    });
+    chart.update();
+  }
+  function bandwidthCanvas() {
+    var bandwidth = $('#bandwidth');
+    var btx = bandwidth.get(0).getContext('2d');
+    var btxOpts = {
+      type: 'line',
+      data: bandwidthChartData,
+      options: {
+        responsive: true,
+        scales: {
+          xAxes: [{
+            type: 'time',
+            time: {
+              unit: 'second'
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              beginAtZero: true,
+              min: 0,
+              precision: 0
+            }
+          }]
+        }
+      }
+    };
+    var bandwidthContainer = bandwidth.parent();
+    var $bandwidthContainer = $(bandwidthContainer);
+    bandwidth.attr('width', $bandwidthContainer.width());
+    bandwidth.attr('height', $bandwidthContainer.height());
+    bandwidthChart = new Chart(btx, btxOpts);
+  }
+  function updateBandwidth() {
+
+    // Fetches the data.
+    function fetchData() {
+
+      // When ajax receives data, this updates the graph.
+      function onDataReceived(series) {
+
+        // Setup our Time elements.
+        var d = new Date(),
+          n = d.getTime();
+
+        let rate = Math.round(series.netstats[0].tx_sec / 1024 / 1024 * 8, 2);
+        if (!bandwidthChart) {
+          bandwidthChartData = {
+            labels: [
+              n
+            ],
+            datasets: [
+              {
+                label: series.netstats[0].iface + ' Mbps',
+                data: [
+                  0
+                ],
+                fill: false
+              }
+            ]
+          }
+          bandwidthCanvas();
+        } else {
+          addBandwidthData(bandwidthChart, n, rate);
+        }
+      }
+      bandwidthajax = $.ajax({
+        url: '/bandwidth',
+        type: 'get',
+        dataType: 'json',
+        beforeSend: () => {
+          if (bandwidthajax) {
+            bandwidthajax.abort();
+          }
+          if (bandwidthinterval) {
+            clearTimeout(bandwidthinterval);
+          }
+        },
+        success: onDataReceived,
+        complete: () => {}
+      });
+
+      bandwidthinterval = setTimeout(fetchData, 1000);
+    }
+
+    // Actually fetch our data.
+    fetchData();
+  }
+  // If the user presses the off button, we should stop
+  // displaying, notice we still collect data, we just don't
+  // display it. When you press on again, it should update
+  // with your missed data.
+  $('#realtime .btn').on('click', (e) => {
+    let selected = $(this).data('toggle');
+    if (selected === 'on' && realtime === 'on') {
+      return;
+    } else if (selected) {
+      realtime = 'on';
+      $('#btn-off').removeClass('active');
+      $('#btn-on').addClass('active');
+    } else {
+      realtime = 'off';
+      $('#btn-off').addClass('active');
+      $('#btn-on').removeClass('active');
+    }
+  });
+  updateBandwidth();
 })(jQuery);
