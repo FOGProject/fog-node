@@ -57,7 +57,33 @@
       options: diskUsageOpts
     });
   // Task History
-  let taskHistoryChart = undefined;
+  let taskHistoryChart = undefined,
+    taskHistoryTimeout,
+    tInterval = 30;
+
+  function getTInterval() {
+    let val = $('.taskDayFilters.active').attr('length');
+
+    switch (val) {
+      case '-1':
+        updateHistory(365);
+        break;
+      case '2':
+        updateHistory(60);
+        break;
+      case '3':
+        updateHistory(90);
+        break;
+      case '6':
+        updateHistory(183);
+        break;
+      default:
+        updateHistory(30);
+    }
+
+    taskHistoryTimeout = setTimeout(getTInterval, 3000);
+  }
+
   function historyCanvas() {
     // Call a function to redraw other content (texts, images, etc)
     if (typeof taskHistoryChart === 'undefined') {
@@ -95,13 +121,13 @@
       taskHistoryChart.data = taskChartData;
       taskHistoryChart.update(0);
     }
-
-    setTimeout(updateHistory, 3000);
   }
-  function updateHistory() {
+
+  function updateHistory(period) {
     $.ajax({
       url: '/task-history',
-      type: 'get',
+      type: 'post',
+      data: {period},
       dataType: 'json',
       success: function(data) {
         taskChartData = {
@@ -121,7 +147,18 @@
       }
     });
   };
-  updateHistory();
+
+  $('.taskDayFilters').on('click', function(e) {
+    e.preventDefault();
+    $('.taskDayFilters.active').removeClass('active');
+    $(this).addClass('active');
+    if (taskHistoryTimeout) {
+      clearTimeout(taskHistoryTimeout);
+    }
+    getTInterval();
+  });
+
+  getTInterval();
 
   // Bandwidth
   let bandwidthChart,
