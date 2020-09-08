@@ -15,7 +15,6 @@ module.exports = {
       dateStart = await moment().subtract(inputs.period, 'days'),
       dateEnd = await moment();
 
-    sails.log.debug(inputs.period);
     while (dateEnd.diff(dateStart, 'days') >= 0) {
       let begin = await moment(dateStart.format('YYYY-MM-DD')).toISOString(),
         end = await moment(dateStart.format('YYYY-MM-DD')).add(1, 'day').toISOString(),

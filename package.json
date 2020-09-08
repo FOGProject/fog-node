@@ -83,6 +83,6 @@
   "author": "FOG Project",
   "license": "GPL v3",
   "engines": {
-    "node": "^10.19"
+    "node": ">=10.19"
   }
 }
