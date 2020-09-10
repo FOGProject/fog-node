@@ -58,7 +58,7 @@
     "sails-hook-grunt": "^4.0.1",
     "sails-hook-orm": "^3.0.1",
     "sails-hook-sockets": "^2.0.0",
-    "sails-mongo": "^1.2.0",
+    "sails-mongo": "fogproject/sails-mongo",
     "systeminformation": "^4.27.3",
     "tempusdominus-core": "^5.0.3",
     "vue": "^2.6.12",
