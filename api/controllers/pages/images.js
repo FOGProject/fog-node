@@ -22,7 +22,9 @@ module.exports = {
         header: 'Image List',
         theads: [
           'Name',
-          'Path'
+          'Protected',
+          'Enabled',
+          'Captured'
         ],
         model: 'image',
         title: 'Image List',

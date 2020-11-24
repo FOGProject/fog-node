@@ -22,7 +22,7 @@ module.exports = {
         header: 'Group List',
         theads: [
           'Name',
-          'Description'
+          'Members'
         ],
         model: 'group',
         title: 'Group List',

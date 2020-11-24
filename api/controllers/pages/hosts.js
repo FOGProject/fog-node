@@ -21,7 +21,11 @@ module.exports = {
       data = {
         header: 'Host List',
         theads: [
-          'Name',
+          'Host',
+          'Primary MAC',
+          'Ping Status',
+          'Last Deployed',
+          'Assigned Image',
           'Description'
         ],
         model: 'host',

@@ -6,6 +6,10 @@
     ],
     columns: [
       {data: 'name'},
+      {data: 'primac'},
+      {data: 'pingstatus'},
+      {data: 'deployed'},
+      {data: 'image'},
       {data: 'description'}
     ],
     rowId: 'id',
