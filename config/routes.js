@@ -103,5 +103,6 @@ module.exports.routes = {
 
   // System Information
   '/systeminformation':                      {action: 'system/info'},
+  '/api/v1/systeminfo':                      {action: 'system/system'},
   '/bandwidth':                              {action: 'system/bandwidth'},
 };
