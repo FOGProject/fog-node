@@ -39,6 +39,9 @@ module.exports = function defineFogVersionHook(sails) {
               if (res.locals.version === undefined) {
                 res.locals.version = pkg.version;
               }
+              if (res.locals.partialname === undefined) {
+                res.locals.partialname = false;
+              }
             }
             return next();
           }
