@@ -6,7 +6,9 @@
     ],
     columns: [
       {data: 'name'},
-      {data: 'description'}
+      {data: 'protected'},
+      {data: 'enabled'},
+      {data: 'lastCaptureDate'}
     ],
     rowId: 'id',
     serverSide: true,

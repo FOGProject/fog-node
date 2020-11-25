@@ -11,6 +11,14 @@ module.exports = {
       required: true,
       unique: true
     },
+    protected: {
+      type: 'boolean',
+      defaultsTo: false
+    },
+    enabled: {
+      type: 'boolean',
+      defaultsTo: true
+    },
     description: {
       type: 'string'
     },
@@ -23,6 +31,10 @@ module.exports = {
       isInteger: true,
       min: 0,
       defaultsTo: 0
+    },
+    lastCaptureDate: {
+      type: 'string',
+      columnType: 'datetime'
     },
     hosts: {
       collection: 'host',
