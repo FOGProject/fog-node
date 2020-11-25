@@ -29,7 +29,7 @@ module.exports = {
           'Description'
         ],
         model: 'host',
-        title: 'Host List',
+        title: 'All Hosts',
         partialname: false
       };
     let partial = path.join(partialPath, `${data.model}.js`);

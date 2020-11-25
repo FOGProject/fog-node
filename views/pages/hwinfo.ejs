@@ -1,0 +1,226 @@
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Hardware Information</h1>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="content">
+  <div class="container-fluid">
+    <% // FOG Version %>
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-outline card-info">
+          <div class="card-header">
+            <h3 class="card-title">FOG Version</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove" data-toggle="tooltip" title="Remove">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <%= version %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% // General Information %>
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-outline card-info">
+          <div class="card-header">
+            <h3 class="card-title">General Information</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove" data-toggle="tooltip" title="Remove">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+          <% Object.keys(data.general).forEach(key => { %>
+            <div class="row">
+              <div class="col-6">
+              <% switch (key) {
+                case 'serverip':
+                  %>Webserver IP:<%
+                  break;
+                case 'hostname':
+                  %>Hostname:<%
+                  break;
+                case 'uptime':
+                  %>Uptime:<%
+                  break;
+                case 'loadaverage':
+                  %>Load Average:<%
+                  break;
+                case 'cpu':
+                  %>CPU:<%
+                  break;
+                case 'memory':
+                  %>Memory:<%
+                  break;
+              } %>
+              </div>
+              <% switch (key) {
+                  case 'cpu':
+                    %>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Vendor:</div>
+              <div class="col-6"><%= data.general.cpu.vendor %></div>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Model:</div>
+              <div class="col-6"><%= data.general.cpu.brand %></div>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Processors:</div>
+              <div class="col-6"><%= data.general.cpu.physicalCores %></div>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Speed:</div>
+              <div class="col-6"><%= data.general.cpu.speed %> GHz</div>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Cache:</div>
+              <div class="offset-6"></div>
+            </div>
+            <div class="row">
+              <div class="offset-4 col-2">L1 Data:</div>
+              <div class="col-6"><%= data.general.cpu.cache.l1d %></div>
+            </div>
+            <div class="row">
+              <div class="offset-4 col-2">L1 Instruction:</div>
+              <div class="col-6"><%= data.general.cpu.cache.l1i %></div>
+            </div>
+            <div class="row">
+              <div class="offset-4 col-2">L2:</div>
+              <div class="col-6"><%= data.general.cpu.cache.l2 %></div>
+            </div>
+            <div class="row">
+              <div class="offset-4 col-2">L3:</div>
+              <div class="col-6"><%= data.general.cpu.cache.l3 %></div>
+            </div>
+            <div class="row">
+                    <%
+                    break;
+                  case 'memory':
+                  %>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Total:</div>
+              <div class="col-6"><%= data.general.memory.total %></div>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Used:</div>
+              <div class="col-6"><%= data.general.memory.used %></div>
+            </div>
+            <div class="row">
+              <div class="offset-3 col-3">Free:</div>
+              <div class="col-6"><%= data.general.memory.free %></div>
+            </div>
+            <div class="row">
+                    <%
+                    break;
+                  default:
+                    %>
+              <div class="col-6"><%- data.general[key] %></div>
+                    <%
+                    break;
+              } %>
+            </div>
+          <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% // File System Information %>
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-outline card-info">
+          <div class="card-header">
+            <h3 class="card-title">File System Information</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove" data-toggle="tooltip" title="Remove">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-6">Images Path</div>
+              <div class="col-6"><%= data.fsinfo.size.path %></div>
+            </div>
+            <div class="row">
+              <div class="col-6">Total</div>
+              <div class="col-6"><%= data.fsinfo.size.total %></div>
+            </div>
+            <div class="row">
+              <div class="col-6">Used</div>
+              <div class="col-6"><%= data.fsinfo.size.used %></div>
+            </div>
+            <div class="row">
+              <div class="col-6">Free</div>
+              <div class="col-6"><%= data.fsinfo.size.free %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% // Network Informaiton %>
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-outline card-info">
+          <div class="card-header">
+            <h3 class="card-title">Network Information</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+                <i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove" data-toggle="tooltip" title="Remove">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="network-accordion">
+              <% data.networkInfo.ifaces.forEach(iface => { %>
+              <div class="card card-outline card-info">
+                <div class="card-header">
+                  <h4 class="card-title">
+                    <a data-toggle="collapse" data-parent="#<%= iface.name %>" href="#<%= iface.name %>" aria-expanded="true"><%= iface.name %></a>
+                  </h4>
+                </div>
+                <div id="<%= iface.name %>" class="panel-collapse in collapse hide">
+                  <div class="card-body">
+                    <% Object.keys(iface).forEach(key => { %>
+                    <% if ('name' === key) return; %>
+                    <div class="row">
+                      <div class="col-6"><%= key %></div>
+                      <div class="col-6"><%= iface[key] %></div>
+                    </div>
+                    <% }); %>
+                  </div>
+                </div>
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>

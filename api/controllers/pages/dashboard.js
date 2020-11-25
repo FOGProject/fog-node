@@ -25,12 +25,6 @@ module.exports = {
       uptime = await si.time().uptime * 1000,
       loadaverage = await si.currentLoad(),
       legend = [];
-    function readableBytes(bytes) {
-      var i = Math.floor(Math.log(bytes) / Math.log(1024));
-      sizes = ['iB', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-
-      return (bytes / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + sizes[i];
-    };
 
     loadaverage = loadaverage.avgload;
     uptime = moment.duration(uptime);
@@ -43,17 +37,17 @@ module.exports = {
       webserver = inet.ip4;
     });
 
-    checkDiskSpace(imagePath).then((diskSpace) => {
+    checkDiskSpace(imagePath).then(async (diskSpace) => {
       size = diskSpace.size;
       free = diskSpace.free;
       used = size - free;
       legend = [
         {
-          name: 'Free: ' + readableBytes(free),
+          name: 'Free: ' + await sails.helpers.readableBytes(free),
           color: 'success'
         },
         {
-          name: 'Used: ' + readableBytes(used),
+          name: 'Used: ' + await sails.helpers.readableBytes(used),
           color: 'danger'
         }
       ];

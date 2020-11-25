@@ -72,13 +72,15 @@
                 <div class="card-header">
                   <h3 class="card-title">Disk Usage</h3>
                 </div>
-                <div class="card-body">
-                  <div class="chart-responsive">
-                    <input type="hidden" id="free" value="<%= free %>">
-                    <input type="hidden" id="used" value="<%= used %>">
-                    <canvas id="diskUsage" class="chartjs-render-monitor"></canvas>
+                <a href="/hwinfo">
+                  <div class="card-body">
+                    <div class="chart-responsive">
+                      <input type="hidden" id="free" value="<%= free %>">
+                      <input type="hidden" id="used" value="<%= used %>">
+                      <canvas id="diskUsage" class="chartjs-render-monitor"></canvas>
+                    </div>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
           </div>
