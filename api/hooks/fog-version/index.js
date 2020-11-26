@@ -35,7 +35,7 @@ module.exports = function defineFogVersionHook(sails) {
           fn: async function(req, res, next) {
             let pkg = safeReadJSON(pkgPath);
             // add version to each response
-            if (req.method === 'GET') {
+            if (req.method === 'GET' || req.method === 'POST') {
               if (res.locals.version === undefined) {
                 res.locals.version = pkg.version;
               }
