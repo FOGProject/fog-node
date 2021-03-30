@@ -1,6 +1,6 @@
 const fs = require('fs-extra'),
   path = require('path'),
-  partialPath = path.join(__dirname, '..', '..', '..','views','pages','partials');
+  partialPath = path.join(__dirname,'..','..','..','..','views','pages','partials','list');
 module.exports = {
   friendlyName: 'Groups',
   description: 'Groups pages.',

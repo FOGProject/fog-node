@@ -1,6 +1,6 @@
 module.exports = {
   friendlyName: 'List',
-  description: 'List user.',
+  description: 'List Items.',
   fn: async function () {
     let req = this.req,
       res = this.res,

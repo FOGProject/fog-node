@@ -73,26 +73,28 @@ module.exports.routes = {
   'POST /task-history':                      {action: 'task-history'},
 
   // Group Views
-  'GET /groups':                             {action: 'pages/groups'},
+  'GET /groups':                             {action: 'pages/list/groups'},
+  'GET /groups/create':                      {action: 'pages/create/groups'},
 
   // Host Views
-  'GET /hosts':                              {action: 'pages/hosts'},
+  'GET /hosts':                              {action: 'pages/list/hosts'},
+  'GET /hosts/create':                       {action: 'pages/create/hosts'},
 
   // Image Views
-  'GET /images':                             {action: 'pages/images'},
+  'GET /images':                             {action: 'pages/list/images'},
 
   // Role Views
-  'GET /roles':                              {action: 'pages/roles'},
+  'GET /roles':                              {action: 'pages/list/roles'},
 
   // Task Views
-  'GET /tasks':                              {action: 'pages/tasks'},
+  'GET /tasks':                              {action: 'pages/list/tasks'},
 
   // User Views
-  'GET /users':                              {action: 'pages/users'},
+  'GET /users':                              {action: 'pages/list/users'},
   'GET /user/me':                            {action: 'user/listme'},
 
   // Workflow Views
-  'GET /workflows':                          {action: 'pages/workflows'},
+  'GET /workflows':                          {action: 'pages/list/workflows'},
 
   // Login View
   'GET /login':                              {action: 'pages/login'},

@@ -1,5 +1,6 @@
 (function($) {
   let path = $(location).attr('pathname').replace(/s$/,'');
+  console.log(path);
   $('#listtable').registerTable(undefined, {
     order: [
       [0, 'asc']

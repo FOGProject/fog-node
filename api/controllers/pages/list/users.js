@@ -1,9 +1,9 @@
 const fs = require('fs-extra'),
   path = require('path'),
-  partialPath = path.join(__dirname, '..', '..', '..','views','pages','partials');
+  partialPath = path.join(__dirname,'..','..','..','..','views','pages','partials','list');
 module.exports = {
-  friendlyName: 'Workflows',
-  description: 'Workflows pages.',
+  friendlyName: 'Users',
+  description: 'Users pages.',
   inputs: {
   },
   exits: {
@@ -19,13 +19,14 @@ module.exports = {
     let req = this.req,
       res = this.res,
       data = {
-        header: 'Workflow List',
+        header: 'User List',
         theads: [
-          'Name',
-          'Description'
+          'Display Name',
+          'Username',
+          'Email'
         ],
-        model: 'workflow',
-        title: 'Workflow List',
+        model: 'user',
+        title: 'User List',
         partialname: false
       };
     let partial = path.join(partialPath, `${data.model}.js`);
