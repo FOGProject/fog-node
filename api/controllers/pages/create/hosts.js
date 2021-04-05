@@ -14,54 +14,63 @@ module.exports = {
       res = this.res,
       data = {
         header: 'Create New Host',
-        forms: await sails.helpers.formGenerator.with({
-          model: 'host',
-          method: 'post',
-          action: '/hosts/create',
-          id: 'host-create',
-          classes: [
-            'test',
-            'host-create-input-form'
-          ]
-        }),
         formItems: {
-          hostname: {
-            input: true,
+          name: {
             textarea: false,
             text: 'Host Name',
             type: 'text',
-            maxlength: 15,
-            validation: "/^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}$/",
-            required: true,
             id: 'hostname',
-            class: ['hostname'],
+            classes: ['hostname'],
             placeholder: 'MYHOSTNAME'
           },
           macs: {
-            input: true,
             textarea: false,
             text: 'MAC Address',
             type: 'text',
-            maxlength: 17,
-            validation: "/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})|([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/",
-            required: true,
+            validations: {
+              minLength: 12,
+              maxLength: 17,
+              regex: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})|([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/,
+            },
             id: 'macaddress',
-            class: [],
+            classes: [],
             placeholder: 'AA:BB:CC:DD:EE:FF'
           },
           description: {
-            input: false,
             textarea: true,
             text: 'Description',
+            type: 'text',
             id: 'hostdescription',
-            class: [],
+            classes: [],
             placeholder: 'Some general description'
           }
         },
         title: 'Create New Host',
+        formButtons: {
+          Cancel: {
+            classes: ['btn-warning','float-left'],
+            type: 'submit'
+          },
+          Create: {
+            classes: ['btn-success','float-right'],
+            type: 'submit'
+          }
+        },
         partialname: false
-      };
-    let partial = path.join(partialPath, `${data.model}.js`);
+      },
+      partial = path.join(partialPath, `${data.model}.js`);
+    data.form = await sails.helpers.formGenerator.with({
+      model: 'host',
+      method: 'post',
+      action: '/hosts/create',
+      id: 'host-create',
+      classes: [
+        'test',
+        'host-create-input-form'
+      ],
+      formItems: data.formItems,
+      formButtons: data.formButtons
+    });
     if (fs.existsSync(partial)) {
       data.partialname = partial;
     }

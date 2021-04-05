@@ -9,6 +9,8 @@ module.exports = {
     name: {
       type: 'string',
       required: true,
+      maxLength: 63,
+      regex: /^[a-z\d]([a-z\d\-]{0,61}[a-z\d])?(\.[a-z\d]([a-z\d\-]{0,61}[a-z\d])?)*$/i,
       unique: true
     },
     description: {
