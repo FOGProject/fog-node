@@ -8,6 +8,19 @@
 <secion class="content">
   <div class="container-fluid">
     <div class="row">
+      <div class="col-12">
+        <div class="card card-outline card-info">
+          <div class="card-header">
+            <h3 class="card-title"><%= header %></h3>
+            <%- partial('../layouts/partials/cardtools.ejs') %>
+          </div>
+          <% if (typeof form === 'undefined') form = '' %>
+          <%- form %>
+          <div class="card-footer">
+            <!-- Place Holder -->
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

@@ -79,6 +79,7 @@ module.exports.routes = {
   // Host Views
   'GET /hosts':                              {action: 'pages/list/hosts'},
   'GET /hosts/create':                       {action: 'pages/create/hosts'},
+  'POST /hosts/create':                      {action: 'general/create'},
 
   // Image Views
   'GET /images':                             {action: 'pages/list/images'},
