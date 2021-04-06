@@ -13,6 +13,7 @@ module.exports = {
     let req = this.req,
       res = this.res,
       data = {
+        model: 'host',
         header: 'Create New Host',
         formItems: {
           name: {
@@ -45,7 +46,6 @@ module.exports = {
             placeholder: 'Some general description'
           }
         },
-        title: 'Create New Host',
         formButtons: {
           Cancel: {
             classes: ['btn-warning','float-left'],
@@ -59,15 +59,13 @@ module.exports = {
         partialname: false
       },
       partial = path.join(partialPath, `${data.model}.js`);
+    data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`,
     data.form = await sails.helpers.formGenerator.with({
-      model: 'host',
+      model: data.model,
       method: 'post',
-      action: '/hosts/create',
-      id: 'host-create',
-      classes: [
-        'test',
-        'host-create-input-form'
-      ],
+      action: `/${data.model}s/create`,
+      id: `${data.model}-create`,
+      classes: [`${data.model}-create-form`],
       formItems: data.formItems,
       formButtons: data.formButtons
     });

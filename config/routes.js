@@ -75,6 +75,7 @@ module.exports.routes = {
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},
   'GET /groups/create':                      {action: 'pages/create/groups'},
+  'POST /groups/create':                     {action: 'general/create'},
 
   // Host Views
   'GET /hosts':                              {action: 'pages/list/hosts'},

@@ -115,6 +115,8 @@ module.exports = {
             form += formi;
           } else if (formo) {
             form += formo;
+          } else {
+            form += `<input${input.id ? ` id="${input.id}"` : ''} class="form-control${input.classes.length ? ` ${input.classes.join(' ')}` : ''}"${input.placeholder ? ` placeholder="${input.placeholder}"` : ''} type="${input.type}"${input.value ? ` value="${input.value}"` : ''}/>`;
           }
       }
       form += `
