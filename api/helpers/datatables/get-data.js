@@ -137,9 +137,12 @@ module.exports = {
 
         // This handles the global search function of this column
         var col = column.data.split('.')[0];
+
         var filter = {};
         if (!_.isEqual(_options.search.value, '')) {
-          filter[col].contains = _options.search.value;
+          filter[col] = {
+            contains: _options.search.value
+          };
         }
         select.push(col);
         where.push(filter);

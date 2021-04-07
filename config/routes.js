@@ -84,6 +84,8 @@ module.exports.routes = {
 
   // Image Views
   'GET /images':                             {action: 'pages/list/images'},
+  'GET /images/create':                      {action: 'pages/create/images'},
+  'POST /images/create':                     {action: 'general/create'},
 
   // Role Views
   'GET /roles':                              {action: 'pages/list/roles'},

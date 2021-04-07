@@ -87,42 +87,103 @@ module.exports = {
     for (item in formItems) {
       input = formItems[item];
       obj = sails.models[model].attributes[item];
-      form += `
-        <div class="row">
-          <div class="col-sm-2">
-            <label${input.id ? ` for="${input.id}"` : ''}>${input.text}</label>
-          </div>
-          <div class="col-sm-10">
-      `;
+      let iChecked = '',
+        iId = '',
+        iFor = '',
+        iClass = '',
+        iValue = '',
+        iPlaceholder = '',
+        iMaxlength = '',
+        iMinlength = '',
+        iRegex = '',
+        iName = ` name="${item}"`;
+      if (input.id) {
+        iFor = ` for="${input.id}"`;
+        iId = ` id="${input.id}"`;
+      }
+      if (input.classes.length > 0) {
+        iClass = ` ${input.classes.join(' ')}`;
+      }
+      if (input.value) {
+        iValue = `${input.value}`;
+      }
+      if (input.placeholder) {
+        iPlaceholder = ` placeholder="${input.placeholder}"`;
+      }
+      if (input.validations || obj.validations) {
+        if (input.validations) {
+          if (input.validations.maxLength) {
+            iMaxlength = ` maxlength="${input.validations.maxLength}"`;
+          }
+          if (input.validations.minLength) {
+            iMinlength = ` minlength="${input.validations.minLength}"`;
+          }
+          if (input.validations.regex) {
+            iRegex = ` regex="${input.validations.regex}"`;
+          }
+        }
+        if (obj.validations) {
+          if (obj.validations.maxLength) {
+            iMaxlength = ` maxlength="${obj.validations.maxLength}"`;
+          }
+          if (obj.validations.minLength) {
+            iMinlength = ` minlength="${obj.validations.minLength}"`;
+          }
+          if (obj.validations.regex) {
+            iRegex = ` regex="${obj.validations.regex}"`;
+          }
+        }
+      }
       switch (input.textarea) {
         case true:
           form += `
-            <textarea${input.id ? ` id="${input.id}"` : ''} class="form-control${input.classes.length ? ` ${input.classes.join(' ')}` : ''}"${input.placeholder ? ` placeholder="${input.placeholder}"` : ''}>${input.value || ''}</textarea>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
+              <div class="col-sm-10">
+                <textarea${iId} class="form-control${iClass}"${iPlaceholder}${iName}>${iValue}</textarea>
+              </div>
+            </div>
           `;
           break;
         default:
-          if (obj.validations) {
-            formo = `
-              <input${input.id ? ` id="${input.id}"` : ''} class="form-control${input.classes.length ? ` ${input.classes.join(' ')}` : ''}"${input.placeholder ? ` placeholder="${input.placeholder}"` : ''} type="${input.type}"${input.value ? ` value="${input.value}"` : ''}${obj.validations.maxLength ? ` maxlength="${obj.validations.maxLength}"` : ''}${obj.validations.regex ? ` regex="${obj.validations.regex}"` : ''}${obj.validations.minLength ? ` minlength="${obj.validations.minLength}"` : ''}/>
-            `;
-          }
-          if (input.validations) {
-            formi = `
-              <input${input.id ? ` id="${input.id}"` : ''} class="form-control${input.classes.length ? ` ${input.classes.join(' ')}` : ''}"${input.placeholder ? ` placeholder="${input.placeholder}"` : ''} type="${input.type}"${input.value ? ` value="${input.value}"` : ''}${input.validations.maxLength ? ` maxlength="${input.validations.maxLength}"` : ''}${input.validations.regex ? ` regex="${input.validations.regex}"` : ''}${input.validations.minLength ? ` minlength="${input.validations.minLength}"` : ''}/>
-            `;
-          }
-          if (formi) {
-            form += formi;
-          } else if (formo) {
-            form += formo;
-          } else {
-            form += `<input${input.id ? ` id="${input.id}"` : ''} class="form-control${input.classes.length ? ` ${input.classes.join(' ')}` : ''}"${input.placeholder ? ` placeholder="${input.placeholder}"` : ''} type="${input.type}"${input.value ? ` value="${input.value}"` : ''}/>`;
+          switch (input.type) {
+            case 'checkbox':
+              if (input.checked) {
+                iChecked = ` checked`;
+              }
+              form += `
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
+                  <div class="col-sm-10">
+                    <div class="icheck-primary d-inline">
+                      <input type="checkbox" class="${iClass}"${iId}${iName}${iChecked}/>
+                      <label${iFor}></label>
+                    </div>
+                  </div>
+                </div>
+              `;
+              break;
+            case 'radio':
+              // To do create loop and make this check an array required element
+              if (input.value.toLowerCase() === input.selected.toLowerCase()) {
+                iChecked=` selected`;
+              }
+              form += `
+                <div class="form-group row">
+                </div>
+              `
+              break;
+            default:
+              form += `
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
+                  <div class="col-sm-10">
+                    <input type="${input.type}"${iId} class="form-control${iClass}"${iName}${iPlaceholder} value="${iValue}"${iMaxlength}${iMinlength}${iRegex}${iChecked}/>
+                  </div>
+                </div>
+              `;
           }
       }
-      form += `
-          </div>
-        </div>
-      `;
     }
     form += `
       </div>
