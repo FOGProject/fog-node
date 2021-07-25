@@ -176,11 +176,11 @@ async.waterfall([
   datastores: {
     fogdb: {
       adapter: 'sails-mongo',
-      host: '${payload.datastores.fogdb.host}',
+      host: '${encodeURIComponent(payload.datastores.fogdb.host)}',
       port: ${payload.datastores.fogdb.port},
-      user: '${payload.datastores.fogdb.username}',
-      password: '${payload.datastores.fogdb.password}',
-      database: '${payload.datastores.fogdb.database}'
+      user: '${encodeURIComponent(payload.datastores.fogdb.username)}',
+      password: '${encodeURIComponent(payload.datastores.fogdb.password)}',
+      database: '${encodeURIComponent(payload.datastores.fogdb.database)}'
     }
   },
   schema: 1

@@ -6,7 +6,7 @@ const fs = require('fs-extra'),
   si = require('systeminformation'),
   os = require('os'),
   moment = require('moment'),
-  checkDiskSpace = require('check-disk-space');
+  checkDiskSpace = require('check-disk-space').default;
 module.exports = {
   friendlyName: 'View dashboard',
   description: 'Display "Dashboard" page.',

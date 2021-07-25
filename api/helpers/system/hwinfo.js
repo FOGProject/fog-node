@@ -4,7 +4,7 @@ const si = require('systeminformation'),
   appRoot = path.join(__dirname, '..', '..', '..'),
   imagePath = `${path.parse(appRoot).root}images`,
   moment = require('moment'),
-  checkDiskSpace = require('check-disk-space');
+  checkDiskSpace = require('check-disk-space').default;
 module.exports = {
   friendlyName: 'Hwinfo',
   description: 'Hwinfo system.',

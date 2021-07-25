@@ -48,7 +48,7 @@ module.exports = function(grunt) {
         },
         {
           expand: true,
-          cwd: './node_modules/chart.js/dist/',
+          cwd: './node_modules/admin-lte/node_modules/chart.js/dist/',
           src: [
             'Chart.bundle.min.js'
           ],
