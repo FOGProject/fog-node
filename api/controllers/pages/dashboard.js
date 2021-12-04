@@ -24,7 +24,10 @@ module.exports = {
       webserver = false,
       uptime = await si.time().uptime * 1000,
       loadaverage = await si.currentLoad(),
-      legend = [];
+      legend = [],
+      staged=3,
+      active=6,
+      avail=(10 - (staged + active));
 
     loadaverage = loadaverage.avgload;
     uptime = moment.duration(uptime);
@@ -66,7 +69,10 @@ module.exports = {
         legend,
         webserver,
         loadaverage,
-        uptime
+        uptime,
+        avail: avail,
+        staged: staged,
+        active: active
       });
     });
     // Respond with view.

@@ -95,6 +95,8 @@ module.exports.routes = {
 
   // User Views
   'GET /users':                              {action: 'pages/list/users'},
+  'GET /users/create':                       {action: 'pages/create/users'},
+  'POST /users/create':                      {action: 'general/create'},
   'GET /user/me':                            {action: 'user/listme'},
 
   // Workflow Views

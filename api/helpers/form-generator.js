@@ -110,7 +110,7 @@ module.exports = {
       if (input.placeholder) {
         iPlaceholder = ` placeholder="${input.placeholder}"`;
       }
-      if (input.validations || obj.validations) {
+      if (input.validations || (typeof obj !== 'undefined' && obj.validations)) {
         if (input.validations) {
           if (input.validations.maxLength) {
             iMaxlength = ` maxlength="${input.validations.maxLength}"`;
@@ -122,7 +122,7 @@ module.exports = {
             iRegex = ` regex="${input.validations.regex}"`;
           }
         }
-        if (obj.validations) {
+        if (typeof obj !== 'undefined' && obj.validations) {
           if (obj.validations.maxLength) {
             iMaxlength = ` maxlength="${obj.validations.maxLength}"`;
           }

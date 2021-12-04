@@ -57,6 +57,12 @@
                   <h3 class="card-title">Activity</h3>
                 </div>
                 <div class="card-body">
+                  <div class="chart-responsive">
+                    <input type="hidden" id="avail" value="<%= avail %>">
+                    <input type="hidden" id="staged" value="<%= staged %>">
+                    <input type="hidden" id="active" value="<%= active %>">
+                    <canvas id="activityUsage" class="chartjs-render-monitor"></canvas>
+                  </div>
                 </div>
               </div>
             </div>
