@@ -10,10 +10,12 @@
         data: 'macs',
         orderable: false,
         render: function(data) {
-          if (Array.isArray(data)) {
-            return data.length ? data[0] : '';
+          let mac = Array.isArray(data) ? (data.length ? data[0] : '') : (data || '');
+          if (!mac) {
+            return '';
           }
-          return data || '';
+          let hex = String(mac).replace(/[^0-9a-fA-F]/g, '').toLowerCase();
+          return hex.length === 12 ? hex.match(/.{2}/g).join(':') : mac;
         }
       },
       {data: 'pingstatus'},

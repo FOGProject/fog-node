@@ -32,7 +32,9 @@ function normalizeMacs(values, proceed) {
     if (!MAC_HEX.test(hex)) {
       return proceed(new Error(`Invalid MAC address: ${entry}`));
     }
-    let mac = hex.toUpperCase().match(/.{2}/g).join(':');
+    // Stored canonical form: bare lower-case hex, no separators (e.g.
+    // "aabbccddeeff"). Displayed as aa:bb:cc:dd:ee:ff at the view layer.
+    let mac = hex.toLowerCase();
     if (out.indexOf(mac) === -1) {
       out.push(mac);
     }
