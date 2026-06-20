@@ -29,11 +29,8 @@ module.exports = {
       throw 'notFound';
     }
 
-    let query = sails.models[model].findOne({ id });
-    if (model === 'host') {
-      query = query.populate('image').populate('defaultPrinter').populate('snapins').populate('printers');
-    }
-    let record = await query;
+    // populateAll so association edit widgets can reflect current values.
+    let record = await sails.models[model].findOne({ id }).populateAll();
     if (!record) {
       throw 'notFound';
     }
@@ -82,10 +79,11 @@ module.exports = {
       formItems[key] = item;
     });
 
-    // Host associations: single (image, default printer) as selects, multiple
-    // (printers, snapins) as checkbox tables. Groups are intentionally omitted.
-    if (model === 'host') {
-      Object.assign(formItems, await sails.helpers.hostAssociationFields(record));
+    // Associations: singleton -> select, multi -> checkbox table. Groups (and
+    // workflows) are intentionally omitted, and the group entity itself is left
+    // out pending the fog-node rethink of groups.
+    if (model !== 'group') {
+      Object.assign(formItems, await sails.helpers.associationFields.with({ model, record }));
     }
 
     let title = model.charAt(0).toUpperCase() + model.slice(1),

@@ -14,6 +14,9 @@
             <h3 class="card-title"><%= header %></h3>
             <%- partial('../layouts/partials/cardtools.ejs') %>
           </div>
+          <% if (typeof req !== 'undefined' && req.query && req.query.saved) { %>
+          <div class="alert alert-success m-3">Saved successfully.</div>
+          <% } %>
           <% if (typeof req !== 'undefined' && req.query && req.query.failed) { %>
           <div class="alert alert-danger m-3"><%= req.query.msg || 'Could not save. Please check your input.' %></div>
           <% } %>

@@ -97,8 +97,8 @@ module.exports = {
       }
     });
 
+    let recordId = id;
     try {
-      let recordId = id;
       if (isUpdate) {
         await sails.models[model].updateOne({ id }).set(values);
       } else {
@@ -115,6 +115,8 @@ module.exports = {
       return res.redirect(`${back}?failed=1&msg=${encodeURIComponent(msg)}`);
     }
 
-    return res.redirect(`/${plural}`);
+    // Stay on the record's edit page with a success flag (instead of bouncing to
+    // the list).
+    return res.redirect(`/${plural}/edit/${recordId}?saved=1`);
   }
 };
