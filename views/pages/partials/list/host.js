@@ -1,16 +1,30 @@
 (function($) {
   let path = $(location).attr('pathname').replace(/s$/,'');
-  console.log(path);
   $('#listtable').registerTable(undefined, {
     order: [
       [0, 'asc']
     ],
     columns: [
       {data: 'name'},
-      {data: 'primac'},
+      {
+        data: 'macs',
+        orderable: false,
+        render: function(data) {
+          if (Array.isArray(data)) {
+            return data.length ? data[0] : '';
+          }
+          return data || '';
+        }
+      },
       {data: 'pingstatus'},
       {data: 'deployed'},
-      {data: 'image'},
+      {
+        data: 'image',
+        orderable: false,
+        render: function(data) {
+          return (data && data.name) ? data.name : '';
+        }
+      },
       {data: 'description'}
     ],
     rowId: 'id',
