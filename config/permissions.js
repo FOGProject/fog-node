@@ -77,6 +77,12 @@ module.exports.permissions = {
       destroy: false,
       read: false,
       update: false
+    },
+    pxemenu: {
+      create: false,
+      destroy: false,
+      read: false,
+      update: false
     }
   }
 };

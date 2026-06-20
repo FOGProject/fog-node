@@ -45,15 +45,16 @@ more than exists. None of the following have models/controllers/views yet:
 `tools/migrate/` is a Mongo *schema-revision* framework, **not** a 1.x-MySQL →
 2.0 data importer; that importer does not exist yet.
 
-## Open decisions (gate detailed planning of Phases 2+)
+## Decisions
 
-1. **Client / FOS compatibility** — must fog-node speak the *existing*
-   fog-client and FOS (iPXE/imaging) APIs so current clients keep working, or are
-   the client/FOS being rewritten alongside 2.0? This shapes the entire imaging
-   and host-registration surface.
-2. **Frontend direction** — `package.json` currently carries Vue 3 *and* React 19
-   *and* jQuery 4 *and* parasails *and* DataTables; the EJS layout references some
-   vendored files that aren't installed. One stack needs to be chosen.
+1. **Client / FOS compatibility** — *decided: mirror 1.x fields now, settle the
+   live protocol at Phase 2.* Entities are modelled on 1.x's schema (compatible-
+   leaning); the actual capture/deploy/registration protocol is decided when
+   imaging is built.
+2. **Frontend direction** — *decided: server-rendered EJS + jQuery / DataTables /
+   AdminLTE* (matches 1.x, no build step, what the existing pages use). The
+   half-present Vue 3 / React 19 deps should be removed (follow-up). Views are
+   built per-entity on top of the API/model layer.
 
 ## Phases
 
@@ -86,16 +87,23 @@ automatically gets full REST CRUD via the generic `:model` routes once it has a
 - [x] `Printer` — mirrors 1.x `printers`. NOTE: the 1.x `pModel` field is exposed
       as `printerModel`, not `model`, because the generic route param `:model`
       would otherwise clobber a body field named `model`.
-- [ ] **iPXE menu — deferred (needs a decision):** in 1.x this splits into two
-      tables — `pxemenuoptions` (the boot-menu entries admins create) and `ipxe`
-      (a hardware product/manufacturer/MAC → boot-file mapping). Which one the
-      sidebar's "iPXE Menu" represents (and the model name) needs to be decided.
-- [ ] Host↔Snapin / Host↔Printer / Group associations (1.x association tables).
-- [ ] Flesh out `Host`/`Image`/`Task` to carry 1.x's fields (gated partly by the
-      client/FOS compatibility decision).
+- [x] `PxeMenu` — mirrors 1.x `pxeMenuOptions` (the sidebar's "iPXE Menu"). The
+      separate 1.x `ipxe` product/manufacturer/MAC → boot-file mapping table is
+      deferred until the boot/imaging flow needs it.
+- [x] `Host` + `Image` scalar field parity with 1.x (AD, kernel, product key,
+      pending, security tokens, etc. on Host; path/type/partition/os/format/
+      compress/etc. on Image). Existing fog-node fields/associations preserved.
+      Image lookup FKs (`imageType`/`imagePartitionType`/`os`) kept as numeric
+      ids for now.
+- [ ] Host↔Snapin / Host↔Printer / Group associations (1.x association tables);
+      Host "default printer" (1.x `printerAssoc.isDefault`).
+- [ ] `Task` field parity (gated partly by the client/FOS decision).
+- [ ] Lookup models to replace numeric FKs: ImageType, PartitionType, OS.
 - [ ] Seed the `FOG_*` settings 1.x expects.
-- [ ] Page controllers/views for the new entities (gated by the frontend-stack
-      decision).
+- [ ] Page controllers/views for the new entities (EJS + jQuery, per the frontend
+      decision); reconcile the sidebar (`config/globals.js`) labels/routes with the
+      model identities (e.g. "Modules" → snapin, plural view routes).
+- [ ] Remove the unused Vue 3 / React 19 dependencies (frontend decision).
 
 ### Phase 2 — Imaging end-to-end  *(the heart of FOG)*
 

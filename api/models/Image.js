@@ -36,6 +36,56 @@ module.exports = {
       type: 'string',
       columnType: 'datetime'
     },
+    // --- FOG 1.x `images` scalar fields. The lookup FKs (imageType,
+    //     imagePartitionType, os) are kept as numeric ids for now; dedicated
+    //     ImageType/PartitionType/OS models can replace them later. ---
+    path: {
+      type: 'string'
+    },
+    createdBy: {
+      type: 'string'
+    },
+    building: {
+      type: 'number',
+      isInteger: true,
+      defaultsTo: 0
+    },
+    size: {
+      type: 'string'
+    },
+    srvsize: {
+      type: 'string'
+    },
+    imageType: {
+      type: 'number',
+      isInteger: true
+    },
+    imagePartitionType: {
+      type: 'number',
+      isInteger: true
+    },
+    os: {
+      type: 'number',
+      isInteger: true
+    },
+    deployed: {
+      type: 'string'
+    },
+    format: {
+      type: 'number',
+      isInteger: true
+    },
+    magnet: {
+      type: 'string'
+    },
+    compress: {
+      type: 'number',
+      isInteger: true
+    },
+    toReplicate: {
+      type: 'boolean',
+      defaultsTo: true
+    },
     hosts: {
       collection: 'host',
       via: 'image'
