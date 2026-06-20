@@ -13,7 +13,11 @@ passport.serializeUser(async (user, done) => {
 passport.deserializeUser(async (id, done) => {
   await User.findOne({id}).populateAll().exec(async (err, user) => {
     if (err) return done(err);
-    done(null, user);
+    // toJSON() runs the User model's customToJSON, which computes `permissions`
+    // from the user's roles. Without it, session-authenticated requests (browser
+    // login without "Remember Me") get a req.user with no permissions, so every
+    // permission-checked action (create, list datatable, ...) 403s.
+    done(null, user ? user.toJSON() : false);
   });
 });
 passport.use(new JWTStrategy(opts,
