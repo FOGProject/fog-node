@@ -93,6 +93,7 @@ module.exports = {
         title: `Edit ${title}`,
         partialname: false
       };
+    let tabOrder = await sails.helpers.formTabs.with({ model, formItems });
     data.form = await sails.helpers.formGenerator.with({
       model,
       method: 'post',
@@ -100,6 +101,7 @@ module.exports = {
       id: `${model}-edit`,
       classes: [`${model}-edit-form`],
       formItems,
+      tabOrder,
       formButtons: {
         Cancel: { classes: ['btn-warning', 'float-start'], type: 'submit' },
         Save: { classes: ['btn-success', 'float-end'], type: 'submit' }
