@@ -1,15 +1,16 @@
 <!-- Sidebar Menu -->
 <% if (req.user) { %>
 <!-- Sidebar global search -->
-<div class="p-2">
+<div class="p-2 position-relative" id="globalSearchWrap">
   <form action="/search" method="get" role="search">
     <div class="input-group input-group-sm">
-      <input class="form-control" type="search" name="q" placeholder="Search..." aria-label="Search">
+      <input id="globalSearchInput" class="form-control" type="search" name="q" placeholder="Search..." aria-label="Search" autocomplete="off">
       <button class="btn btn-primary" type="submit">
         <i class="fa fa-search"></i>
       </button>
     </div>
   </form>
+  <div id="globalSearchResults" class="position-absolute bg-white border rounded shadow-sm" style="display:none; left:0.5rem; right:0.5rem; z-index:1050; max-height:320px; overflow:auto;"></div>
 </div>
 <nav class="mt-2">
   <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
