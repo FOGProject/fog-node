@@ -85,31 +85,7 @@ module.exports = {
     // Host associations: single (image, default printer) as selects, multiple
     // (printers, snapins) as checkbox tables. Groups are intentionally omitted.
     if (model === 'host') {
-      let [images, printers, snapins] = await Promise.all([
-        sails.models.image.find().sort('name ASC'),
-        sails.models.printer.find().sort('name ASC'),
-        sails.models.snapin.find().sort('name ASC')
-      ]);
-      let imageId = record.image ? record.image.id : null,
-        defPrinterId = record.defaultPrinter ? record.defaultPrinter.id : null,
-        snapinIds = (record.snapins || []).map((s) => s.id),
-        printerIds = (record.printers || []).map((p) => p.id);
-      formItems.image = {
-        text: 'Image', classes: [], textarea: false, type: 'select',
-        options: images.map((i) => ({ value: i.id, label: i.name, selected: i.id === imageId }))
-      };
-      formItems.defaultPrinter = {
-        text: 'Default Printer', classes: [], textarea: false, type: 'select',
-        options: printers.map((p) => ({ value: p.id, label: p.name, selected: p.id === defPrinterId }))
-      };
-      formItems.printers = {
-        text: 'Printers', classes: [], textarea: false, type: 'checktable',
-        options: printers.map((p) => ({ value: p.id, label: p.name, checked: printerIds.indexOf(p.id) !== -1 }))
-      };
-      formItems.snapins = {
-        text: 'Snapins', classes: [], textarea: false, type: 'checktable',
-        options: snapins.map((s) => ({ value: s.id, label: s.name, checked: snapinIds.indexOf(s.id) !== -1 }))
-      };
+      Object.assign(formItems, await sails.helpers.hostAssociationFields(record));
     }
 
     let title = model.charAt(0).toUpperCase() + model.slice(1),

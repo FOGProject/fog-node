@@ -54,6 +54,8 @@ module.exports = {
         partialname: false
       },
       partial = path.join(partialPath, `${data.model}.js`);
+    // Offer the host's associations on the create form too (no current values).
+    Object.assign(data.formItems, await sails.helpers.hostAssociationFields(null));
     data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`,
     data.form = await sails.helpers.formGenerator.with({
       model: data.model,
