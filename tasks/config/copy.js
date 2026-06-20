@@ -48,17 +48,9 @@ module.exports = function(grunt) {
         },
         {
           expand: true,
-          cwd: './node_modules/admin-lte/node_modules/chart.js/dist/',
+          cwd: './node_modules/chart.js/dist/',
           src: [
-            'Chart.bundle.min.js'
-          ],
-          dest: '.tmp/public/js'
-        },
-        {
-          expand: true,
-          cwd: './node_modules/chartjs-plugin-labels/src/',
-          src: [
-            'chartjs-plugin-labels.js'
+            'chart.umd.min.js*'
           ],
           dest: '.tmp/public/js'
         },

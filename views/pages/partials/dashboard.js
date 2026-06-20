@@ -1,183 +1,95 @@
 (function($) {
-  let free = $('#free').val(),
-    used = $('#used').val(),
-    hFree = $.readableBytes(free),
-    hUsed = $.readableBytes(used),
-    qavail = $('#avail').val(),
-    qstaged = $('#staged').val(),
-    qactive = $('#active').val();
-  // Activity Usage
-  let activeUsageCanvas = $('#activityUsage').get(0).getContext('2d'),
-    activeUsageData = {
-      labels: [
-        `Available: ${qavail}`,
-        `Active: ${qactive}`,
-        `Staged: ${qstaged}`
-      ],
-      datasets: [
-        {
-          data: [
-            qavail,
-            qactive,
-            qstaged
-          ],
-          backgroundColor: [
-            '#28a745',
-            '#dc3545',
-            '#007bff'
-          ]
-        }
-      ]
-    },
-    activeUsageOpts = {
-      responsive: true,
-      plugins: {
-        labels: {
-          reder: 'percentage',
-          precision: 0,
-          fontColor: '#ffffff',
-          fontSize: 12
-        }
-      },
-      legend: {
-        position: 'bottom'
-      },
-      tooltips: {
-        callbacks: {
-          label: function(tooltipItem, data) {
-            var dataset = data.datasets[tooltipItem.datasetIndex];
-            var meta = dataset._meta[Object.keys(dataset._meta)[0]];
-            var total = meta.total;
-            var currentValue = dataset.data[tooltipItem.index];
-            var percentage = parseFloat((currentValue/total*100).toFixed(1));
-            var hText = $.readableBytes(currentValue);
-            return `${hText} (${percentage}%)`;
-          },
-        }
-      }
-    },
-    activeUsageChart = new Chart(activeUsageCanvas, {
-      type: 'doughnut',
-      data: activeUsageData,
-      options: activeUsageOpts
-    });
-  // Disk Usage
-  let diskUsageCanvas = $('#diskUsage').get(0).getContext('2d'),
-    diskUsageData = {
-      labels: [
-        `Free: ${hFree}`,
-        `Used: ${hUsed}`
-      ],
-      datasets: [
-        {
-          data: [
-            free,
-            used
-          ],
-          backgroundColor: [
-            '#28a745',
-            '#dc3545',
-            '#007bff'
-          ]
-        }
-      ]
-    },
-    diskUsageOpts = {
-      responsive: true,
-      plugins: {
-        labels: {
-          render: 'percentage',
-          precision: 0,
-          fontColor: '#ffffff',
-          fontSize: 12
-        }
-      },
-      legend: {
-        position: 'bottom'
-      },
-      tooltips: {
-        callbacks: {
-          label: function(tooltipItem, data) {
-            var dataset = data.datasets[tooltipItem.datasetIndex];
-            var meta = dataset._meta[Object.keys(dataset._meta)[0]];
-            var total = meta.total;
-            var currentValue = dataset.data[tooltipItem.index];
-            var percentage = parseFloat((currentValue/total*100).toFixed(1));
-            var hText = $.readableBytes(currentValue);
-            return `${hText} (${percentage}%)`;
-          },
-        }
-      }
-    },
-    diskUsageChart = new Chart(diskUsageCanvas, {
-      type: 'doughnut',
-      data: diskUsageData,
-      options: diskUsageOpts
-    });
-  // Task History
-  let taskHistoryChart = undefined,
-    taskHistoryTimeout,
-    tInterval = 30;
-
-  function getTInterval() {
-    let val = $('.taskDayFilters.active').attr('length');
-
-    switch (val) {
-      case '-1':
-        updateHistory(365);
-        break;
-      case '2':
-        updateHistory(60);
-        break;
-      case '3':
-        updateHistory(90);
-        break;
-      case '6':
-        updateHistory(183);
-        break;
-      default:
-        updateHistory(30);
-    }
-
-    taskHistoryTimeout = setTimeout(getTInterval, 3000);
+  // Percentage helper for doughnut tooltips (Chart.js v4).
+  function pctLabel(context) {
+    let val = Number(context.parsed) || 0,
+      total = context.dataset.data.reduce((a, b) => a + Number(b), 0),
+      pct = total ? (val / total * 100).toFixed(1) : 0;
+    return ` ${context.label}: ${pct}%`;
   }
 
-  function historyCanvas() {
-    // Call a function to redraw other content (texts, images, etc)
-    if (typeof taskHistoryChart === 'undefined') {
-      var history = $('#taskHistory');
-      var htx = history.get(0).getContext('2d');
-      var htxOpts = {
+  // Activity Usage
+  let qavail = Number($('#avail').val()) || 0,
+    qactive = Number($('#active').val()) || 0,
+    qstaged = Number($('#staged').val()) || 0,
+    activeUsageCanvas = $('#activityUsage').get(0);
+  if (activeUsageCanvas) {
+    new Chart(activeUsageCanvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: [
+          `Available: ${qavail}`,
+          `Active: ${qactive}`,
+          `Staged: ${qstaged}`
+        ],
+        datasets: [{
+          data: [qavail, qactive, qstaged],
+          backgroundColor: ['#28a745', '#dc3545', '#007bff']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: { callbacks: { label: pctLabel } }
+        }
+      }
+    });
+  }
+
+  // Disk Usage
+  let free = Number($('#free').val()) || 0,
+    used = Number($('#used').val()) || 0,
+    hFree = $.readableBytes(free),
+    hUsed = $.readableBytes(used),
+    total = free + used,
+    freePct = total ? (free / total * 100).toFixed(1) : 0,
+    usedPct = total ? (used / total * 100).toFixed(1) : 0,
+    diskUsageCanvas = $('#diskUsage').get(0);
+  if (diskUsageCanvas) {
+    new Chart(diskUsageCanvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: [
+          `Free: ${hFree} (${freePct}%)`,
+          `Used: ${hUsed} (${usedPct}%)`
+        ],
+        datasets: [{
+          data: [free, used],
+          backgroundColor: ['#28a745', '#dc3545']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: { callbacks: { label: pctLabel } }
+        }
+      }
+    });
+  }
+
+  // Task History (category x-axis -> no time adapter needed)
+  let taskHistoryChart,
+    taskHistoryTimeout;
+
+  function historyCanvas(taskChartData) {
+    let history = $('#taskHistory').get(0);
+    if (!history) return;
+    if (!taskHistoryChart) {
+      taskHistoryChart = new Chart(history.getContext('2d'), {
         type: 'line',
         data: taskChartData,
         options: {
           responsive: true,
-          scales: {
-            xAxes: [{
-              type: 'time',
-              time: {
-                unit: 'day'
-              }
-            }],
-            yAxes: [{
-              ticks: {
-                beginAtZero: true,
-                min: 0,
-                precision: 0
-              }
-            }]
-          }
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, min: 0, ticks: { precision: 0 } } }
         }
-      }
-      var historyContainer = history.parent();
-
-      var $historyContainer = $(historyContainer);
-      history.attr('width', $historyContainer.width());
-      history.attr('height', $historyContainer.height());
-      taskHistoryChart = new Chart(htx, htxOpts);
+      });
     } else {
       taskHistoryChart.data = taskChartData;
-      taskHistoryChart.update(0);
+      taskHistoryChart.update('none');
     }
   }
 
@@ -185,160 +97,96 @@
     $.ajax({
       url: '/task-history',
       type: 'post',
-      data: {period},
+      data: { period },
       dataType: 'json',
       success: function(data) {
-        taskChartData = {
+        historyCanvas({
           labels: data.dates,
-          datasets: [
-            {
-              label: 'Tasks',
-              data: data.data,
-              fill: false
-            }
-          ]
-        };
-
-        max = Math.max.apply(Math, data.data);
-
-        historyCanvas();
+          datasets: [{ label: 'Tasks', data: data.data, fill: false }]
+        });
       }
     });
-  };
+  }
+
+  function getTInterval() {
+    let val = $('.taskDayFilters.active').attr('length');
+    switch (val) {
+      case '-1': updateHistory(365); break;
+      case '2': updateHistory(60); break;
+      case '3': updateHistory(90); break;
+      case '6': updateHistory(183); break;
+      default: updateHistory(30);
+    }
+    taskHistoryTimeout = setTimeout(getTInterval, 3000);
+  }
 
   $('.taskDayFilters').on('click', function(e) {
     e.preventDefault();
     $('.taskDayFilters.active').removeClass('active');
     $(this).addClass('active');
-    if (taskHistoryTimeout) {
-      clearTimeout(taskHistoryTimeout);
-    }
+    if (taskHistoryTimeout) clearTimeout(taskHistoryTimeout);
     getTInterval();
   });
 
-  getTInterval();
+  if ($('#taskHistory').length) getTInterval();
 
-  // Bandwidth
+  // Bandwidth (category x-axis)
   let bandwidthChart,
+    bandwidthChartData,
     bandwidthinterval,
     bandwidthajax;
-  function addBandwidthData(chart, label, data) {
-    chart.data.labels.push(label);
-    chart.data.datasets.forEach((dataset) => {
-      dataset.data.push(data);
-    });
-    chart.update();
-  }
-  function remBandwidthData(chart) {
-    chart.data.labels.pop();
-    chart.data.datasets.forEach((dataset) => {
-      dataset.data.pop();
-    });
-    chart.update();
-  }
+
   function bandwidthCanvas() {
-    var bandwidth = $('#bandwidth');
-    var btx = bandwidth.get(0).getContext('2d');
-    var btxOpts = {
+    let bandwidth = $('#bandwidth').get(0);
+    if (!bandwidth) return;
+    bandwidthChart = new Chart(bandwidth.getContext('2d'), {
       type: 'line',
       data: bandwidthChartData,
       options: {
         responsive: true,
-        scales: {
-          xAxes: [{
-            type: 'time',
-            time: {
-              unit: 'second'
-            }
-          }],
-          yAxes: [{
-            ticks: {
-              beginAtZero: true,
-              min: 0,
-              precision: 0
-            }
-          }]
-        }
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, min: 0, ticks: { precision: 0 } } }
       }
-    };
-    var bandwidthContainer = bandwidth.parent();
-    var $bandwidthContainer = $(bandwidthContainer);
-    bandwidth.attr('width', $bandwidthContainer.width());
-    bandwidth.attr('height', $bandwidthContainer.height());
-    bandwidthChart = new Chart(btx, btxOpts);
+    });
   }
+
+  function addBandwidthData(chart, label, value) {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => dataset.data.push(value));
+    if (chart.data.labels.length > 30) {
+      chart.data.labels.shift();
+      chart.data.datasets.forEach((dataset) => dataset.data.shift());
+    }
+    chart.update('none');
+  }
+
   function updateBandwidth() {
-
-    // Fetches the data.
     function fetchData() {
-
-      // When ajax receives data, this updates the graph.
-      function onDataReceived(series) {
-
-        // Setup our Time elements.
-        var d = new Date(),
-          n = d.getTime();
-
-        let rate = Math.round(series.netstats[0].tx_sec / 1024 / 1024 * 8, 2);
-        if (!bandwidthChart) {
-          bandwidthChartData = {
-            labels: [
-              n
-            ],
-            datasets: [
-              {
-                label: series.netstats[0].iface + ' Mbps',
-                data: [
-                  0
-                ],
-                fill: false
-              }
-            ]
-          }
-          bandwidthCanvas();
-        } else {
-          addBandwidthData(bandwidthChart, n, rate);
-        }
-      }
       bandwidthajax = $.ajax({
         url: '/bandwidth',
         type: 'get',
         dataType: 'json',
-        beforeSend: () => {
-          if (bandwidthajax) {
-            bandwidthajax.abort();
-          }
-          if (bandwidthinterval) {
-            clearTimeout(bandwidthinterval);
+        success: function(series) {
+          if (!series || !series.netstats || !series.netstats[0]) return;
+          let label = new Date().toLocaleTimeString(),
+            rate = Math.round(series.netstats[0].tx_sec / 1024 / 1024 * 8);
+          if (!bandwidthChart) {
+            bandwidthChartData = {
+              labels: [label],
+              datasets: [{ label: series.netstats[0].iface + ' Mbps', data: [rate], fill: false }]
+            };
+            bandwidthCanvas();
+          } else {
+            addBandwidthData(bandwidthChart, label, rate);
           }
         },
-        success: onDataReceived,
-        complete: () => {}
+        complete: function() {
+          bandwidthinterval = setTimeout(fetchData, 2000);
+        }
       });
-
-      bandwidthinterval = setTimeout(fetchData, 1000);
     }
-
-    // Actually fetch our data.
     fetchData();
   }
-  // If the user presses the off button, we should stop
-  // displaying, notice we still collect data, we just don't
-  // display it. When you press on again, it should update
-  // with your missed data.
-  $('#realtime .btn').on('click', (e) => {
-    let selected = $(this).data('toggle');
-    if (selected === 'on' && realtime === 'on') {
-      return;
-    } else if (selected) {
-      realtime = 'on';
-      $('#btn-off').removeClass('active');
-      $('#btn-on').addClass('active');
-    } else {
-      realtime = 'off';
-      $('#btn-off').addClass('active');
-      $('#btn-on').removeClass('active');
-    }
-  });
-  updateBandwidth();
+
+  if ($('#bandwidth').length) updateBandwidth();
 })(jQuery);

@@ -17,8 +17,11 @@ module.exports = {
     },
   },
   fn: async function (inputs) {
-    let bytes = inputs.bytes,
-      i = Math.floor(Math.log(bytes) / Math.log(1024));
+    let bytes = inputs.bytes;
+    if (!bytes || bytes <= 0 || !isFinite(bytes)) {
+      return `0 ${sizes[0]}`;
+    }
+    let i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(2) * 1} ${sizes[i]}`;
   }
 };
