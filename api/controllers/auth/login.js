@@ -13,6 +13,17 @@ module.exports = {
       res = this.res;
     await passport.authenticate(sails.config.globals.authenticationMechanisms, async function(err, user, info) {
       if (err) return exits.error(err);
+      // No user => bad credentials. Return a clean 401 (JSON) or bounce back to
+      // the login form, instead of calling req.login(undefined) which throws a
+      // 500 ("Failed to serialize user into session").
+      if (!user) {
+        let message = (info && info.message) || 'Invalid username or password';
+        if (req.wantsJSON) {
+          res.status(401);
+          return res.json({message});
+        }
+        return res.redirect('/login?failed=1');
+      }
       await req.login(user, async function(err) {
         if (err) return exits.error(err);
         await jwt.sign(
