@@ -32,8 +32,6 @@ module.exports = function(grunt) {
             '@pnotify/core/dist/PNotify.js',
             '@pnotify/mobile/dist/PNotifyMobile.js',
             'select2/dist/js/select2.full.min.js',
-            'vue/dist/vue.min.js',
-            'vue-router/dist/vue-router.min.js',
           ],
           dest: '.tmp/public/js'
         },

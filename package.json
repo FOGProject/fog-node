@@ -44,7 +44,6 @@
     "moment-timezone": "^0.6.2",
     "node-forge": "^1.4.0",
     "pace-js": "^1.2.4",
-    "parasails": "^0.9.2",
     "passport": "0.7.0",
     "passport-jwt-cookiecombo": "^1.0.5",
     "passport-local": "^1.0.0",
@@ -52,18 +51,13 @@
     "pnotify": "^5.2.0",
     "popper.js": "^1.16.1",
     "progress-stream": "^2.0.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-select": "^5.2.1",
     "sails": "~>1.5.3",
     "sails-hook-grunt": "^5.0.0",
     "sails-hook-orm": "^4.0.0",
     "sails-hook-sockets": "^3.0.2",
     "sails-mongo": "fogproject/sails-mongo",
     "systeminformation": "^5.31.7",
-    "tempusdominus-core": "^5.19.0",
-    "vue": "^3.5.38",
-    "vue-router": "^5.1.0"
+    "tempusdominus-core": "^5.19.0"
   },
   "devDependencies": {
     "eslint": "10.5.0",
