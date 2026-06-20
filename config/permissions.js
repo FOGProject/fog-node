@@ -53,6 +53,30 @@ module.exports.permissions = {
       destroy: false,
       read: false,
       update: false
+    },
+    storagegroup: {
+      create: false,
+      destroy: false,
+      read: false,
+      update: false
+    },
+    storagenode: {
+      create: false,
+      destroy: false,
+      read: false,
+      update: false
+    },
+    snapin: {
+      create: false,
+      destroy: false,
+      read: false,
+      update: false
+    },
+    printer: {
+      create: false,
+      destroy: false,
+      read: false,
+      update: false
     }
   }
 };

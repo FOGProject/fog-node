@@ -72,12 +72,30 @@ more than exists. None of the following have models/controllers/views yet:
 - [ ] Resolve the lockfile split (`yarn.lock` is committed while
       `package-lock.json` keeps reappearing untracked). Pick one tool.
 
-### Phase 1 — Data-model parity for core entities  *(foundation)*
+### Phase 1 — Data-model parity for core entities  *(in progress)*
 
-Add missing models + fields and wire them into routes / CRUD / views:
-StorageGroup, StorageNode, Module (Snapin), iPXE menu, Printer. Flesh out
-`Host`/`Image`/`Task`/`Setting` to carry 1.x's fields. Seed the `FOG_*` settings
-1.x expects.
+Add the missing core entity models (mirroring 1.x fields). Each registered model
+automatically gets full REST CRUD via the generic `:model` routes once it has a
+`stock.<identity>` entry in `config/permissions.js`.
+
+- [x] `StorageGroup` + `StorageNode` (with a bidirectional association) —
+      mirrors 1.x `nfsGroups` / `nfsGroupMembers`.
+- [x] `Snapin` — mirrors 1.x `snapins`. (The sidebar labels these "Modules"; the
+      model is named `Snapin` to match 1.x domain language and avoid shadowing
+      Node's `Module` global. Sidebar label/route to be reconciled later.)
+- [x] `Printer` — mirrors 1.x `printers`. NOTE: the 1.x `pModel` field is exposed
+      as `printerModel`, not `model`, because the generic route param `:model`
+      would otherwise clobber a body field named `model`.
+- [ ] **iPXE menu — deferred (needs a decision):** in 1.x this splits into two
+      tables — `pxemenuoptions` (the boot-menu entries admins create) and `ipxe`
+      (a hardware product/manufacturer/MAC → boot-file mapping). Which one the
+      sidebar's "iPXE Menu" represents (and the model name) needs to be decided.
+- [ ] Host↔Snapin / Host↔Printer / Group associations (1.x association tables).
+- [ ] Flesh out `Host`/`Image`/`Task` to carry 1.x's fields (gated partly by the
+      client/FOS compatibility decision).
+- [ ] Seed the `FOG_*` settings 1.x expects.
+- [ ] Page controllers/views for the new entities (gated by the frontend-stack
+      decision).
 
 ### Phase 2 — Imaging end-to-end  *(the heart of FOG)*
 
