@@ -1,95 +1,68 @@
-<!-- Sidebar items -->
-<div class="sidebar">
-  <% if (req.user) { %>
-  <!-- Sidebar user panel -->
-  <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-    <div class="image">
-    </div>
-    <div class="info">
-      <a href="<%= (req.user.isLocalAuth ? '/user/me' : '#') %>" class="d-block">
-        <i class="fa fa-user"></i>&nbsp;
-        <%= req.user.displayName || req.user.username %>
+<!-- Sidebar Menu -->
+<% if (req.user) { %>
+<nav class="mt-2">
+  <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+    <% for (var i = 0; i < menuItems.length; i++) { %>
+    <% if (!menuItems[i].subLinks) { %>
+    <li class="nav-item">
+      <a href="<%= menuItems[i].link %>" class="nav-link">
+        <i class="nav-icon fa <%= menuItems[i].icon %>"></i>
+        <p><%= menuItems[i].text %></p>
       </a>
-    </div>
-  </div>
-  <!-- Sidebar Search -->
-  <div class="form-inline">
-    <div class="input-group" data-widget="sidebar-search">
-      <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
-      <div class="input-group-append">
-        <button class="btn btn-sidebar">
-          <i class="fa fa-search fa-fw"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  <!-- Sidebar Menu -->
-  <nav class="mt-2">
-    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-      <li class="nav-header">MAIN NAVIGATION</li>
-      <% for (var i = 0; i < menuItems.length; i++) { %>
-      <% if (!menuItems[i].subLinks) { %>
-      <li class="nav-item">
-        <a href="<%= menuItems[i].link %>" class="nav-link">
-          <i class="fa <%= menuItems[i].icon %>"></i>
-          <p><%= menuItems[i].text %></p>
-        </a>
-      </li>
-      <% } else { %>
-      <li class="nav-item has-treeview">
-        <a href="#" class="nav-link">
-          <i class="fa <%= menuItems[i].icon %>"></i>
-          <p>
-            <%= menuItems[i].plural %>&nbsp;
-            <i class="right fa fa-angle-left"></i>
-          </p>
-        </a>
-        <ul class="nav nav-treeview">
-          <li class="nav-item">
-            <a href="<%= menuItems[i].link %>">
-              <i class="fa fa-circle-o nav-icon"></i>&nbsp;
-              List all <%= menuItems[i].plural %>
-            </a>
-          </li>
-          <% for (var j = 0; j < menuItems[i].subLinks.length; j++) { %>
-          <li class="nav-item">
-            <a href="<%= menuItems[i].subLinks[j].link %>">
-              <i class="fa fa-circle-o nav-icon"></i>&nbsp;
-              <%= menuItems[i].subLinks[j].text %>
-            </a>
-          </li>
-          <% } %>
-        </ul>
-      </li>
-      <% }%>
-      <% } %>
-      <li class="nav-header">PLUGIN OPTIONS</li>
-      <li class="nav-header">RESOURCES</li>
-      <li class="nav-item">
-        <a href="https://sourceforge.net/donate/index.php?group_id=201099" class="nav-link" target="_blank">
-          <i class="fa fa-money"></i>
-          <p>Donate</p>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="https://news.fogproject.org" class="nav-link" target="_blank">
-          <i class="fa fa-bullhorn"></i>
-          <p>News</p>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="https://forums.fogproject.org" class="nav-link" target="_blank">
-          <i class="fa fa-users"></i>
-          <p>Forums</p>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="https://wiki.fogproject.org" class="nav-link" target="_blank">
-          <i class="fa fa-book"></i>
-          <p>Wiki</p>
-        </a>
-      </li>
-    </ul>
-  </nav>
-  <% } %>
-</div>
+    </li>
+    <% } else { %>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="nav-icon fa <%= menuItems[i].icon %>"></i>
+        <p>
+          <%= menuItems[i].plural %>
+          <i class="nav-arrow fa fa-angle-left"></i>
+        </p>
+      </a>
+      <ul class="nav nav-treeview">
+        <li class="nav-item">
+          <a href="<%= menuItems[i].link %>" class="nav-link">
+            <i class="nav-icon fa fa-circle-o"></i>
+            <p>List all <%= menuItems[i].plural %></p>
+          </a>
+        </li>
+        <% for (var j = 0; j < menuItems[i].subLinks.length; j++) { %>
+        <li class="nav-item">
+          <a href="<%= menuItems[i].subLinks[j].link %>" class="nav-link">
+            <i class="nav-icon fa fa-circle-o"></i>
+            <p><%= menuItems[i].subLinks[j].text %></p>
+          </a>
+        </li>
+        <% } %>
+      </ul>
+    </li>
+    <% } %>
+    <% } %>
+    <li class="nav-header">RESOURCES</li>
+    <li class="nav-item">
+      <a href="https://sourceforge.net/donate/index.php?group_id=201099" class="nav-link" target="_blank">
+        <i class="nav-icon fa fa-money"></i>
+        <p>Donate</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="https://news.fogproject.org" class="nav-link" target="_blank">
+        <i class="nav-icon fa fa-bullhorn"></i>
+        <p>News</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="https://forums.fogproject.org" class="nav-link" target="_blank">
+        <i class="nav-icon fa fa-users"></i>
+        <p>Forums</p>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="https://wiki.fogproject.org" class="nav-link" target="_blank">
+        <i class="nav-icon fa fa-book"></i>
+        <p>Wiki</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<% } %>
