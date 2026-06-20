@@ -174,14 +174,24 @@ module.exports.globals = {
       plural: 'Snapins',
       link: '/snapins',
       icon: 'fa-cogs',
-      subLinks: false
+      subLinks: [
+        {
+          link: '/snapins/create',
+          text: 'Create New Snapin'
+        }
+      ]
     },
     {
       text: 'Printer',
       plural: 'Printers',
       link: '/printers',
       icon: 'fa-print',
-      subLinks: false
+      subLinks: [
+        {
+          link: '/printers/create',
+          text: 'Create New Printer'
+        }
+      ]
     },
     {
       text: 'Task',
@@ -272,7 +282,12 @@ module.exports.globals = {
       plural: 'iPXE Menus',
       link: '/pxemenus',
       icon: 'fa-bars',
-      subLinks: false
+      subLinks: [
+        {
+          link: '/pxemenus/create',
+          text: 'Create New iPXE Menu'
+        }
+      ]
     },
   ],
   authenticationMechanisms: [

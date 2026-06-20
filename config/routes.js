@@ -75,32 +75,42 @@ module.exports.routes = {
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},
   'GET /groups/create':                      {action: 'pages/create/groups'},
-  'POST /groups/create':                     {action: 'general/create'},
+  'POST /groups/create':                     {action: 'general/save'},
 
   // Host Views
   'GET /hosts':                              {action: 'pages/list/hosts'},
   'GET /hosts/create':                       {action: 'pages/create/hosts'},
-  'POST /hosts/create':                      {action: 'general/create'},
+  'POST /hosts/create':                      {action: 'general/save'},
 
   // Image Views
   'GET /images':                             {action: 'pages/list/images'},
   'GET /images/create':                      {action: 'pages/create/images'},
-  'POST /images/create':                     {action: 'general/create'},
+  'POST /images/create':                     {action: 'general/save'},
 
   // Storage Group Views
   'GET /storagegroups':                      {action: 'pages/list/storagegroups'},
+  'GET /storagegroups/create':               {action: 'pages/create/storagegroups'},
+  'POST /storagegroups/create':              {action: 'general/save'},
 
   // Storage Node Views
   'GET /storagenodes':                       {action: 'pages/list/storagenodes'},
+  'GET /storagenodes/create':                {action: 'pages/create/storagenodes'},
+  'POST /storagenodes/create':               {action: 'general/save'},
 
   // Snapin Views
   'GET /snapins':                            {action: 'pages/list/snapins'},
+  'GET /snapins/create':                     {action: 'pages/create/snapins'},
+  'POST /snapins/create':                    {action: 'general/save'},
 
   // Printer Views
   'GET /printers':                           {action: 'pages/list/printers'},
+  'GET /printers/create':                    {action: 'pages/create/printers'},
+  'POST /printers/create':                   {action: 'general/save'},
 
   // iPXE Menu Views
   'GET /pxemenus':                           {action: 'pages/list/pxemenus'},
+  'GET /pxemenus/create':                    {action: 'pages/create/pxemenus'},
+  'POST /pxemenus/create':                   {action: 'general/save'},
 
   // Role Views
   'GET /roles':                              {action: 'pages/list/roles'},
@@ -111,7 +121,7 @@ module.exports.routes = {
   // User Views
   'GET /users':                              {action: 'pages/list/users'},
   'GET /users/create':                       {action: 'pages/create/users'},
-  'POST /users/create':                      {action: 'general/create'},
+  'POST /users/create':                      {action: 'general/save'},
   'GET /user/me':                            {action: 'user/listme'},
 
   // Workflow Views
