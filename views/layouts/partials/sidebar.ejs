@@ -1,5 +1,16 @@
 <!-- Sidebar Menu -->
 <% if (req.user) { %>
+<!-- Sidebar global search -->
+<div class="p-2">
+  <form action="/search" method="get" role="search">
+    <div class="input-group input-group-sm">
+      <input class="form-control" type="search" name="q" placeholder="Search..." aria-label="Search">
+      <button class="btn btn-primary" type="submit">
+        <i class="fa fa-search"></i>
+      </button>
+    </div>
+  </form>
+</div>
 <nav class="mt-2">
   <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
     <% for (var i = 0; i < menuItems.length; i++) { %>

@@ -52,6 +52,9 @@ module.exports.routes = {
   // User API
   'GET /api/v1/user/me':                     {action: 'user/listme'},
 
+  // Global search (must precede the :model routes).
+  'GET /api/v1/search':                      {action: 'search'},
+
   // General API elements.
   'POST /api/v1/:model':                     {action: 'general/create'},
   'DELETE /api/v1/:model/:id?':              {action: 'general/destroy'},
@@ -71,6 +74,9 @@ module.exports.routes = {
   // Dashboard View
   'GET /':                                   {action: 'pages/dashboard'},
   'POST /task-history':                      {action: 'task-history'},
+
+  // Search View
+  'GET /search':                             {action: 'pages/search'},
 
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},
