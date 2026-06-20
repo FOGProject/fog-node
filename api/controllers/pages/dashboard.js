@@ -4,7 +4,6 @@ const fs = require('fs-extra'),
   partialPath = path.join(appRoot, 'views', 'pages', 'partials'),
   imagePath = `${path.parse(appRoot).root}images`,
   si = require('systeminformation'),
-  os = require('os'),
   moment = require('moment'),
   checkDiskSpace = require('check-disk-space').default;
 module.exports = {
@@ -15,75 +14,60 @@ module.exports = {
       viewTemplatePath: 'pages/dashboard'
     }
   },
-  fn: async function (inputs, exits) {
-    let free = 0,
-      size = 0,
-      used = 0,
+  fn: async function () {
+    let webserver = 'Unknown',
       defaultInet = await si.networkInterfaceDefault(),
       interfaces = await si.networkInterfaces(),
-      webserver = false,
-      uptime = await si.time().uptime * 1000,
-      loadaverage = await si.currentLoad(),
-      legend = [],
-      staged=3,
-      active=6,
-      avail=(10 - (staged + active));
+      timeInfo = await si.time(),
+      uptime = moment.duration((timeInfo.uptime || 0) * 1000).humanize(),
+      load = await si.currentLoad(),
+      loadaverage = 'N/A';
 
-    loadaverage = loadaverage.avgload;
-    uptime = moment.duration(uptime);
-    uptime = uptime.humanize();
-
-    interfaces.forEach((inet) => {
-      if (defaultInet !== inet.ifaceName) {
-        return;
+    // systeminformation v5: currentLoad() -> avgLoad / currentLoad (camelCase)
+    if (load) {
+      if (typeof load.avgLoad === 'number') {
+        loadaverage = load.avgLoad;
+      } else if (typeof load.currentLoad === 'number') {
+        loadaverage = `${load.currentLoad.toFixed(2)}%`;
       }
-      webserver = inet.ip4;
+    }
+
+    // systeminformation v5: networkInterfaces() entries use `iface`
+    (Array.isArray(interfaces) ? interfaces : [interfaces]).forEach((inet) => {
+      if (inet && inet.iface === defaultInet) {
+        webserver = inet.ip4;
+      }
     });
 
-    checkDiskSpace(imagePath).then(async (diskSpace) => {
-      size = diskSpace.size;
-      free = diskSpace.free;
-      used = size - free;
-      legend = [
-        {
-          name: 'Free: ' + await sails.helpers.readableBytes(free),
-          color: 'success'
-        },
-        {
-          name: 'Used: ' + await sails.helpers.readableBytes(used),
-          color: 'danger'
-        }
-      ];
-      partial = path.join(partialPath, `${data.model}.js`);
-      if (fs.existsSync(partial)) {
-        data.partialname = partial;
-      }
-      return exits.success({
-        header: 'Dashboard',
-        title: 'Dashboard',
-        model: 'dashboard',
-        partialname: partial,
-        free,
-        used,
-        size,
-        legend,
-        webserver,
-        loadaverage,
-        uptime,
-        avail: avail,
-        staged: staged,
-        active: active
-      });
-    });
-    // Respond with view.
+    // Disk usage of the image store. Fall back to the filesystem root when the
+    // image path does not exist (e.g. in development).
+    let free = 0, size = 0, used = 0;
+    try {
+      let diskSpace = await checkDiskSpace(imagePath);
+      size = diskSpace.size; free = diskSpace.free; used = size - free;
+    } catch (unused) {
+      try {
+        let diskSpace = await checkDiskSpace(path.parse(appRoot).root);
+        size = diskSpace.size; free = diskSpace.free; used = size - free;
+      } catch (unused2) { /* leave zeros */ }
+    }
+
+    let legend = [
+      { name: 'Free: ' + await sails.helpers.readableBytes(free), color: 'success' },
+      { name: 'Used: ' + await sails.helpers.readableBytes(used), color: 'danger' }
+    ];
+
+    // Activity placeholders until real task data is wired up.
+    let staged = 3, active = 6, avail = 10 - (staged + active);
+
     let data = {
+      header: 'Dashboard',
       title: 'Dashboard',
       model: 'dashboard',
       partialname: false,
-      legend: legend,
-      free: free,
-      used: used,
-      size: size
+      free, used, size, legend,
+      webserver, loadaverage, uptime,
+      avail, staged, active
     };
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
