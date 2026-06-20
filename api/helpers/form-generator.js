@@ -173,6 +173,33 @@ module.exports = {
                 </div>
               `
               break;
+            case 'maclist': {
+              let macs = Array.isArray(input.value) ? input.value : (input.value ? [input.value] : []);
+              if (!macs.length) { macs = ['']; }
+              form += `
+                <div class="row mb-3">
+                  <label class="col-sm-2 col-form-label">${input.text}</label>
+                  <div class="col-sm-10">
+                    <div data-maclist>`;
+              macs.forEach((m, idx) => {
+                form += `
+                      <div class="input-group mb-1 maclist-row">
+                        <div class="input-group-text">
+                          <input type="radio" name="__primac" title="Primary MAC"${idx === 0 ? ' checked' : ''}/>
+                        </div>
+                        <input type="text" class="form-control" name="macs[]" value="${m}" placeholder="AA:BB:CC:DD:EE:FF"/>
+                        <button type="button" class="btn btn-outline-danger maclist-remove" tabindex="-1">&times;</button>
+                      </div>`;
+              });
+              form += `
+                      <button type="button" class="btn btn-sm btn-secondary maclist-add">+ Add MAC</button>
+                    </div>
+                    <small class="form-text text-muted">Select the radio of the primary MAC.</small>
+                  </div>
+                </div>
+              `;
+              break;
+            }
             default:
               form += `
                 <div class="row mb-3">
