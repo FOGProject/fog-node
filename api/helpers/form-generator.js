@@ -137,7 +137,7 @@ module.exports = {
       switch (input.textarea) {
         case true:
           form += `
-            <div class="form-group row">
+            <div class="row mb-3">
               <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
               <div class="col-sm-10">
                 <textarea${iId} class="form-control${iClass}"${iPlaceholder}${iName}>${iValue}</textarea>
@@ -152,12 +152,11 @@ module.exports = {
                 iChecked = ` checked`;
               }
               form += `
-                <div class="form-group row">
+                <div class="row mb-3">
                   <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
                   <div class="col-sm-10">
-                    <div class="icheck-primary d-inline">
-                      <input type="checkbox" class="${iClass}"${iId}${iName}${iChecked}/>
-                      <label${iFor}></label>
+                    <div class="form-check mt-2">
+                      <input type="checkbox" class="form-check-input${iClass}"${iId}${iName}${iChecked}/>
                     </div>
                   </div>
                 </div>
@@ -169,13 +168,13 @@ module.exports = {
                 iChecked=` selected`;
               }
               form += `
-                <div class="form-group row">
+                <div class="row mb-3">
                 </div>
               `
               break;
             default:
               form += `
-                <div class="form-group row">
+                <div class="row mb-3">
                   <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
                   <div class="col-sm-10">
                     <input type="${input.type}"${iId} class="form-control${iClass}"${iName}${iPlaceholder} value="${iValue}"${iMaxlength}${iMinlength}${iRegex}${iChecked}/>

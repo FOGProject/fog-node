@@ -19,6 +19,8 @@ module.exports.policies = {
   'general/destroy':       ['isLoggedIn','isAuthenticated','destroy'],
   'general/datatable':     ['isLoggedIn','isAuthenticated','read'],
   'general/columns':       ['isLoggedIn','isAuthenticated','read'],
+  // save derives the model from the URL and checks create permission itself
+  'general/save':          ['isLoggedIn','isAuthenticated'],
 
 
   // Group Policies
