@@ -66,8 +66,6 @@ var jsFilesToInject = [
 
   'dependencies/lodash.js',
   'js/jquery/dist/jquery.min.js',
-  'js/vue/dist/vue.min.js',
-  'js/vue-router/dist/vue-router.min.js',
   'js/bootstrap/dist/js/bootstrap.bundle.min.js',
   'js/pace-js/pace.min.js',
 
