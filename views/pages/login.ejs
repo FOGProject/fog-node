@@ -5,6 +5,9 @@
   <div class="card">
     <div class="card-body login-card-body">
       <p class="login-box-msg">Sign in to start your session</p>
+      <% if (typeof req !== 'undefined' && req.query && req.query.failed) { %>
+      <div class="alert alert-danger">Invalid username or password.</div>
+      <% } %>
       <form action="/login" method="post">
         <div class="input-group mb-3">
           <input name="username" type="text" class="form-control" placeholder="Username">
