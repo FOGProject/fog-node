@@ -109,9 +109,10 @@ module.exports = {
       for (let assoc of _.keys(collections)) {
         await sails.models[model].replaceCollection(recordId, assoc).members(collections[assoc]);
       }
-    } catch (unused) {
-      let back = isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`;
-      return res.redirect(`${back}?failed=1`);
+    } catch (err) {
+      let back = isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`,
+        msg = (err && err.message) ? String(err.message).slice(0, 200) : 'Could not save. Please check your input.';
+      return res.redirect(`${back}?failed=1&msg=${encodeURIComponent(msg)}`);
     }
 
     return res.redirect(`/${plural}`);
