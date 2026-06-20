@@ -33,6 +33,18 @@ $.fn.registerTable = function(onSelect, opts) {
         }
       },
       {
+        text: '<i class="fa fa-edit"></i> Edit',
+        action: function(e, dt, node, config) {
+          let rows = dt.rows({selected: true}).data().toArray();
+          if (rows.length !== 1) {
+            window.alert('Select exactly one row to edit.');
+            return;
+          }
+          let base = window.location.pathname.replace(/\/$/, '');
+          window.location = `${base}/edit/${rows[0].id}`;
+        }
+      },
+      {
         text: '<i class="fa fa-trash"></i> Delete',
         className: 'btn-danger',
         action: function(e, dt, node, config) {

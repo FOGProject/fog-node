@@ -156,7 +156,8 @@ module.exports = {
                   <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
                   <div class="col-sm-10">
                     <div class="form-check mt-2">
-                      <input type="checkbox" class="form-check-input${iClass}"${iId}${iName}${iChecked}/>
+                      <input type="hidden"${iName} value="false"/>
+                      <input type="checkbox" class="form-check-input${iClass}"${iId}${iName} value="true"${iChecked}/>
                     </div>
                   </div>
                 </div>
