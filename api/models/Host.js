@@ -4,6 +4,43 @@
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
+const MAC_HEX = /^[0-9a-fA-F]{12}$/;
+
+// Normalise + validate the `macs` json array: accept any common separator style
+// (colon/hyphen/dot) or bare 12 hex, store the canonical upper-case colon form,
+// drop blanks/dupes, and reject anything that isn't a MAC address.
+function normalizeMacs(values, proceed) {
+  if (!Object.prototype.hasOwnProperty.call(values, 'macs')) {
+    return proceed();
+  }
+  let raw = values.macs;
+  if (typeof raw === 'string') {
+    raw = raw.split(/[\s,]+/);
+  }
+  if (!Array.isArray(raw)) {
+    raw = (raw === null || typeof raw === 'undefined') ? [] : [raw];
+  }
+  let out = [];
+  for (let entry of raw) {
+    if (entry === null || typeof entry === 'undefined') {
+      continue;
+    }
+    let hex = String(entry).replace(/[\s.:-]/g, '');
+    if (hex === '') {
+      continue;
+    }
+    if (!MAC_HEX.test(hex)) {
+      return proceed(new Error(`Invalid MAC address: ${entry}`));
+    }
+    let mac = hex.toUpperCase().match(/.{2}/g).join(':');
+    if (out.indexOf(mac) === -1) {
+      out.push(mac);
+    }
+  }
+  values.macs = out;
+  return proceed();
+}
+
 module.exports = {
   attributes: {
     name: {
@@ -138,5 +175,11 @@ module.exports = {
     defaultPrinter: {
       model: 'printer'
     }
+  },
+  beforeCreate: function(values, proceed) {
+    return normalizeMacs(values, proceed);
+  },
+  beforeUpdate: function(values, proceed) {
+    return normalizeMacs(values, proceed);
   }
 };

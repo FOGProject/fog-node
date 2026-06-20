@@ -187,7 +187,7 @@ module.exports = {
                         <div class="input-group-text">
                           <input type="radio" name="__primac" title="Primary MAC"${idx === 0 ? ' checked' : ''}/>
                         </div>
-                        <input type="text" class="form-control" name="macs[]" value="${m}" placeholder="AA:BB:CC:DD:EE:FF"/>
+                        <input type="text" class="form-control" name="macs[]" value="${m}" placeholder="AA:BB:CC:DD:EE:FF" pattern="[0-9A-Fa-f]{2}([:.-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. AA:BB:CC:DD:EE:FF"/>
                         <button type="button" class="btn btn-outline-danger maclist-remove" tabindex="-1">&times;</button>
                       </div>`;
               });
