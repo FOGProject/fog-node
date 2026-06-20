@@ -26,16 +26,11 @@ module.exports = {
           },
           macs: {
             textarea: false,
-            text: 'MAC Address',
-            type: 'text',
-            validations: {
-              minLength: 12,
-              maxLength: 17,
-              regex: /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})|([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/,
-            },
+            text: 'MAC Addresses',
+            type: 'maclist',
             id: 'macaddress',
             classes: [],
-            placeholder: 'AA:BB:CC:DD:EE:FF'
+            value: []
           },
           description: {
             textarea: true,

@@ -41,6 +41,19 @@ module.exports = {
       if (attr.collection || attr.model) { return; } // associations
       if (skip.includes(key)) { return; }
 
+      // Host MACs get a dedicated multi-value widget with a primary picker.
+      if (model === 'host' && key === 'macs') {
+        formItems[key] = {
+          text: 'MAC Addresses',
+          id: `${model}-macs`,
+          classes: [],
+          textarea: false,
+          type: 'maclist',
+          value: Array.isArray(record[key]) ? record[key] : (record[key] ? [record[key]] : [])
+        };
+        return;
+      }
+
       let label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()),
         val = record[key],
         item = { text: label, id: `${model}-${key}`, classes: [], textarea: false };

@@ -33,20 +33,18 @@ module.exports = {
     }
 
     // Build the values from the body, dropping non-attribute keys.
-    let values = _.omit(req.allParams(), ['model', '_csrf', 'id']);
+    let values = _.omit(req.allParams(), ['model', '_csrf', 'id', '__primac']);
 
-    // A checkbox paired with a hidden field submits an array (["false","true"]
-    // when checked, "false" when not); take the last value.
-    _.forEach(values, (v, k) => {
-      if (_.isArray(v)) {
-        values[k] = v[v.length - 1];
-      }
-    });
-
-    // Coerce boolean attributes from their string form so Waterline accepts them.
+    // Normalise boolean attributes only. A checkbox paired with a hidden field
+    // submits an array (["false","true"] when checked, "false" when not) -- take
+    // the last value, then coerce to a real boolean. Legitimate array fields
+    // (e.g. a json `macs` list) are left untouched.
     let attrs = sails.models[model].attributes;
     _.forEach(values, (v, k) => {
       if (attrs[k] && attrs[k].type === 'boolean') {
+        if (_.isArray(v)) {
+          v = v[v.length - 1];
+        }
         values[k] = (v === true || v === 'true' || v === 'on' || v === '1');
       }
     });
