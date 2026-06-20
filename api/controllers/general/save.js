@@ -43,11 +43,32 @@ module.exports = {
       }
     });
 
+    let attrs = sails.models[model].attributes;
+
+    // Pull out associations: collection (many) associations are applied via
+    // replaceCollection() after the record is saved; singleton (model)
+    // associations are set inline, with "" meaning "none" (null).
+    let collections = {};
+    _.forEach(_.keys(values), (k) => {
+      let attr = attrs[k];
+      if (attr && attr.collection) {
+        let v = values[k];
+        if (!_.isArray(v)) {
+          v = (v === '' || v === null || typeof v === 'undefined') ? [] : [v];
+        }
+        collections[k] = v.filter((x) => x !== '' && x !== null && typeof x !== 'undefined');
+        delete values[k];
+      } else if (attr && attr.model) {
+        if (values[k] === '' || values[k] === null || typeof values[k] === 'undefined') {
+          values[k] = null;
+        }
+      }
+    });
+
     // Normalise boolean attributes only. A checkbox paired with a hidden field
     // submits an array (["false","true"] when checked, "false" when not) -- take
     // the last value, then coerce to a real boolean. Legitimate array fields
     // (e.g. a json `macs` list) are left untouched.
-    let attrs = sails.models[model].attributes;
     _.forEach(values, (v, k) => {
       if (attrs[k] && attrs[k].type === 'boolean') {
         if (_.isArray(v)) {
@@ -77,10 +98,16 @@ module.exports = {
     });
 
     try {
+      let recordId = id;
       if (isUpdate) {
         await sails.models[model].updateOne({ id }).set(values);
       } else {
-        await sails.models[model].create(values);
+        let created = await sails.models[model].create(values).fetch();
+        recordId = created.id;
+      }
+      // Apply many-to-many associations (replace == authoritative set).
+      for (let assoc of _.keys(collections)) {
+        await sails.models[model].replaceCollection(recordId, assoc).members(collections[assoc]);
       }
     } catch (unused) {
       let back = isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`;

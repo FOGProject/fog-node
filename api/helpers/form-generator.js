@@ -200,6 +200,52 @@ module.exports = {
               `;
               break;
             }
+            case 'select': {
+              form += `
+                <div class="row mb-3">
+                  <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
+                  <div class="col-sm-10">
+                    <select class="form-control${iClass}"${iId} name="${item}">
+                      <option value="">(none)</option>`;
+              (input.options || []).forEach((o) => {
+                form += `
+                      <option value="${o.value}"${o.selected ? ' selected' : ''}>${o.label}</option>`;
+              });
+              form += `
+                    </select>
+                  </div>
+                </div>
+              `;
+              break;
+            }
+            case 'checktable': {
+              form += `
+                <div class="row mb-3">
+                  <label class="col-sm-2 col-form-label">${input.text}</label>
+                  <div class="col-sm-10">
+                    <div class="border rounded" style="max-height:220px;overflow:auto">
+                      <table class="table table-sm table-hover mb-0">
+                        <tbody>`;
+              if (!(input.options || []).length) {
+                form += `
+                          <tr><td class="text-muted">None available.</td></tr>`;
+              }
+              (input.options || []).forEach((o) => {
+                form += `
+                          <tr>
+                            <td style="width:2.5rem"><input type="checkbox" class="form-check-input" name="${item}[]" value="${o.value}"${o.checked ? ' checked' : ''}/></td>
+                            <td>${o.label}</td>
+                          </tr>`;
+              });
+              form += `
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              `;
+              break;
+            }
             default:
               form += `
                 <div class="row mb-3">
