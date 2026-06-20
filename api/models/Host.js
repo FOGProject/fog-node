@@ -16,10 +16,12 @@ module.exports = {
     description: {
       type: 'string'
     },
+    // NOTE: not `unique` and not `isUUID`. A unique index on an optional field
+    // makes every host created without a guid collide (empty/null guids are
+    // "equal"), which 409s the 2nd host; and isUUID rejects the empty string on
+    // edit. The hardware guid is set/validated at registration time instead.
     guid: {
-      type: 'string',
-      isUUID: true,
-      unique: true
+      type: 'string'
     },
     macs: {
       type: 'json'
