@@ -7,7 +7,9 @@ passport.serializeUser(async (user, done) => {
 passport.deserializeUser(async (id, done) => {
   await User.findOne({id}).populateAll().exec(async (err, user) => {
     if (err) return done(err);
-    done(null, user);
+    // See config/passport/jwt.js: toJSON() computes `permissions` from roles so
+    // session-authenticated requests have them (otherwise permission checks 403).
+    done(null, user ? user.toJSON() : false);
   });
 });
 passport.use(new LocalStrategy(
