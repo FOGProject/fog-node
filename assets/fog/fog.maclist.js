@@ -9,7 +9,7 @@
         <div class="input-group-text">
           <input type="radio" name="__primac" title="Primary MAC"/>
         </div>
-        <input type="text" class="form-control" name="macs[]" placeholder="AA:BB:CC:DD:EE:FF" pattern="[0-9A-Fa-f]{2}([:.-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. AA:BB:CC:DD:EE:FF"/>
+        <input type="text" class="form-control" name="macs[]" placeholder="aa:bb:cc:dd:ee:ff" pattern="[0-9A-Fa-f]{2}([:.-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. aa:bb:cc:dd:ee:ff"/>
         <button type="button" class="btn btn-outline-danger maclist-remove" tabindex="-1">&times;</button>
       </div>`;
   }

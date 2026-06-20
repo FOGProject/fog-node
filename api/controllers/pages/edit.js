@@ -42,14 +42,19 @@ module.exports = {
       if (skip.includes(key)) { return; }
 
       // Host MACs get a dedicated multi-value widget with a primary picker.
+      // Stored bare (aabbccddeeff) -> displayed as aa:bb:cc:dd:ee:ff.
       if (model === 'host' && key === 'macs') {
+        let stored = Array.isArray(record[key]) ? record[key] : (record[key] ? [record[key]] : []);
         formItems[key] = {
           text: 'MAC Addresses',
           id: `${model}-macs`,
           classes: [],
           textarea: false,
           type: 'maclist',
-          value: Array.isArray(record[key]) ? record[key] : (record[key] ? [record[key]] : [])
+          value: stored.map((m) => {
+            let hex = String(m).replace(/[^0-9a-fA-F]/g, '').toLowerCase();
+            return hex.length === 12 ? hex.match(/.{2}/g).join(':') : m;
+          })
         };
         return;
       }
