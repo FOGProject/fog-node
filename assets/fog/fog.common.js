@@ -31,7 +31,36 @@ $.fn.registerTable = function(onSelect, opts) {
           dt.clear().draw();
           dt.ajax.reload();
         }
+      },
+      {
+        text: '<i class="fa fa-trash"></i> Delete',
+        className: 'btn-danger',
+        action: function(e, dt, node, config) {
+          let ids = dt.rows({selected: true}).data().toArray().map((r) => r.id).filter(Boolean);
+          if (!ids.length) {
+            window.alert('Select one or more rows to delete.');
+            return;
+          }
+          if (!window.confirm(`Delete ${ids.length} selected item(s)? This cannot be undone.`)) {
+            return;
+          }
+          let base = dt.ajax.url().replace(/\/datatable.*$/, '');
+          $.ajax({
+            url: base,
+            type: 'DELETE',
+            contentType: 'application/json',
+            data: JSON.stringify({id: ids}),
+            complete: function() {
+              dt.ajax.reload();
+            }
+          });
+        }
       }
+    ],
+    // Render a missing/association field as empty instead of throwing the
+    // DataTables "Requested unknown parameter" warning.
+    columnDefs: [
+      { targets: '_all', defaultContent: '' }
     ],
     pagingType: 'simple_numbers',
     select: {
