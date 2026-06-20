@@ -87,6 +87,21 @@ module.exports.routes = {
   'GET /images/create':                      {action: 'pages/create/images'},
   'POST /images/create':                     {action: 'general/create'},
 
+  // Storage Group Views
+  'GET /storagegroups':                      {action: 'pages/list/storagegroups'},
+
+  // Storage Node Views
+  'GET /storagenodes':                       {action: 'pages/list/storagenodes'},
+
+  // Snapin Views
+  'GET /snapins':                            {action: 'pages/list/snapins'},
+
+  // Printer Views
+  'GET /printers':                           {action: 'pages/list/printers'},
+
+  // iPXE Menu Views
+  'GET /pxemenus':                           {action: 'pages/list/pxemenus'},
+
   // Role Views
   'GET /roles':                              {action: 'pages/list/roles'},
 

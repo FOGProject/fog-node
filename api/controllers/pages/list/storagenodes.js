@@ -1,0 +1,37 @@
+const fs = require('fs-extra'),
+  path = require('path'),
+  partialPath = path.join(__dirname,'..','..','..','..','views','pages','partials','list');
+module.exports = {
+  friendlyName: 'Storage Nodes',
+  description: 'Storage Node list page.',
+  inputs: {
+  },
+  exits: {
+    error: {
+      responseType: 'serverError'
+    },
+    success: {
+      viewTemplatePath: 'pages/list',
+      description: 'Successful'
+    }
+  },
+  fn: async function (inputs) {
+    let data = {
+      header: 'Storage Node List',
+      theads: [
+        'Name',
+        'IP Address',
+        'Master',
+        'Enabled'
+      ],
+      model: 'storagenode',
+      title: 'All Storage Nodes',
+      partialname: false
+    };
+    let partial = path.join(partialPath, `${data.model}.js`);
+    if (fs.existsSync(partial)) {
+      data.partialname = partial;
+    }
+    return data;
+  }
+};

@@ -170,24 +170,18 @@ module.exports.globals = {
       ],
     },
     {
-      text: 'Module',
-      plural: 'Modules',
-      link: '/modules',
+      text: 'Snapin',
+      plural: 'Snapins',
+      link: '/snapins',
       icon: 'fa-cogs',
-      subLinks: [
-        {
-          link: '/modules/create',
-          text: 'Create New Module'
-        },
-        {
-          link: '/modules/export',
-          text: 'Export Modules'
-        },
-        {
-          link: '/modules/import',
-          text: 'Import Modules'
-        }
-      ],
+      subLinks: false
+    },
+    {
+      text: 'Printer',
+      plural: 'Printers',
+      link: '/printers',
+      icon: 'fa-print',
+      subLinks: false
     },
     {
       text: 'Task',
@@ -276,22 +270,9 @@ module.exports.globals = {
     {
       text: 'iPXE Menu',
       plural: 'iPXE Menus',
-      link: '/ipxes',
+      link: '/pxemenus',
       icon: 'fa-bars',
-      subLinks: [
-        {
-          link: '/ipxes/create',
-          text: 'Create New iPXE Menu'
-        },
-        {
-          link: '/ipxes/export',
-          text: 'Export iPXE Menus'
-        },
-        {
-          link: '/ipxes/import',
-          text: 'Import iPXE Menus'
-        }
-      ],
+      subLinks: false
     },
   ],
   authenticationMechanisms: [
