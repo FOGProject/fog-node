@@ -24,6 +24,94 @@ module.exports = {
     macs: {
       type: 'json'
     },
+    // --- FOG 1.x `hosts` scalar fields (friendly names; snake_case
+    //     security fields normalised to camelCase) ---
+    ip: {
+      type: 'string'
+    },
+    building: {
+      type: 'number',
+      isInteger: true,
+      defaultsTo: 0
+    },
+    deployed: {
+      type: 'string'
+    },
+    createdBy: {
+      type: 'string'
+    },
+    useAD: {
+      type: 'boolean',
+      defaultsTo: false
+    },
+    ADDomain: {
+      type: 'string'
+    },
+    ADOU: {
+      type: 'string'
+    },
+    ADUser: {
+      type: 'string'
+    },
+    ADPass: {
+      type: 'string'
+    },
+    ADPassLegacy: {
+      type: 'string'
+    },
+    productKey: {
+      type: 'string'
+    },
+    printerLevel: {
+      type: 'number',
+      isInteger: true,
+      defaultsTo: 0
+    },
+    kernelArgs: {
+      type: 'string'
+    },
+    kernel: {
+      type: 'string'
+    },
+    kernelDevice: {
+      type: 'string'
+    },
+    init: {
+      type: 'string'
+    },
+    pending: {
+      type: 'boolean',
+      defaultsTo: false
+    },
+    pubKey: {
+      type: 'string'
+    },
+    secToken: {
+      type: 'string'
+    },
+    secTime: {
+      type: 'string'
+    },
+    pingstatus: {
+      type: 'string'
+    },
+    biosexit: {
+      type: 'string'
+    },
+    efiexit: {
+      type: 'string'
+    },
+    enforce: {
+      type: 'boolean',
+      defaultsTo: false
+    },
+    token: {
+      type: 'string'
+    },
+    tokenlock: {
+      type: 'boolean',
+      defaultsTo: false
+    },
     image: {
       model: 'image'
     },
@@ -34,6 +122,19 @@ module.exports = {
     workflows: {
       collection: 'workflow',
       via: 'host'
+    },
+    snapins: {
+      collection: 'snapin',
+      via: 'hosts',
+      dominant: true
+    },
+    printers: {
+      collection: 'printer',
+      via: 'hosts',
+      dominant: true
+    },
+    defaultPrinter: {
+      model: 'printer'
     }
   }
 };

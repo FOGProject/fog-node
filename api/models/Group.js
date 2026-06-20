@@ -27,6 +27,16 @@ module.exports = {
     },
     image: {
       model: 'image'
+    },
+    snapins: {
+      collection: 'snapin',
+      via: 'groups',
+      dominant: true
+    },
+    printers: {
+      collection: 'printer',
+      via: 'groups',
+      dominant: true
     }
   }
 };
