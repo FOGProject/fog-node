@@ -35,6 +35,14 @@ module.exports = {
     // Build the values from the body, dropping non-attribute keys.
     let values = _.omit(req.allParams(), ['model', '_csrf', 'id', '__primac']);
 
+    // Drop empty strings from array fields (e.g. blank rows in the MAC widget),
+    // so the primary (index 0) is never an empty value.
+    _.forEach(values, (v, k) => {
+      if (_.isArray(v)) {
+        values[k] = v.filter((el) => !(typeof el === 'string' && el.trim() === ''));
+      }
+    });
+
     // Normalise boolean attributes only. A checkbox paired with a hidden field
     // submits an array (["false","true"] when checked, "false" when not) -- take
     // the last value, then coerce to a real boolean. Legitimate array fields
