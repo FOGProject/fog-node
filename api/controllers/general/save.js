@@ -57,6 +57,25 @@ module.exports = {
       }
     });
 
+    // Coerce number attributes. Empty form fields arrive as "" which Waterline
+    // rejects for a number type -- omit those (leave the value unchanged on
+    // update / use the model default on create) and convert the rest.
+    _.forEach(_.keys(values), (k) => {
+      if (attrs[k] && attrs[k].type === 'number') {
+        let v = values[k];
+        if (v === '' || v === null || typeof v === 'undefined') {
+          delete values[k];
+        } else {
+          let n = Number(v);
+          if (_.isNaN(n)) {
+            delete values[k];
+          } else {
+            values[k] = n;
+          }
+        }
+      }
+    });
+
     try {
       if (isUpdate) {
         await sails.models[model].updateOne({ id }).set(values);
