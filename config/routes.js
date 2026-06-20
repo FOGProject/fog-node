@@ -78,6 +78,10 @@ module.exports.routes = {
   // Search View
   'GET /search':                             {action: 'pages/search'},
 
+  // iPXE boot script (public; hit by PXE-booting machines)
+  'GET /boot.ipxe':                          {action: 'boot'},
+  'GET /boot':                               {action: 'boot'},
+
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},
   'GET /groups/create':                      {action: 'pages/create/groups'},

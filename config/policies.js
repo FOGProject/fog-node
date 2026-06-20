@@ -50,6 +50,9 @@ module.exports.policies = {
   // Allow API Backend to work
   'api':                   true,
 
+  // iPXE boot script is public (PXE machines have no session)
+  'boot':                  true,
+
   // System info
   'system/info':           true,
   'system/bandwidth':      true,
