@@ -70,6 +70,14 @@ module.exports = {
     },
     createdBy: {
       type: 'string'
+    },
+    hosts: {
+      collection: 'host',
+      via: 'snapins'
+    },
+    groups: {
+      collection: 'group',
+      via: 'snapins'
     }
   }
 };

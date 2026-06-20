@@ -35,6 +35,14 @@ module.exports = {
     },
     ip: {
       type: 'string'
+    },
+    hosts: {
+      collection: 'host',
+      via: 'printers'
+    },
+    groups: {
+      collection: 'group',
+      via: 'printers'
     }
   }
 };

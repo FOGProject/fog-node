@@ -95,8 +95,14 @@ automatically gets full REST CRUD via the generic `:model` routes once it has a
       compress/etc. on Image). Existing fog-node fields/associations preserved.
       Image lookup FKs (`imageType`/`imagePartitionType`/`os`) kept as numeric
       ids for now.
-- [ ] Host↔Snapin / Host↔Printer / Group associations (1.x association tables);
-      Host "default printer" (1.x `printerAssoc.isDefault`).
+- [x] Host↔Snapin, Host↔Printer, Group↔Snapin, Group↔Printer many-to-many
+      associations + Host `defaultPrinter` (1.x `printerAssoc.isDefault`).
+      Relationships are defined and populate via the API. **Follow-up:**
+      *assigning* members through the API needs controller support — the generic
+      `update` doesn't set collections and the blueprint nested
+      `/:model/:id/:assoc/:fk` routes are shadowed by the custom `:model` routes
+      (return 404). Add explicit add/remove-to-collection endpoints (mirroring
+      the existing `group/register`, `role/assign` pattern).
 - [ ] `Task` field parity (gated partly by the client/FOS decision).
 - [ ] Lookup models to replace numeric FKs: ImageType, PartitionType, OS.
 - [ ] Seed the `FOG_*` settings 1.x expects.
