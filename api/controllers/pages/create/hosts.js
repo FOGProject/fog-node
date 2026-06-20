@@ -56,6 +56,7 @@ module.exports = {
       partial = path.join(partialPath, `${data.model}.js`);
     // Offer the host's associations on the create form too (no current values).
     Object.assign(data.formItems, await sails.helpers.associationFields.with({ model: 'host', record: null }));
+    let tabOrder = await sails.helpers.formTabs.with({ model: data.model, formItems: data.formItems });
     data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`,
     data.form = await sails.helpers.formGenerator.with({
       model: data.model,
@@ -64,6 +65,7 @@ module.exports = {
       id: `${data.model}-create`,
       classes: [`${data.model}-create-form`],
       formItems: data.formItems,
+      tabOrder,
       formButtons: data.formButtons
     });
     if (fs.existsSync(partial)) {

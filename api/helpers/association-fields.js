@@ -46,13 +46,13 @@ module.exports = {
       if (attr.model) {
         let curId = (record[key] && (record[key].id || record[key])) || null;
         out[key] = {
-          text: label, classes: [], textarea: false, type: 'select',
+          text: label, classes: [], textarea: false, type: 'select', tab: 'Associations',
           options: candidates.map((c) => ({ value: c.id, label: labelOf(c), selected: c.id === curId }))
         };
       } else {
         let curIds = (record[key] || []).map((x) => x.id || x);
         out[key] = {
-          text: label, classes: [], textarea: false, type: 'checktable',
+          text: label, classes: [], textarea: false, type: 'checktable', tab: 'Associations',
           options: candidates.map((c) => ({ value: c.id, label: labelOf(c), checked: curIds.indexOf(c.id) !== -1 }))
         };
       }
