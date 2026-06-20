@@ -1,0 +1,22 @@
+# Development MongoDB for fog-node.
+#
+# This is for LOCAL DEVELOPMENT ONLY -- it runs Mongo with no authentication,
+# matching the default connection string written by `npm run setup:dev`
+# (mongodb://127.0.0.1:27017/fog). Do not use this for production.
+#
+# Works with either Docker or Podman:
+#   docker compose up -d        (or)   podman compose up -d
+#   docker compose down                podman compose down
+#
+services:
+  mongo:
+    image: mongo:7
+    container_name: fog-node-mongo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - fog-node-mongo-data:/data/db
+
+volumes:
+  fog-node-mongo-data:

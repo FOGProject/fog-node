@@ -17,12 +17,15 @@ module.exports = function defineWatchdogHook(sails) {
       running = true;
       sails.log.info('Starting watchdog');
       sails.emit('fog:watchdog:start');
+      // NOTE: the iteratee must be a plain (non-async) function. Under async@3
+      // an async/promise-returning iteratee is not passed the `next` callback,
+      // which made `setTimeout(next, delay)` throw (next === undefined).
       async.forever(
-        async (next) => {
+        (next) => {
           sails.emit('fog:watchdog:tick');
           setTimeout(next, delay);
         },
-        async (err) => {
+        (err) => {
           running = false;
           sails.emit('fog:watchdog:crash');
           sails.log.error(`Watchdog crashed, err: ${err}`);

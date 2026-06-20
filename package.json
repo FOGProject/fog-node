@@ -72,6 +72,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node app.js",
+    "setup:dev": "node tools/setup/dev.js",
     "test": "npm run lint && npm run custom-tests && echo 'Done.'",
     "lint": "./node_modules/eslint/bin/eslint.js . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your .js files look good.'",
     "custom-tests": "echo \"(No other custom tests yet.)\" && echo"
@@ -84,6 +85,6 @@
   "author": "FOG Project",
   "license": "GPL v3",
   "engines": {
-    "node": ">=10.19"
+    "node": ">=18"
   }
 }
