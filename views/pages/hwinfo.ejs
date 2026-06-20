@@ -1,13 +1,13 @@
-<section class="content-header">
+<div class="app-content-header">
   <div class="container-fluid">
     <div class="row mb-2">
       <div class="col-sm-6">
-        <h1>Hardware Information</h1>
+        <h3 class="mb-0">Hardware Information</h3>
       </div>
     </div>
   </div>
-</section>
-<section class="content">
+</div>
+<div class="app-content">
   <div class="container-fluid">
     <% // FOG Version %>
     <div class="row">
@@ -172,10 +172,10 @@
               <div class="card card-outline card-info">
                 <div class="card-header">
                   <h4 class="card-title">
-                    <a data-toggle="collapse" data-parent="#<%= iface.name %>" href="#<%= iface.name %>" aria-expanded="true"><%= iface.name %></a>
+                    <a data-bs-toggle="collapse" data-bs-parent="#network-accordion" href="#<%= iface.name %>" aria-expanded="true"><%= iface.name %></a>
                   </h4>
                 </div>
-                <div id="<%= iface.name %>" class="panel-collapse in collapse hide">
+                <div id="<%= iface.name %>" class="collapse">
                   <div class="card-body">
                     <% Object.keys(iface).forEach(key => { %>
                     <% if ('name' === key) return; %>
@@ -194,5 +194,5 @@
       </div>
     </div>
   </div>
-</section>
+</div>
 <%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>

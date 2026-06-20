@@ -57,35 +57,33 @@
     <link rel="stylesheet" href="/styles/icheck-bootstrap/icheck-bootstrap.min.css">
     <link rel="stylesheet" href="/styles/importer.css">
     <link rel="stylesheet" href="/styles/pace-js/themes/blue/pace-theme-minimal.css">
-    <link rel="stylesheet" href="/styles/select2/dist/css/select2.min.css">
     <!--STYLES END-->
   </head>
 
   <% if (req.user) { %>
-  <body class="sidebar-mini layout-navbar-fixed layout-fixed layout-footer-fixed">
-    <div class="wrapper">
+  <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+    <div class="app-wrapper">
       <!-- Header -->
       <%- partial('./partials/navbar.ejs') %>
       <!-- Sidebar -->
       <%- partial('./partials/mainsidebar.ejs', {menuItems: sails.config.globals.menuItems}) %>
       <!-- Main Content -->
-      <div class="content-wrapper">
+      <main class="app-main">
         <%- body %>
-      </div>
+      </main>
       <!-- Main Footer -->
-      <footer class="main-footer">
-        <div class="float-right d-none d-sm d-sm-block">
+      <footer class="app-footer">
+        <div class="float-end d-none d-sm-inline">
           <b>Channel</b> Alpha |&nbsp;
           <b>Version</b> <a href="/"><%= version %></a>
         </div>
-        <b>Copyright &copy; 2007-2021&nbsp;
-          <a href="https://fogproject.org">FOG Project</a>
-        </b>&nbsp;
+        <strong>Copyright &copy; 2007-2026&nbsp;
+          <a href="https://fogproject.org">FOG Project</a>.</strong>&nbsp;
         All rights reserved.
       </footer>
     </div>
   <% } else  { %>
-  <body class="hold-transition login-page">
+  <body class="login-page bg-body-secondary">
     <%- body %>
   <% }%>
 
@@ -160,18 +158,14 @@
     <script src="/dependencies/sails.io.js"></script>
     <script src="/dependencies/lodash.js"></script>
     <script src="/js/jquery/dist/jquery.min.js"></script>
-    <script src="/js/vue/dist/vue.min.js"></script>
-    <script src="/js/vue-router/dist/vue-router.min.js"></script>
     <script src="/js/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/pace-js/pace.min.js"></script>
     <script src="/dependencies/cloud.js"></script>
     <script src="/dependencies/parasails.js"></script>
-    <script src="/js/datatables.net/js/jquery.dataTables.min.js"></script>
     <script src="/js/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="/js/datatables.net-autofill/js/dataTables.autoFill.min.js"></script>
     <script src="/js/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
     <script src="/js/datatables.net-buttons/js/buttons.colVis.min.js"></script>
-    <script src="/js/datatables.net-buttons/js/buttons.flash.min.js"></script>
     <script src="/js/datatables.net-buttons/js/buttons.print.min.js"></script>
     <script src="/js/datatables.net-colreorder/js/dataTables.colReorder.min.js"></script>
     <script src="/js/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
@@ -184,7 +178,6 @@
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
     <script src="/js/@pnotify/core/dist/PNotify.js"></script>
     <script src="/js/@pnotify/mobile/dist/PNotifyMobile.js"></script>
-    <script src="/js/Chart.bundle.min.js"></script>
     <script src="/js/chartjs-plugin-labels.js"></script>
     <script src="/js/datatables.net-autofill-bs4/js/autoFill.bootstrap4.min.js"></script>
     <script src="/js/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
@@ -201,7 +194,6 @@
     <script src="/js/pages/create.page.js"></script>
     <script src="/js/pages/list.page.js"></script>
     <script src="/js/pdfmake/build/pdfmake.min.js"></script>
-    <script src="/js/select2/dist/js/select2.full.min.js"></script>
     <script src="/fog/fog.common.js"></script>
     <!--SCRIPTS END-->
     <% if (partialname) { %>

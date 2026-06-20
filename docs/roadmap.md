@@ -51,10 +51,13 @@ more than exists. None of the following have models/controllers/views yet:
    live protocol at Phase 2.* Entities are modelled on 1.x's schema (compatible-
    leaning); the actual capture/deploy/registration protocol is decided when
    imaging is built.
-2. **Frontend direction** — *decided: server-rendered EJS + jQuery / DataTables /
-   AdminLTE* (matches 1.x, no build step, what the existing pages use). The
-   half-present Vue 3 / React 19 deps should be removed (follow-up). Views are
-   built per-entity on top of the API/model layer.
+2. **Frontend direction** — *decided: server-rendered EJS + jQuery, on
+   **AdminLTE 4 / Bootstrap 5*** (migrated from the AdminLTE 3 / BS4 templates).
+   jQuery 3.7.1 is kept for DataTables / `fog.common.js` / parasails. Views are
+   built per-entity on top of the API/model layer. Follow-ups: upgrade DataTables
+   integration `-bs4` → `-bs5`, re-vendor Chart.js for AdminLTE 4 (dashboard
+   charts), fix `systeminformation@5` property renames (hwinfo/dashboard load),
+   and remove the unused Vue 3 / React 19 deps.
 
 ## Phases
 

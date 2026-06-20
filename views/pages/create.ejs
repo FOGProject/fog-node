@@ -1,15 +1,15 @@
-<section class="content-header">
+<div class="app-content-header">
   <div class="container-fluid">
     <div class="col-sm-6">
-      <h1><%= header %></h1>
+      <h3 class="mb-0"><%= header %></h3>
     </div>
   </div>
-</section>
-<secion class="content">
+</div>
+<div class="app-content">
   <div class="container-fluid">
     <div class="row">
       <div class="col-12">
-        <div class="card card-outline card-info">
+        <div class="card card-info card-outline">
           <div class="card-header">
             <h3 class="card-title"><%= header %></h3>
             <%- partial('../layouts/partials/cardtools.ejs') %>
@@ -20,6 +20,6 @@
       </div>
     </div>
   </div>
-</section>
+</div>
 
 <%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>
