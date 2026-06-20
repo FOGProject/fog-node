@@ -106,10 +106,18 @@ async.waterfall([
     /**
      * sails http.js config.
      */
-    let rawtext = `module.exports.http = {
+    let rawtext = `const passport = require('passport');
+
+// Only run passport when a session exists. Sails skips session for asset
+// requests, so running passport.session() on those throws "Login sessions
+// require session support" and turns every CSS/JS asset into a 500.
+const onlyWithSession = (middleware) => (req, res, next) =>
+  req.session ? middleware(req, res, next) : next();
+
+module.exports.http = {
   middleware: {
-  passportInit: require('passport').initialize(),
-  passportSession: require('passport').session(),
+    passportInit: onlyWithSession(passport.initialize()),
+    passportSession: onlyWithSession(passport.session()),
     order: [
       'cookieParser',
       'session',
