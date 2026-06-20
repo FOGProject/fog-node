@@ -112,6 +112,26 @@ module.exports.routes = {
   'GET /pxemenus/create':                    {action: 'pages/create/pxemenus'},
   'POST /pxemenus/create':                   {action: 'general/save'},
 
+  // Edit Views (generic edit page + save)
+  'GET /hosts/edit/:id':                      {action: 'pages/edit'},
+  'POST /hosts/edit/:id':                     {action: 'general/save'},
+  'GET /groups/edit/:id':                     {action: 'pages/edit'},
+  'POST /groups/edit/:id':                    {action: 'general/save'},
+  'GET /images/edit/:id':                     {action: 'pages/edit'},
+  'POST /images/edit/:id':                    {action: 'general/save'},
+  'GET /storagegroups/edit/:id':             {action: 'pages/edit'},
+  'POST /storagegroups/edit/:id':            {action: 'general/save'},
+  'GET /storagenodes/edit/:id':              {action: 'pages/edit'},
+  'POST /storagenodes/edit/:id':             {action: 'general/save'},
+  'GET /snapins/edit/:id':                    {action: 'pages/edit'},
+  'POST /snapins/edit/:id':                   {action: 'general/save'},
+  'GET /printers/edit/:id':                   {action: 'pages/edit'},
+  'POST /printers/edit/:id':                  {action: 'general/save'},
+  'GET /pxemenus/edit/:id':                   {action: 'pages/edit'},
+  'POST /pxemenus/edit/:id':                  {action: 'general/save'},
+  'GET /users/edit/:id':                      {action: 'pages/edit'},
+  'POST /users/edit/:id':                     {action: 'general/save'},
+
   // Role Views
   'GET /roles':                              {action: 'pages/list/roles'},
 
