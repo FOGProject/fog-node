@@ -53,7 +53,12 @@ config.json
 ################################################
 # FOG specific
 ################################################
-plugins
+# Runtime-installed plugins live under /plugins/ and are not committed -- except
+# the bundled reference plugins (e.g. wol). The plugin LOADER is core
+# (api/hooks/plugins) and must stay tracked, so don't use a bare `plugins`
+# pattern (it would match api/hooks/plugins too).
+/plugins/*
+!/plugins/wol/
 images
 
 ################################################
