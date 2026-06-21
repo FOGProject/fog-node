@@ -29,47 +29,55 @@ module.exports.routes = {
   * not match any of those, it is matched against static assets.             *
   *                                                                          *
   ***************************************************************************/
+  // CSRF token endpoint (public; the token is session-bound, and the login form
+  // needs one before authenticating). Consumed by assets/fog/fog.csrf.js.
+  'GET /csrfToken':                          {action: 'security/grant-csrf-token', csrf: false},
+
+  // ---- /api/v1/* : the Bearer-token / JWT API surface. Exempt from Sails CSRF
+  // (token auth isn't cookie-CSRF-vulnerable); cookie-authed mutations here are
+  // guarded by api/policies/apiCsrfGuard.js instead. ----
+
   // Status API
-  '/api/v1':                                 {action: 'api'},
+  '/api/v1':                                 {action: 'api', csrf: false},
 
   // Auth API
-  'POST /api/v1/auth/token':                 {action: 'auth/token'},
-  'POST /api/v1/auth/login':                 {action: 'auth/login'},
-  'POST /api/v1/auth/logout':                {action: 'auth/logout'},
+  'POST /api/v1/auth/token':                 {action: 'auth/token', csrf: false},
+  'POST /api/v1/auth/login':                 {action: 'auth/login', csrf: false},
+  'POST /api/v1/auth/logout':                {action: 'auth/logout', csrf: false},
 
   // Image API
-  'PUT /api/v1/image/:id/capture/:partition':{action: 'image/capture'},
-  'GET /api/v1/image/:id/deploy/:partition': {action: 'image/deploy'},
+  'PUT /api/v1/image/:id/capture/:partition':{action: 'image/capture', csrf: false},
+  'GET /api/v1/image/:id/deploy/:partition': {action: 'image/deploy', csrf: false},
 
   // Role API
-  'PUT /api/v1/role/:id/assign':             {action: 'role/assign'},
-  'PUT /api/v1/role/:id/unassign':           {action: 'role/unassign'},
+  'PUT /api/v1/role/:id/assign':             {action: 'role/assign', csrf: false},
+  'PUT /api/v1/role/:id/unassign':           {action: 'role/unassign', csrf: false},
 
   // User API
-  'GET /api/v1/user/me':                     {action: 'user/listme'},
+  'GET /api/v1/user/me':                     {action: 'user/listme', csrf: false},
 
   // Host API
-  'POST /api/v1/host/bulk':                  {action: 'host/bulk'},
+  'POST /api/v1/host/bulk':                  {action: 'host/bulk', csrf: false},
 
   // Global search (must precede the :model routes).
-  'GET /api/v1/search':                      {action: 'search'},
+  'GET /api/v1/search':                      {action: 'search', csrf: false},
 
   // General API elements.
-  'POST /api/v1/image/scan':                 {action: 'image/scan'},
-  'POST /api/v1/:model':                     {action: 'general/create'},
-  'DELETE /api/v1/:model/:id?':              {action: 'general/destroy'},
-  'GET /api/v1/:model/:id':                  {action: 'general/find'},
-  'GET /api/v1/:model':                      {action: 'general/list'},
-  'GET /api/v1/:model/search':               {action: 'general/search'},
-  'PUT /api/v1/:model/:id':                  {action: 'general/update'},
+  'POST /api/v1/image/scan':                 {action: 'image/scan', csrf: false},
+  'POST /api/v1/:model':                     {action: 'general/create', csrf: false},
+  'DELETE /api/v1/:model/:id?':              {action: 'general/destroy', csrf: false},
+  'GET /api/v1/:model/:id':                  {action: 'general/find', csrf: false},
+  'GET /api/v1/:model':                      {action: 'general/list', csrf: false},
+  'GET /api/v1/:model/search':               {action: 'general/search', csrf: false},
+  'PUT /api/v1/:model/:id':                  {action: 'general/update', csrf: false},
 
   // Datatables
-  'GET /api/v1/:model/datatable':            {action: 'general/datatable'},
-  'POST /api/v1/:model/datatable':           {action: 'general/datatable'},
+  'GET /api/v1/:model/datatable':            {action: 'general/datatable', csrf: false},
+  'POST /api/v1/:model/datatable':           {action: 'general/datatable', csrf: false},
 
   // Datatables COlumns
-  'GET /api/v1/:model/columns':              {action: 'general/columns'},
-  'POST /api/v1/:model/columns':             {action: 'general/columns'},
+  'GET /api/v1/:model/columns':              {action: 'general/columns', csrf: false},
+  'POST /api/v1/:model/columns':             {action: 'general/columns', csrf: false},
 
   // Dashboard View
   'GET /':                                   {action: 'pages/dashboard'},

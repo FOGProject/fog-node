@@ -14,9 +14,9 @@ module.exports.policies = {
   'general/list':          ['isLoggedIn','isAuthenticated','read'],
   'general/find':          ['isLoggedIn','isAuthenticated','read'],
   'general/search':        ['isLoggedIn','isAuthenticated','read'],
-  'general/create':        ['isLoggedIn','isAuthenticated','create'],
-  'general/update':        ['isLoggedIn','isAuthenticated','update'],
-  'general/destroy':       ['isLoggedIn','isAuthenticated','destroy'],
+  'general/create':        ['isLoggedIn','isAuthenticated','apiCsrfGuard','create'],
+  'general/update':        ['isLoggedIn','isAuthenticated','apiCsrfGuard','update'],
+  'general/destroy':       ['isLoggedIn','isAuthenticated','apiCsrfGuard','destroy'],
   'general/datatable':     ['isLoggedIn','isAuthenticated','read'],
   'general/columns':       ['isLoggedIn','isAuthenticated','read'],
   // save derives the model from the URL and checks create permission itself
@@ -53,6 +53,9 @@ module.exports.policies = {
 
   // Allow API Backend to work
   'api':                   true,
+
+  // CSRF token endpoint -- public, so the login form can obtain a token pre-auth
+  'security/grant-csrf-token': true,
 
   // iPXE boot script is public (PXE machines have no session)
   'boot':                  true,
