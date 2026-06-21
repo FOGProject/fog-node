@@ -67,6 +67,25 @@
     "mocha": "^11.7.6",
     "supertest": "^7.2.2"
   },
+  "comments": {
+    "overrides": "Force-patch vulnerable transitive deps pinned by the abandoned sails-hook-grunt/less/request build chain. These are build-time deps; npm audit fix can't reach them because their parents are unmaintained. babel-traverse, request, one hoek advisory, js-yaml and minimatch are intentionally not overridden (no in-range patch / cross-major bumps would break the grunt build)."
+  },
+  "overrides": {
+    "async": "^3.2.6",
+    "form-data": "^4.0.4",
+    "getobject": "^1.0.0",
+    "grunt": "$grunt",
+    "hoek": "$hoek",
+    "joi": "$joi",
+    "json5": "^2.2.3",
+    "jsonwebtoken": "$jsonwebtoken",
+    "lodash": "^4.17.21",
+    "qs": "^6.14.2",
+    "serialize-javascript": "^7.0.5",
+    "tough-cookie": "^4.1.4",
+    "trim-newlines": "^3.0.1",
+    "uuid": "^11.1.1"
+  },
   "scripts": {
     "start": "NODE_ENV=production node app.js",
     "setup:dev": "node tools/setup/dev.js",
