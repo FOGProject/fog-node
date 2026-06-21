@@ -39,6 +39,14 @@ module.exports = {
             id: 'hostdescription',
             classes: [],
             placeholder: 'Some general description'
+          },
+          tags: {
+            textarea: false,
+            text: 'Tags',
+            type: 'text',
+            id: 'hosttags',
+            classes: [],
+            placeholder: 'lab-a, win11, 3rd-floor'
           }
         },
         formButtons: {

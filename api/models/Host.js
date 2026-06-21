@@ -43,6 +43,30 @@ function normalizeMacs(values, proceed) {
   return proceed();
 }
 
+// Normalise the `tags` json array: accept a comma/newline-separated string or an
+// array, trim, drop blanks, and de-dupe (case-insensitively, keeping first form).
+function normalizeTags(values) {
+  if (!Object.prototype.hasOwnProperty.call(values, 'tags')) {
+    return;
+  }
+  let raw = values.tags;
+  if (typeof raw === 'string') {
+    raw = raw.split(/[\n,]+/);
+  }
+  if (!Array.isArray(raw)) {
+    raw = (raw === null || typeof raw === 'undefined') ? [] : [raw];
+  }
+  let out = [], seen = {};
+  for (let entry of raw) {
+    if (entry === null || typeof entry === 'undefined') { continue; }
+    let tag = String(entry).trim();
+    if (tag === '') { continue; }
+    let key = tag.toLowerCase();
+    if (!seen[key]) { seen[key] = true; out.push(tag); }
+  }
+  values.tags = out;
+}
+
 // Canonicalise the fingerprint fields so identity matching is stable: trim, and
 // lower-case the guid/serial/asset (SMBIOS values vary in case across firmware).
 function normalizeIdentity(values) {
@@ -73,6 +97,12 @@ module.exports = {
       type: 'string'
     },
     macs: {
+      type: 'json'
+    },
+    // Free-form labels for organising/filtering hosts. These replace 1.x groups
+    // for the "named set + group-by" use case (see docs/adr/0001). Stored as a
+    // de-duped string array.
+    tags: {
       type: 'json'
     },
     // --- Hardware fingerprint (issue #198): a host is identified by the scored
@@ -183,10 +213,12 @@ module.exports = {
   },
   beforeCreate: function(values, proceed) {
     normalizeIdentity(values);
+    normalizeTags(values);
     return normalizeMacs(values, proceed);
   },
   beforeUpdate: function(values, proceed) {
     normalizeIdentity(values);
+    normalizeTags(values);
     return normalizeMacs(values, proceed);
   }
 };

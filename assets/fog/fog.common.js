@@ -88,6 +88,13 @@ $.fn.registerTable = function(onSelect, opts) {
     processing: true
   });
 
+  // Per-list extra toolbar buttons (e.g. host bulk actions) appended to the
+  // shared Select/Edit/Delete set.
+  if (Array.isArray(opts.extraButtons)) {
+    opts.buttons = opts.buttons.concat(opts.extraButtons);
+    delete opts.extraButtons;
+  }
+
   let table = $(this).DataTable(opts);
 
   if (onSelect !== undefined && typeof onSelect === 'functin') {
