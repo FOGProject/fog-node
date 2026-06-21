@@ -36,6 +36,11 @@ module.exports.policies = {
 
   // User Policies
   'user/listme':           ['isLoggedIn','isAuthenticated'],
+  // Credential management (each action self-checks permission + refuses API-token auth)
+  'user/reset-password':     ['isLoggedIn','isAuthenticated'],
+  'user/reset-api-token':    ['isLoggedIn','isAuthenticated'],
+  'account/change-password': ['isLoggedIn','isAuthenticated'],
+  'account/reset-api-token': ['isLoggedIn','isAuthenticated'],
 
   // Auth Policies
   'auth/login':            'isNotLoggedIn',
@@ -44,7 +49,7 @@ module.exports.policies = {
 
   'pages/login':           'isNotLoggedIn',
 
-  '*':                     ['isLoggedIn','isAuthenticated'],
+  '*':                     ['isLoggedIn','isAuthenticated','stripApiTokenCredentials'],
 
   // Allow API Backend to work
   'api':                   true,

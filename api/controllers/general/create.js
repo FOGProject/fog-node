@@ -19,8 +19,10 @@ module.exports = {
     let req = this.req,
       res = this.res,
       params = req.allParams(),
-      model = params.model,
-      obj = await sails.models[model].create(params)
+      model = params.model;
+    // API-token requests may never write credentials (password / apiTokenHash).
+    if (req.authVia === 'apitoken') { delete params.password; delete params.apiTokenHash; }
+    let obj = await sails.models[model].create(params)
       .intercept('E_UNIQUE', (err) => {
         return {conflict: {message: 'A record already exists with that name'}};
       })

@@ -137,6 +137,15 @@ module.exports.routes = {
   'POST /users/create':                      {action: 'general/save'},
   'GET /user/me':                            {action: 'user/listme'},
 
+  // User credential management (admin; web session only -- never via API token)
+  'POST /users/:id/reset-password':          {action: 'user/reset-password'},
+  'POST /users/:id/api-token':               {action: 'user/reset-api-token'},
+
+  // Self-service account credential management (logged-in user, own credentials)
+  'GET /account':                            {action: 'pages/account'},
+  'POST /account/password':                  {action: 'account/change-password'},
+  'POST /account/api-token':                 {action: 'account/reset-api-token'},
+
   // Workflow Views
   'GET /workflows':                          {action: 'pages/list/workflows'},
 

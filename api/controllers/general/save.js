@@ -35,6 +35,9 @@ module.exports = {
     // Build the values from the body, dropping non-attribute keys.
     let values = _.omit(req.allParams(), ['model', '_csrf', 'id', '__primac']);
 
+    // API-token requests may never write credentials (password / apiTokenHash).
+    if (req.authVia === 'apitoken') { delete values.password; delete values.apiTokenHash; }
+
     // Drop empty strings from array fields (e.g. blank rows in the MAC widget),
     // so the primary (index 0) is never an empty value.
     _.forEach(values, (v, k) => {
