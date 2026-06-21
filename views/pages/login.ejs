@@ -9,6 +9,7 @@
       <div class="alert alert-danger">Invalid username or password.</div>
       <% } %>
       <form action="/login" method="post">
+        <input type="hidden" name="_csrf" value="<%= typeof _csrf !== 'undefined' ? _csrf : '' %>">
         <div class="input-group mb-3">
           <input name="username" type="text" class="form-control" placeholder="Username">
           <div class="input-group-text"><span class="fa fa-user"></span></div>

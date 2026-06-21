@@ -20,6 +20,15 @@ module.exports.session = {
   ***************************************************************************/
   secret: '528ba42f15ea9433bb5cc8916b7821c6',
 
+  /***************************************************************************
+  * Persistent session store (Redis), backed by the fog-node-redis container.*
+  * Required for CSRF: the CSRF secret lives in the session, and the default  *
+  * in-memory store doesn't persist it reliably across requests (and wipes    *
+  * every login on restart). See the Redis Quadlet + README.                  *
+  ***************************************************************************/
+  adapter: '@sailshq/connect-redis',
+  url: 'redis://127.0.0.1:6379/0',
+
 
   /***************************************************************************
   *                                                                          *
