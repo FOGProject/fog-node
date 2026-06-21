@@ -1,0 +1,54 @@
+/* Tag pills (host list / search) and the chip input widget (host forms + bulk
+ * "Manage tags" modal). Loaded last (zz- prefix) so it overrides Bootstrap. */
+
+/* Read-only pill group, e.g. the host-list Tags column. */
+.fog-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+}
+.fog-tag-list .badge {
+  font-weight: 500;
+}
+
+/* Editable chip input: behaves like a multi-value form-control. */
+.fog-taginput {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem;
+  height: auto;
+  min-height: calc(1.5em + .75rem + 2px);
+  padding: .25rem .5rem;
+  cursor: text;
+}
+.fog-taginput .fog-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-weight: 500;
+}
+.fog-tag .fog-tag-x {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  line-height: 1;
+  font-size: 1.05em;
+  opacity: .75;
+  cursor: pointer;
+}
+.fog-tag .fog-tag-x:hover {
+  opacity: 1;
+}
+.fog-taginput-entry {
+  flex: 1 1 6rem;
+  min-width: 6rem;
+  border: 0;
+  padding: .1rem;
+  background: transparent;
+  color: inherit;
+}
+.fog-taginput-entry:focus {
+  outline: 0;
+}
