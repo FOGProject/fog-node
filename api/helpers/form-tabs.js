@@ -1,7 +1,8 @@
 // Field -> tab mapping for the Host form (mirrors FOG 1.x's grouped tabs).
 const HOST_MAP = {
   name: 'General', description: 'General', ip: 'General', building: 'General',
-  deployed: 'General', createdBy: 'General', guid: 'General', image: 'General',
+  deployed: 'General', createdBy: 'General', image: 'General',
+  guid: 'Identity', serial: 'Identity', asset: 'Identity',
   macs: 'MAC Addresses',
   kernel: 'Boot', kernelArgs: 'Boot', kernelDevice: 'Boot', init: 'Boot',
   biosexit: 'Boot', efiexit: 'Boot',
@@ -12,7 +13,7 @@ const HOST_MAP = {
   secTime: 'Service', pingstatus: 'Service', enforce: 'Service', token: 'Service',
   tokenlock: 'Service'
 };
-const HOST_ORDER = ['General', 'MAC Addresses', 'Boot', 'Active Directory', 'Printers', 'Snapins', 'Service'];
+const HOST_ORDER = ['General', 'MAC Addresses', 'Identity', 'Boot', 'Active Directory', 'Printers', 'Snapins', 'Service'];
 
 module.exports = {
   friendlyName: 'Form tabs',

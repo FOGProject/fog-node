@@ -12,13 +12,19 @@ module.exports = {
       mac = String(req.param('mac') || '').replace(/[^0-9a-fA-F]/g, '').toLowerCase(),
       host = null;
 
-    // Look up a registered host by MAC (macs stored as bare lower-case hex).
-    if (mac.length === 12) {
-      try {
-        let db = sails.getDatastore(sails.models.host.datastore).manager;
-        host = await db.collection(sails.models.host.tableName).findOne({ macs: mac });
-      } catch (unused) { /* fall through to anonymous menu */ }
-    }
+    // Identify the host by its hardware fingerprint (issue #198), not MAC alone:
+    // iPXE passes the SMBIOS values (${uuid}/${serial}/${asset}/${mac}).
+    try {
+      let match = await sails.helpers.identifyHost.with({
+        fingerprint: {
+          guid: req.param('uuid'),
+          serial: req.param('serial'),
+          asset: req.param('asset'),
+          mac: mac
+        }
+      });
+      if (match) { host = match.host; }
+    } catch (unused) { /* fall through to anonymous menu */ }
 
     let menus = await sails.models.pxemenu.find().sort('name ASC'),
       lines = [];
