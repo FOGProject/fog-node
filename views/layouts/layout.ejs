@@ -84,7 +84,7 @@
       <footer class="app-footer">
         <div class="float-end d-none d-sm-inline">
           <b>Channel</b> Alpha |&nbsp;
-          <b>Version</b> <a href="/"><%= version %></a>
+          <b>Version</b> <a href="/"><%= typeof version !== 'undefined' ? version : '' %></a>
         </div>
         <strong>Copyright &copy; 2007-2026&nbsp;
           <a href="https://fogproject.org">FOG Project</a>.</strong>&nbsp;
@@ -225,7 +225,7 @@
     <script src="/fog/fog.select2.js"></script>
     <script src="/fog/fog.taginput.js"></script>
     <!--SCRIPTS END-->
-    <% if (partialname) { %>
+    <% if (typeof partialname !== 'undefined' && partialname) { %>
     <script type="text/javascript">
     <%- partial(partialname) %>
     </script>
