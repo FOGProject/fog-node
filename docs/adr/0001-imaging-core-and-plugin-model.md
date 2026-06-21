@@ -106,6 +106,10 @@ Two unrelated things, do not conflate:
 - **Host fingerprint identity** (`helpers/identifyHost`): weighted scorer
   guid 100 / serial 50 / asset 30 / mac 40, threshold 40; wired into
   `boot.ipxe`. (PR #49)
+- **Groups removed** → host `tags` + bulk host-list actions (Add/Remove Tag,
+  Set Image via `POST /api/v1/host/bulk`). The Group entity and its
+  associations are deleted. (PR #51, #52). Bulk *task* scheduling is deferred to
+  the imaging engine.
 
 ## Open questions
 
