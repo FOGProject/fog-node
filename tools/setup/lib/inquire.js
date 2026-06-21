@@ -96,41 +96,5 @@ module.exports = {
       }
     ];
     inquirer.prompt(questions).then(next);
-  },
-  getWebserverInfo: (next) => {
-    let questions = [
-      {
-        name: 'port',
-        type: 'input',
-        message: 'Enter the port number FOG should listen on:',
-        default: 1337,
-        validate: (value) => {
-          if (isNaN(value) || value < 1 || value > 65535) return 'You must enter a valid port number';
-          return true;
-        }
-      },
-      {
-        name: 'proxy',
-        type: 'confirm',
-        message: 'Will FOG Operate behind a reverse proxy (recommended)?',
-        default: true
-      },
-      {
-        name: 'horizontal',
-        type: 'confirm',
-        message: 'Will there be a pool of FOG servers (horizontal scaling)?',
-        default: true,
-        when: (answers) => {
-          return answers.proxy;
-        }
-      },
-      {
-        name: 'vertical',
-        type: 'confirm',
-        message: 'Should FOG multithread itself (vertical scaling)?',
-        default: true
-      }
-    ];
-    inquirer.prompt(questions).then(next);
   }
 };
