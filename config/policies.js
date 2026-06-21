@@ -23,10 +23,6 @@ module.exports.policies = {
   'general/save':          ['isLoggedIn','isAuthenticated'],
 
 
-  // Group Policies
-  'group/register':        ['isLoggedIn','isAuthenticated', 'group/register'],
-  'group/unregister':      ['isLoggedIn','isAuthenticated', 'group/unregister'],
-
   // Host bulk actions (checks host update permission itself)
   'host/bulk':             ['isLoggedIn','isAuthenticated'],
 

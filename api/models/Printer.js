@@ -1,7 +1,7 @@
 /**
  * Printer.js
  *
- * @description :: A printer definition that can be assigned to hosts/groups.
+ * @description :: A printer definition that can be assigned to hosts.
  *                 Mirrors FOG 1.x `printers`.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
@@ -38,10 +38,6 @@ module.exports = {
     },
     hosts: {
       collection: 'host',
-      via: 'printers'
-    },
-    groups: {
-      collection: 'group',
       via: 'printers'
     }
   }

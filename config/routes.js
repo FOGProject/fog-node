@@ -37,10 +37,6 @@ module.exports.routes = {
   'POST /api/v1/auth/login':                 {action: 'auth/login'},
   'POST /api/v1/auth/logout':                {action: 'auth/logout'},
 
-  // Group API
-  'PUT /api/v1/group/:id/register':          {action: 'group/register'},
-  'PUT /api/v1/group/:id/unregister':        {action: 'group/unregister'},
-
   // Image API
   'PUT /api/v1/image/:id/capture/:partition':{action: 'image/capture'},
   'GET /api/v1/image/:id/deploy/:partition': {action: 'image/deploy'},
@@ -85,11 +81,6 @@ module.exports.routes = {
   'GET /boot.ipxe':                          {action: 'boot'},
   'GET /boot':                               {action: 'boot'},
 
-  // Group Views
-  'GET /groups':                             {action: 'pages/list/groups'},
-  'GET /groups/create':                      {action: 'pages/create/groups'},
-  'POST /groups/create':                     {action: 'general/save'},
-
   // Host Views
   'GET /hosts':                              {action: 'pages/list/hosts'},
   'GET /hosts/create':                       {action: 'pages/create/hosts'},
@@ -128,8 +119,6 @@ module.exports.routes = {
   // Edit Views (generic edit page + save)
   'GET /hosts/edit/:id':                      {action: 'pages/edit'},
   'POST /hosts/edit/:id':                     {action: 'general/save'},
-  'GET /groups/edit/:id':                     {action: 'pages/edit'},
-  'POST /groups/edit/:id':                    {action: 'general/save'},
   'GET /images/edit/:id':                     {action: 'pages/edit'},
   'POST /images/edit/:id':                    {action: 'general/save'},
   'GET /storagegroups/edit/:id':             {action: 'pages/edit'},

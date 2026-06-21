@@ -1,6 +1,6 @@
 module.exports = {
   friendlyName: 'Save',
-  description: 'Handle a server-rendered create/edit form POST (e.g. POST /groups/create or POST /groups/edit/:id).',
+  description: 'Handle a server-rendered create/edit form POST (e.g. POST /hosts/create or POST /hosts/edit/:id).',
   exits: {
     success: {
       description: 'Record created/updated; redirected to the list.'
@@ -12,7 +12,7 @@ module.exports = {
   fn: async function () {
     let req = this.req,
       res = this.res,
-      // Derive the model from the URL, e.g. /groups/create -> group
+      // Derive the model from the URL, e.g. /hosts/create -> host
       segments = req.path.split('/').filter(Boolean),
       plural = segments[0],
       model = plural.replace(/s$/, ''),

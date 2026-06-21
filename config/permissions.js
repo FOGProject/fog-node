@@ -1,13 +1,5 @@
 module.exports.permissions = {
   stock: {
-    group: {
-      create: false,
-      destroy: false,
-      read: false,
-      register: false,
-      unregister: false,
-      update: false
-    },
     host: {
       create: false,
       destroy: false,

@@ -90,12 +90,9 @@ module.exports = {
       formItems[key] = item;
     });
 
-    // Associations: singleton -> select, multi -> checkbox table. Groups (and
-    // workflows) are intentionally omitted, and the group entity itself is left
-    // out pending the fog-node rethink of groups.
-    if (model !== 'group') {
-      Object.assign(formItems, await sails.helpers.associationFields.with({ model, record }));
-    }
+    // Associations: singleton -> select, multi -> checkbox table. (workflows are
+    // omitted by the helper's default skip list.)
+    Object.assign(formItems, await sails.helpers.associationFields.with({ model, record }));
 
     // Plugin-contributed host fields (e.g. the AD plugin's tab).
     if (model === 'host' && sails.plugins && sails.plugins.hostForm) {

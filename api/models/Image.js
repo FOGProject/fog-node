@@ -89,10 +89,6 @@ module.exports = {
     hosts: {
       collection: 'host',
       via: 'image'
-    },
-    groups: {
-      collection: 'group',
-      via: 'image'
     }
   }
 };

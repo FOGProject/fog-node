@@ -86,26 +86,6 @@ module.exports.globals = {
       ]
     },
     {
-      text: 'Group',
-      plural: 'Groups',
-      link: '/groups',
-      icon: 'fa-sitemap',
-      subLinks: [
-        {
-          link: '/groups/create',
-          text: 'Create New Group'
-        },
-        {
-          link: '/groups/export',
-          text: 'Export Groups'
-        },
-        {
-          link: '/groups/import',
-          text: 'Import Groups'
-        }
-      ],
-    },
-    {
       text: 'Image',
       plural: 'Images',
       link: '/images',
