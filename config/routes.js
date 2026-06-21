@@ -104,9 +104,6 @@ module.exports.routes = {
   // Snapin Views
 
   // Printer Views
-  'GET /printers':                           {action: 'pages/list/printers'},
-  'GET /printers/create':                    {action: 'pages/create/printers'},
-  'POST /printers/create':                   {action: 'general/save'},
 
   // iPXE Menu Views
   'GET /pxemenus':                           {action: 'pages/list/pxemenus'},
@@ -122,8 +119,6 @@ module.exports.routes = {
   'POST /storagegroups/edit/:id':            {action: 'general/save'},
   'GET /storagenodes/edit/:id':              {action: 'pages/edit'},
   'POST /storagenodes/edit/:id':             {action: 'general/save'},
-  'GET /printers/edit/:id':                   {action: 'pages/edit'},
-  'POST /printers/edit/:id':                  {action: 'general/save'},
   'GET /pxemenus/edit/:id':                   {action: 'pages/edit'},
   'POST /pxemenus/edit/:id':                  {action: 'general/save'},
   'GET /users/edit/:id':                      {action: 'pages/edit'},

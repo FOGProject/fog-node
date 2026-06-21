@@ -61,6 +61,7 @@ config.json
 !/plugins/wol/
 !/plugins/ad/
 !/plugins/snapin/
+!/plugins/printer/
 images
 
 ################################################

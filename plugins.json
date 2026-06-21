@@ -2,7 +2,8 @@
   "enabled": [
     "wol",
     "ad",
-    "snapin"
+    "snapin",
+    "printer"
   ],
   "disabled": [
     "tftp-server",
