@@ -27,6 +27,9 @@ module.exports.policies = {
   'group/register':        ['isLoggedIn','isAuthenticated', 'group/register'],
   'group/unregister':      ['isLoggedIn','isAuthenticated', 'group/unregister'],
 
+  // Host bulk actions (checks host update permission itself)
+  'host/bulk':             ['isLoggedIn','isAuthenticated'],
+
   // Image Policies
   'image/capture':         ['isLoggedIn','isAuthenticated', 'image/capture'],
   'image/deploy':          ['isLoggedIn','isAuthenticated', 'image/deploy'],

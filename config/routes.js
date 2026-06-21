@@ -52,6 +52,9 @@ module.exports.routes = {
   // User API
   'GET /api/v1/user/me':                     {action: 'user/listme'},
 
+  // Host API
+  'POST /api/v1/host/bulk':                  {action: 'host/bulk'},
+
   // Global search (must precede the :model routes).
   'GET /api/v1/search':                      {action: 'search'},
 

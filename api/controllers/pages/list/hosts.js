@@ -26,6 +26,7 @@ module.exports = {
           'Ping Status',
           'Last Deployed',
           'Assigned Image',
+          'Tags',
           'Description'
         ],
         model: 'host',

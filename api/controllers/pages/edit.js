@@ -60,6 +60,17 @@ module.exports = {
         return;
       }
 
+      // Tags: a comma-separated text field over the json array.
+      if (model === 'host' && key === 'tags') {
+        let stored = Array.isArray(record[key]) ? record[key] : [];
+        formItems[key] = {
+          text: 'Tags', id: `${model}-tags`, classes: [], textarea: false,
+          type: 'text', placeholder: 'lab-a, win11, 3rd-floor',
+          value: stored.join(', ')
+        };
+        return;
+      }
+
       let label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()),
         val = record[key],
         item = { text: label, id: `${model}-${key}`, classes: [], textarea: false };
