@@ -76,8 +76,9 @@ Phase 1); the remaining gaps are behavior, breadth, and views — not schema:
       `eslint.config.js` (and clean up the resulting warnings, since the lint
       script runs with `--max-warnings=0`) or pin `eslint` to v8. Deferred —
       decide the eslint direction first.
-- [ ] Resolve the lockfile split (`yarn.lock` is committed while
-      `package-lock.json` keeps reappearing untracked). Pick one tool.
+- [x] Resolved the lockfile split — standardized on **npm**: `package-lock.json`
+      is committed; the stray `yarn.lock` (gitignored, never tracked) is removed
+      and stays ignored. (README, `.npmrc`, and the scripts already use npm.)
 
 ### Phase 1 — Data-model parity for core entities  *(in progress)*
 
