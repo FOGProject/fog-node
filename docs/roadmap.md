@@ -19,8 +19,9 @@ JWT auth, and the seeded Administrator account are functional.
 
 **Implemented today:**
 
-- 8 models: `Host`, `Image`, `Group`, `Role`, `Setting`, `Task`, `User`,
-  `Workflow`.
+- 10 core models: `Host`, `Image`, `PxeMenu`, `Role`, `Setting`, `StorageGroup`,
+  `StorageNode`, `Task`, `User`, `Workflow`. (`Group` removed — ADR 0001; `Snapin`
+  (#55/#56) and `Printer` (#57) extracted to plugins.)
 - Generic CRUD driven by a `:model` route param (`api/controllers/general/*`),
   plus DataTables list/columns endpoints.
 - Auth: passport local + JWT (cookiecombo) with a granular per-model permissions
@@ -30,17 +31,19 @@ JWT auth, and the seeded Administrator account are functional.
 - Interactive installer (`tools/setup/index.js`) and a non-interactive dev setup
   (`tools/setup/dev.js`).
 
-**Gap vs. FOG 1.6 (large).** The sidebar (`config/globals.js`) advertises much
-more than exists. None of the following have models/controllers/views yet:
+**Gap vs. FOG 1.6 (still large).** Core entity *models* now largely exist (see
+Phase 1); the remaining gaps are behavior, breadth, and views — not schema:
 
-- Storage Groups, Storage Nodes (core to imaging & replication)
-- Modules/Snapins, Printers, iPXE menus
 - Multicast, Pending Hosts / Pending MACs (host approval)
 - Import/Export for every entity
 - A real imaging engine (capture/deploy controllers are stubs)
 - The 1.x background daemons (TaskScheduler, Image/Snapin replicators,
   MulticastManager, PingHosts, ImageSize, SnapinHash, FileDeleter)
 - The hundreds of `FOG_*` global settings 1.x seeds
+- Views: per-entity **list** views exist, but the per-entity **create forms**
+  aren't built (`views/pages/partials/create/` is empty) and the list pages have
+  no "Create new" entry point. (The `snapin` plugin is the exception — it ships
+  its own create page.)
 
 `tools/migrate/` is a Mongo *schema-revision* framework, **not** a 1.x-MySQL →
 2.0 data importer; that importer does not exist yet.
@@ -84,12 +87,16 @@ automatically gets full REST CRUD via the generic `:model` routes once it has a
 
 - [x] `StorageGroup` + `StorageNode` (with a bidirectional association) —
       mirrors 1.x `nfsGroups` / `nfsGroupMembers`.
-- [x] `Snapin` — mirrors 1.x `snapins`. (The sidebar labels these "Modules"; the
-      model is named `Snapin` to match 1.x domain language and avoid shadowing
-      Node's `Module` global. Sidebar label/route to be reconciled later.)
-- [x] `Printer` — mirrors 1.x `printers`. NOTE: the 1.x `pModel` field is exposed
-      as `printerModel`, not `model`, because the generic route param `:model`
-      would otherwise clobber a body field named `model`.
+- [x] `Snapin` — **extracted to the `snapin` plugin** (PRs #55/#56); no longer a
+      core model. It contributes its own `snapin` model + permissions + list/create
+      pages + the host "Snapins" tab (`extends.host`, links in the plugin's own
+      `plugin_snapin_host` collection). (Sidebar still labels snapins "Modules" in
+      places — reconcile later.)
+- [x] `Printer` — **extracted to the `printer` plugin** (PR #57); no longer a core
+      model. Contributes its own `printer` model + permissions + list/create pages
+      + the host "Printers" tab (`extends.host`; host links + per-host
+      `defaultPrinter`/level in `plugin_printer_host` / `plugin_printer_hostcfg`).
+      Mirrors 1.x `printers`.
 - [x] `PxeMenu` — mirrors 1.x `pxeMenuOptions` (the sidebar's "iPXE Menu"). The
       separate 1.x `ipxe` product/manufacturer/MAC → boot-file mapping table is
       deferred until the boot/imaging flow needs it.
@@ -98,14 +105,16 @@ automatically gets full REST CRUD via the generic `:model` routes once it has a
       compress/etc. on Image). Existing fog-node fields/associations preserved.
       Image lookup FKs (`imageType`/`imagePartitionType`/`os`) kept as numeric
       ids for now.
-- [x] Host↔Snapin, Host↔Printer, Group↔Snapin, Group↔Printer many-to-many
-      associations + Host `defaultPrinter` (1.x `printerAssoc.isDefault`).
-      Relationships are defined and populate via the API. **Follow-up:**
-      *assigning* members through the API needs controller support — the generic
+- [x] Host↔Printer / Host↔Snapin assignments + per-host `defaultPrinter` — **now
+      owned by the `printer`/`snapin` plugins** (links in each plugin's own
+      `plugin_*_host` collections via `extends.host`), not core associations.
+      `Group↔*` associations were removed with the Group entity (ADR 0001: groups
+      → host `tags` + bulk list actions). Remaining core association:
+      StorageGroup↔StorageNode (bidirectional). **Follow-up:** *assigning* core
+      collection members through the API needs controller support — the generic
       `update` doesn't set collections and the blueprint nested
       `/:model/:id/:assoc/:fk` routes are shadowed by the custom `:model` routes
-      (return 404). Add explicit add/remove-to-collection endpoints (mirroring
-      the existing `group/register`, `role/assign` pattern).
+      (return 404). Add explicit add/remove endpoints (mirroring `role/assign`).
 - [ ] `Task` field parity (gated partly by the client/FOS decision).
 - [ ] Lookup models to replace numeric FKs: ImageType, PartitionType, OS.
 - [ ] Seed the `FOG_*` settings 1.x expects.
