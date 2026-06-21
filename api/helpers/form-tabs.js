@@ -7,8 +7,7 @@ const HOST_MAP = {
   kernel: 'Boot', kernelArgs: 'Boot', kernelDevice: 'Boot', init: 'Boot',
   biosexit: 'Boot', efiexit: 'Boot',
   // (Active Directory fields now come from the `ad` plugin, which sets their tab.)
-  printerLevel: 'Printers', defaultPrinter: 'Printers', printers: 'Printers',
-  // (snapins now come from the snapin plugin, which sets its own tab.)
+  // (printers + snapins now come from their plugins, which set their own tabs.)
   productKey: 'Service', pending: 'Service', pubKey: 'Service', secToken: 'Service',
   secTime: 'Service', pingstatus: 'Service', enforce: 'Service', token: 'Service',
   tokenlock: 'Service'

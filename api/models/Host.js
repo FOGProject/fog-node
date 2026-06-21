@@ -136,11 +136,6 @@ module.exports = {
     productKey: {
       type: 'string'
     },
-    printerLevel: {
-      type: 'number',
-      isInteger: true,
-      defaultsTo: 0
-    },
     kernelArgs: {
       type: 'string'
     },
@@ -192,14 +187,6 @@ module.exports = {
     workflows: {
       collection: 'workflow',
       via: 'host'
-    },
-    printers: {
-      collection: 'printer',
-      via: 'hosts',
-      dominant: true
-    },
-    defaultPrinter: {
-      model: 'printer'
     }
   },
   beforeCreate: function(values, proceed) {
