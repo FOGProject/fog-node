@@ -49,6 +49,11 @@ module.exports.security = {
   *                                                                           *
   ****************************************************************************/
 
-  // csrf: false
+  // CSRF protection. `/api/v1/*` is exempted because that surface is
+  // authenticated by Bearer API tokens / JWTs (not cookie-CSRF-vulnerable);
+  // cookie-authenticated state changes there are guarded instead by
+  // api/policies/apiCsrfGuard.js. Browser forms/AJAX get the token from
+  // GET /csrfToken (see assets/fog/fog.csrf.js).
+  csrf: true
 
 };
