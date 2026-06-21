@@ -18,7 +18,11 @@
             complete: function(xhr) {
               let r = (xhr && xhr.responseJSON) || {},
                 n = (r.created || []).length;
-              window.alert(r.error ? r.error : (n ? `Discovered ${n} new image(s).` : 'No new images found.'));
+              if (r.error) {
+                window.fogToast('error', r.error);
+              } else {
+                window.fogToast(n ? 'success' : 'info', n ? `Discovered ${n} new image(s).` : 'No new images found.');
+              }
               dt.ajax.reload();
             }
           });

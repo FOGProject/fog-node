@@ -56,8 +56,12 @@ module.exports.routes = {
   // User API
   'GET /api/v1/user/me':                     {action: 'user/listme', csrf: false},
 
-  // Host API
+  // Host API (explicit host routes must precede the generic :model routes below,
+  // or e.g. GET /api/v1/host/tags is read as :model=host/:id=tags). Exempt from
+  // Sails CSRF like the rest of /api/v1; the host/bulk mutation is guarded by
+  // apiCsrfGuard instead (see config/policies.js).
   'POST /api/v1/host/bulk':                  {action: 'host/bulk', csrf: false},
+  'GET /api/v1/host/tags':                   {action: 'host/tags', csrf: false},
 
   // Global search (must precede the :model routes).
   'GET /api/v1/search':                      {action: 'search', csrf: false},

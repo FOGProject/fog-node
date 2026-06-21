@@ -9,6 +9,28 @@
 </div>
 <div class="app-content">
   <div class="container-fluid">
+    <% // Alerts %>
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-outline card-<%= pendingHosts ? 'warning' : 'success' %>">
+          <div class="card-header">
+            <h3 class="card-title">Alerts</h3>
+            <%- partial('../layouts/partials/cardtools.ejs') %>
+          </div>
+          <div class="card-body">
+            <% if (pendingHosts) { %>
+            <a href="/hosts" class="d-inline-flex align-items-center text-decoration-none">
+              <span class="badge bg-warning text-dark me-2"><%= pendingHosts %></span>
+              <%= pendingHosts === 1 ? 'host is' : 'hosts are' %> pending approval
+            </a>
+            <% } else { %>
+            <span class="text-success"><i class="fa fa-check-circle"></i> No pending hosts.</span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% // End Alerts %>
     <% // Overview boxes %>
     <div class="row">
       <div class="col-12">

@@ -120,6 +120,23 @@ module.exports = {
             </div>`;
           return field;
         }
+        case 'taginput': {
+          // Chip/token input; fog.taginput.js builds the chips + hidden field
+          // from data-tags on load. Value may be an array or a comma string.
+          let vals = Array.isArray(input.value)
+            ? input.value
+            : (input.value ? String(input.value).split(/[\n,]+/) : []);
+          let csv = vals.map((t) => String(t).trim()).filter(Boolean).join(',');
+          field += `
+            <div class="row mb-3">
+              <label class="col-sm-2 col-form-label"${iFor}>${input.text}</label>
+              <div class="col-sm-10">
+                <div data-taginput data-name="${item}" data-tags="${csv.replace(/"/g, '&quot;')}"></div>
+                <small class="form-text text-muted">Type a tag and press Enter or comma.</small>
+              </div>
+            </div>`;
+          return field;
+        }
         case 'checktable': {
           field += `
             <div class="row mb-3">

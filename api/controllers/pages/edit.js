@@ -60,13 +60,12 @@ module.exports = {
         return;
       }
 
-      // Tags: a comma-separated text field over the json array.
+      // Tags: a chip/token input over the json array (see fog.taginput.js).
       if (model === 'host' && key === 'tags') {
         let stored = Array.isArray(record[key]) ? record[key] : [];
         formItems[key] = {
           text: 'Tags', id: `${model}-tags`, classes: [], textarea: false,
-          type: 'text', placeholder: 'lab-a, win11, 3rd-floor',
-          value: stored.join(', ')
+          type: 'taginput', value: stored
         };
         return;
       }

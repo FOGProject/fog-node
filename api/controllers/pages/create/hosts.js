@@ -43,10 +43,10 @@ module.exports = {
           tags: {
             textarea: false,
             text: 'Tags',
-            type: 'text',
+            type: 'taginput',
             id: 'hosttags',
             classes: [],
-            placeholder: 'lab-a, win11, 3rd-floor'
+            value: []
           }
         },
         formButtons: {

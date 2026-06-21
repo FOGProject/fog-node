@@ -68,6 +68,9 @@ module.exports = {
       capacity = storageNodes.reduce((sum, n) => sum + (Number(n.maxClients) || 0), 0),
       avail = Math.max(0, capacity - active - staged);
 
+    // Alerts panel (parity with 1.x dashboard): hosts awaiting approval.
+    let pendingHosts = await Host.count({ pending: true });
+
     let data = {
       header: 'Dashboard',
       title: 'Dashboard',
@@ -75,7 +78,8 @@ module.exports = {
       partialname: false,
       free, used, size, legend,
       webserver, loadaverage, uptime,
-      avail, staged, active
+      avail, staged, active,
+      pendingHosts
     };
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {

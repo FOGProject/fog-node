@@ -39,7 +39,7 @@ $.fn.registerTable = function(onSelect, opts) {
         action: function(e, dt, node, config) {
           let rows = dt.rows({selected: true}).data().toArray();
           if (rows.length !== 1) {
-            window.alert('Select exactly one row to edit.');
+            window.fogToast('error', 'Select exactly one row to edit.');
             return;
           }
           let base = window.location.pathname.replace(/\/$/, '');
@@ -52,21 +52,26 @@ $.fn.registerTable = function(onSelect, opts) {
         action: function(e, dt, node, config) {
           let ids = dt.rows({selected: true}).data().toArray().map((r) => r.id).filter(Boolean);
           if (!ids.length) {
-            window.alert('Select one or more rows to delete.');
+            window.fogToast('error', 'Select one or more rows to delete.');
             return;
           }
-          if (!window.confirm(`Delete ${ids.length} selected item(s)? This cannot be undone.`)) {
-            return;
-          }
-          let base = dt.ajax.url().replace(/\/datatable.*$/, '');
-          $.ajax({
-            url: base,
-            type: 'DELETE',
-            contentType: 'application/json',
-            data: JSON.stringify({id: ids}),
-            complete: function() {
-              dt.ajax.reload();
-            }
+          window.fogConfirm({
+            title: `Delete ${ids.length} selected item(s)?`,
+            body: 'This cannot be undone.',
+            confirmText: 'Delete',
+            danger: true
+          }).then(function(ok) {
+            if (!ok) { return; }
+            let base = dt.ajax.url().replace(/\/datatable.*$/, '');
+            $.ajax({
+              url: base,
+              type: 'DELETE',
+              contentType: 'application/json',
+              data: JSON.stringify({id: ids}),
+              complete: function() {
+                dt.ajax.reload();
+              }
+            });
           });
         }
       }
@@ -225,4 +230,85 @@ $.readableBytes = function(bytes) {
       })
       .catch(function() { showError(body, 'Could not load the form.'); });
   };
+})();
+
+// Shared UI helpers used to replace native dialogs (alert/confirm/prompt) with
+// AdminLTE/Bootstrap toasts + modals across the lists. Each degrades gracefully
+// when its dependency (PNotify / Bootstrap) is missing.
+(function() {
+  // Toast notification; falls back to alert() if PNotify isn't loaded.
+  function toast(type, text) {
+    try {
+      if (window.PNotify && typeof PNotify.alert === 'function') {
+        PNotify.alert({ type: type === 'error' ? 'error' : type, text: text, delay: 3000 });
+        return;
+      }
+    } catch (e) { /* fall through to native */ }
+    window.alert(text);
+  }
+
+  // Build + show a Bootstrap modal. Returns {el, modal, body} or null (no
+  // Bootstrap). `onConfirm(el, modal)` may return false (keep open) or a promise.
+  function modal(opts) {
+    opts = opts || {};
+    if (!window.bootstrap) { return null; }
+    let wrap = document.createElement('div');
+    wrap.className = 'modal fade';
+    wrap.tabIndex = -1;
+    wrap.innerHTML =
+      '<div class="modal-dialog modal-dialog-centered' + (opts.size ? ' ' + opts.size : '') + '">' +
+        '<div class="modal-content">' +
+          '<div class="modal-header"><h5 class="modal-title"></h5>' +
+            '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>' +
+          '<div class="modal-body"></div>' +
+          '<div class="modal-footer">' +
+            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+              (opts.cancelText || 'Cancel') + '</button>' +
+            '<button type="button" class="btn ' + (opts.danger ? 'btn-danger' : 'btn-primary') +
+              '" data-fog-confirm>' + (opts.confirmText || 'OK') + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    wrap.querySelector('.modal-title').textContent = opts.title || '';
+    let bodyEl = wrap.querySelector('.modal-body');
+    if (typeof opts.body === 'string') { bodyEl.innerHTML = opts.body; }
+    else if (opts.body instanceof Node) { bodyEl.appendChild(opts.body); }
+    document.body.appendChild(wrap);
+    let m = bootstrap.Modal.getOrCreateInstance(wrap);
+    wrap.addEventListener('hidden.bs.modal', function() { m.dispose(); wrap.remove(); });
+    wrap.querySelector('[data-fog-confirm]').addEventListener('click', function() {
+      let r = opts.onConfirm ? opts.onConfirm(wrap, m) : true;
+      Promise.resolve(r).then(function(keep) { if (keep !== false) { m.hide(); } });
+    });
+    if (opts.onShown) {
+      wrap.addEventListener('shown.bs.modal', function() { opts.onShown(wrap); }, { once: true });
+    }
+    m.show();
+    return { el: wrap, modal: m, body: bodyEl };
+  }
+
+  // Confirm dialog -> Promise<boolean>. Falls back to window.confirm().
+  function confirm(opts) {
+    opts = opts || {};
+    return new Promise(function(resolve) {
+      if (!window.bootstrap) {
+        resolve(window.confirm(opts.body || opts.title || 'Are you sure?'));
+        return;
+      }
+      let answered = false,
+        ctrl = modal({
+          title: opts.title || 'Please confirm',
+          body: '<p class="mb-0">' + (opts.body || '') + '</p>',
+          confirmText: opts.confirmText || 'Confirm',
+          cancelText: opts.cancelText || 'Cancel',
+          danger: opts.danger,
+          onConfirm: function() { answered = true; resolve(true); }
+        });
+      ctrl.el.addEventListener('hidden.bs.modal', function() { if (!answered) { resolve(false); } });
+    });
+  }
+
+  window.fogToast = toast;
+  window.fogModal = modal;
+  window.fogConfirm = confirm;
 })();
