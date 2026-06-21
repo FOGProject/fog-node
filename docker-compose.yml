@@ -1,8 +1,12 @@
-# Development MongoDB for fog-node.
+# Development MongoDB + Redis for fog-node.
 #
-# This is for LOCAL DEVELOPMENT ONLY -- it runs Mongo with no authentication,
-# matching the default connection string written by `npm run setup:dev`
-# (mongodb://127.0.0.1:27017/fog). Do not use this for production.
+# This is for LOCAL DEVELOPMENT ONLY -- it runs Mongo with no authentication and
+# Redis with no password, matching the defaults written by `npm run setup:dev`
+# (mongodb://127.0.0.1:27017/fog and redis://127.0.0.1:6379/0). Do not use this
+# for production.
+#
+# Redis backs the session store, which is REQUIRED: the CSRF token's secret lives
+# in the session, so login and every form submit fail without it.
 #
 # Works with either Docker or Podman:
 #   docker compose up -d        (or)   podman compose up -d
@@ -18,5 +22,16 @@ services:
     volumes:
       - fog-node-mongo-data:/data/db
 
+  redis:
+    image: redis:7-alpine
+    container_name: fog-node-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - fog-node-redis-data:/data
+
 volumes:
   fog-node-mongo-data:
+  fog-node-redis-data:
