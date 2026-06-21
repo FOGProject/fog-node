@@ -55,6 +55,11 @@ module.exports = {
       required: true,
       minLength: 8
     },
+    apiTokenHash: {
+      type: 'string',
+      allowNull: true,
+      description: 'SHA-256 of the user\'s API bearer token. The token itself is never stored.'
+    },
     roles: {
       collection: 'role',
       via: 'users'
@@ -82,7 +87,7 @@ module.exports = {
       return permissions;
     };
     this.permissions = concatRoles(this.roles);
-    return _.omit(this, ['password','roles']);
+    return _.omit(this, ['password','roles','apiTokenHash']);
   },
   beforeCreate: function(values, next) {
     bcrypt.hash(values.password, sails.config.auth.bcrypt.rounds, (err, hash) => {

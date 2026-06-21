@@ -28,4 +28,67 @@
   </div>
 </div>
 
+<% if (typeof credentialPanel !== 'undefined' && credentialPanel) { %>
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row"><div class="col-12">
+      <div class="card card-warning card-outline">
+        <div class="card-header"><h3 class="card-title">Credentials</h3></div>
+        <div class="card-body">
+          <h5>Reset password</h5>
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label" for="cp-pw">New password</label>
+              <input type="password" id="cp-pw" class="form-control" minlength="8" autocomplete="new-password">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="cp-pwc">Confirm password</label>
+              <input type="password" id="cp-pwc" class="form-control" autocomplete="new-password">
+            </div>
+            <div class="col-md-3">
+              <button id="cp-btn" type="button" class="btn btn-warning">Reset password</button>
+            </div>
+          </div>
+          <div id="cp-msg" class="mt-2"></div>
+          <hr>
+          <h5>API token</h5>
+          <p class="text-muted mb-2">Used as <code>Authorization: Bearer &lt;token&gt;</code> for API access. Regenerating immediately invalidates the previous token; the new token is shown only once. API tokens can never change a password.</p>
+          <button id="tok-btn" type="button" class="btn btn-info">Regenerate API token</button>
+          <div id="tok-msg" class="mt-2"></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+<script>
+(function(){
+  var uid = <%- JSON.stringify(credentialPanel.userId) %>;
+  function post(url, body){
+    return fetch(url, {method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: body ? JSON.stringify(body) : undefined});
+  }
+  function show(el, ok, html){ el.className = 'mt-2 alert ' + (ok ? 'alert-success' : 'alert-danger'); el.innerHTML = html; }
+  document.getElementById('cp-btn').addEventListener('click', async function(){
+    var pw = document.getElementById('cp-pw').value, pwc = document.getElementById('cp-pwc').value, m = document.getElementById('cp-msg');
+    if (pw.length < 8) { return show(m, false, 'Password must be at least 8 characters.'); }
+    if (pw !== pwc) { return show(m, false, 'Passwords do not match.'); }
+    try {
+      var r = await post('/users/' + uid + '/reset-password', {password: pw, passwordConfirm: pwc});
+      if (r.ok) { show(m, true, 'Password reset.'); document.getElementById('cp-pw').value = ''; document.getElementById('cp-pwc').value = ''; }
+      else { var j = await r.json().catch(function(){return {};}); show(m, false, (j.message || ('Failed (HTTP ' + r.status + ')'))); }
+    } catch (e) { show(m, false, 'Request failed.'); }
+  });
+  document.getElementById('tok-btn').addEventListener('click', async function(){
+    var m = document.getElementById('tok-msg');
+    try {
+      var r = await post('/users/' + uid + '/api-token');
+      if (r.ok) { var j = await r.json(); show(m, true, 'New API token (copy now &mdash; shown once):<br><code style="word-break:break-all">' + j.token + '</code>'); }
+      else { show(m, false, 'Failed (HTTP ' + r.status + ')'); }
+    } catch (e) { show(m, false, 'Request failed.'); }
+  });
+})();
+</script>
+<% } %>
+
 <%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>

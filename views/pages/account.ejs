@@ -1,0 +1,72 @@
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="col-sm-6"><h3 class="mb-0"><%= header %></h3></div>
+  </div>
+</div>
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row"><div class="col-md-8">
+      <div class="card card-primary card-outline">
+        <div class="card-header"><h3 class="card-title">Change my password</h3></div>
+        <div class="card-body">
+          <div class="mb-2">
+            <label class="form-label" for="ac-cur">Current password</label>
+            <input type="password" id="ac-cur" class="form-control" autocomplete="current-password">
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="ac-pw">New password</label>
+            <input type="password" id="ac-pw" class="form-control" minlength="8" autocomplete="new-password">
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="ac-pwc">Confirm new password</label>
+            <input type="password" id="ac-pwc" class="form-control" autocomplete="new-password">
+          </div>
+          <button id="ac-btn" type="button" class="btn btn-primary">Change password</button>
+          <div id="ac-msg" class="mt-2"></div>
+        </div>
+      </div>
+
+      <div class="card card-info card-outline">
+        <div class="card-header"><h3 class="card-title">My API token</h3></div>
+        <div class="card-body">
+          <p class="text-muted mb-2">Use as <code>Authorization: Bearer &lt;token&gt;</code> for API access. Regenerating invalidates the previous token immediately; the new token is shown only once. An API token can never change a password.</p>
+          <button id="ac-tok" type="button" class="btn btn-info">Regenerate my API token</button>
+          <div id="ac-tokmsg" class="mt-2"></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+<script>
+(function(){
+  function post(url, body){
+    return fetch(url, {method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: body ? JSON.stringify(body) : undefined});
+  }
+  function show(el, ok, html){ el.className = 'mt-2 alert ' + (ok ? 'alert-success' : 'alert-danger'); el.innerHTML = html; }
+  document.getElementById('ac-btn').addEventListener('click', async function(){
+    var cur = document.getElementById('ac-cur').value,
+      pw = document.getElementById('ac-pw').value,
+      pwc = document.getElementById('ac-pwc').value,
+      m = document.getElementById('ac-msg');
+    if (pw.length < 8) { return show(m, false, 'New password must be at least 8 characters.'); }
+    if (pw !== pwc) { return show(m, false, 'New passwords do not match.'); }
+    try {
+      var r = await post('/account/password', {currentPassword: cur, password: pw, passwordConfirm: pwc});
+      if (r.ok) { show(m, true, 'Password changed.'); document.getElementById('ac-cur').value=''; document.getElementById('ac-pw').value=''; document.getElementById('ac-pwc').value=''; }
+      else { var j = await r.json().catch(function(){return {};}); show(m, false, (j.message || ('Failed (HTTP ' + r.status + ')'))); }
+    } catch (e) { show(m, false, 'Request failed.'); }
+  });
+  document.getElementById('ac-tok').addEventListener('click', async function(){
+    var m = document.getElementById('ac-tokmsg');
+    try {
+      var r = await post('/account/api-token');
+      if (r.ok) { var j = await r.json(); show(m, true, 'New API token (copy now &mdash; shown once):<br><code style="word-break:break-all">' + j.token + '</code>'); }
+      else { show(m, false, 'Failed (HTTP ' + r.status + ')'); }
+    } catch (e) { show(m, false, 'Request failed.'); }
+  });
+})();
+</script>
+
+<%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>

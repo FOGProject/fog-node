@@ -120,6 +120,9 @@ module.exports = {
         Save: { classes: ['btn-success', 'float-end'], type: 'submit' }
       }
     });
+    // The user edit page gets an admin credential panel (reset password /
+    // regenerate API token) rendered by pages/create.ejs.
+    if (model === 'user') { data.credentialPanel = { userId: String(id) }; }
     return data;
   }
 };
