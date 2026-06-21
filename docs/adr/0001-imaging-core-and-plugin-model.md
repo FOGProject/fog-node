@@ -110,6 +110,15 @@ Two unrelated things, do not conflate:
   Set Image via `POST /api/v1/host/bulk`). The Group entity and its
   associations are deleted. (PR #51, #52). Bulk *task* scheduling is deferred to
   the imaging engine.
+- **Plugins contribute Waterline models + permissions** (via
+  `sails.config.orm.moduleDefinitions.models` + `sails.config.permissions`), so
+  a plugin entity gets the whole generic CRUD. (PR #54)
+- **Snapins + Printers extracted to plugins** (`plugins/snapin`,
+  `plugins/printer`): catalog models with full CRUD + a host tab via
+  `extends.host`, with host links in the plugins' own collections
+  (`plugin_snapin_host`, `plugin_printer_host`/`_hostcfg`). Core Snapin/Printer
+  models, pages, and the Host snapins/printers/defaultPrinter/printerLevel
+  fields are removed. (PR #55–#57)
 
 ## Open questions
 
