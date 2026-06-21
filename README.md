@@ -58,7 +58,7 @@ standard ports (80/443) behind nginx instead of `:1337` — wire it up with syst
 and a reverse proxy. The example below targets a Linux host with **rootless
 Podman**; adjust the IP, user, and paths to your machine.
 
-### 1. MongoDB as a Podman Quadlet (systemd `--user`)
+### 1. MongoDB &amp; Redis as Podman Quadlets (systemd `--user`)
 
 `~/.config/containers/systemd/fog-node-mongo.container`:
 
@@ -86,6 +86,42 @@ WantedBy=default.target
 file. The named volume `fog-node-mongo-data` keeps your data across container
 re-creation.
 
+Redis backs the **session store**, which is required for CSRF to work (the CSRF
+token's secret lives in the session; the in-memory default doesn't persist it
+reliably and wipes every login on restart).
+`~/.config/containers/systemd/fog-node-redis.container`:
+
+```ini
+[Unit]
+Description=fog-node Redis (session store)
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+ContainerName=fog-node-redis
+Image=docker.io/library/redis:7-alpine
+PublishPort=127.0.0.1:6379:6379
+Volume=fog-node-redis-data:/data
+Exec=redis-server --appendonly yes
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
+```
+
+Then point Sails sessions at it in `config/session.js`:
+
+```js
+module.exports.session = {
+  secret: '…',
+  adapter: '@sailshq/connect-redis',
+  url: 'redis://127.0.0.1:6379/0',
+};
+```
+
 ### 2. fog-node as a systemd `--user` service
 
 `~/.config/systemd/user/fog-node.service` (replace `<user>`):
@@ -93,8 +129,8 @@ re-creation.
 ```ini
 [Unit]
 Description=fog-node (Sails.js) server on :1337
-After=fog-node-mongo.service network-online.target
-Wants=fog-node-mongo.service network-online.target
+After=fog-node-mongo.service fog-node-redis.service network-online.target
+Wants=fog-node-mongo.service fog-node-redis.service network-online.target
 StartLimitIntervalSec=0
 
 [Service]
@@ -110,7 +146,7 @@ WantedBy=default.target
 ```
 
 `Restart=on-failure` also covers the boot race where fog-node lifts before
-MongoDB is accepting connections — it just retries.
+MongoDB/Redis are accepting connections — it just retries.
 
 ### 3. Enable autostart at boot
 
@@ -120,6 +156,7 @@ sudo loginctl enable-linger "$USER"
 
 systemctl --user daemon-reload
 systemctl --user enable --now fog-node-mongo.service
+systemctl --user enable --now fog-node-redis.service
 systemctl --user enable --now fog-node.service
 ```
 
