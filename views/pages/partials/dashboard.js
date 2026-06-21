@@ -145,14 +145,15 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true, min: 0, ticks: { precision: 0 } } }
+        scales: { y: { beginAtZero: true, min: 0, title: { display: true, text: 'Mbps' } } },
+        plugins: { legend: { display: true } }
       }
     });
   }
 
-  function addBandwidthData(chart, label, value) {
+  function addBandwidthData(chart, label, values) {
     chart.data.labels.push(label);
-    chart.data.datasets.forEach((dataset) => dataset.data.push(value));
+    chart.data.datasets.forEach((dataset, i) => dataset.data.push(values[i]));
     if (chart.data.labels.length > 30) {
       chart.data.labels.shift();
       chart.data.datasets.forEach((dataset) => dataset.data.shift());
@@ -168,16 +169,25 @@
         dataType: 'json',
         success: function(series) {
           if (!series || !series.netstats || !series.netstats[0]) return;
-          let label = new Date().toLocaleTimeString(),
-            rate = Math.round(series.netstats[0].tx_sec / 1024 / 1024 * 8);
+          // rx_sec/tx_sec are bytes/sec -> Mbps (bits/sec / 1e6), kept to 2dp so
+          // sub-Mbps idle traffic is visible instead of rounding to a flat 0.
+          // (si's first sample can be -1; treat anything not > 0 as 0.)
+          let stat = series.netstats[0],
+            toMbps = function(bps) { return (typeof bps === 'number' && bps > 0) ? Math.round((bps * 8 / 1e6) * 100) / 100 : 0; },
+            label = new Date().toLocaleTimeString(),
+            rx = toMbps(stat.rx_sec),
+            tx = toMbps(stat.tx_sec);
           if (!bandwidthChart) {
             bandwidthChartData = {
               labels: [label],
-              datasets: [{ label: series.netstats[0].iface + ' Mbps', data: [rate], fill: false }]
+              datasets: [
+                { label: stat.iface + ' RX (Mbps)', data: [rx], fill: false, borderColor: '#3c8dbc', tension: 0.3 },
+                { label: stat.iface + ' TX (Mbps)', data: [tx], fill: false, borderColor: '#00a65a', tension: 0.3 }
+              ]
             };
             bandwidthCanvas();
           } else {
-            addBandwidthData(bandwidthChart, label, rate);
+            addBandwidthData(bandwidthChart, label, [rx, tx]);
           }
         },
         complete: function() {
