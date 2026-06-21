@@ -25,7 +25,11 @@ plugins live, and the open issues that actually relate to the rewrite. (Captured
 | `tftp-server` | (no split repo found — built-in or not yet extracted) |
 | (snapins) | fog-plugin-snapin |
 | (printing) | fog-plugin-print ("Printer plugin for FOG 2.0") / fog-plugin-printer ("fog-too plugin … printer management") |
-| (AD) | fog-plugin-activedirectory |
+| (admin auth) | fog-plugin-activedirectory — **AD authentication for logging into fog-node**, NOT the host AD-join fields. |
+
+> The Host's `useAD`/`ADDomain`/… fields are a *post-deploy* "join the imaged
+> machine to the domain" concern (done by FOS/fog-client) — unrelated to the
+> fog-plugin-activedirectory admin-auth plugin.
 
 Mechanism: `sails-util-micro-apps`. All plugin repos currently have **0 open
 issues**.

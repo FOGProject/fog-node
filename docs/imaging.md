@@ -3,6 +3,20 @@
 Status: **design / in progress.** The boot entry point (`GET /boot.ipxe`) ships;
 the capture/deploy engine below is the plan, to be built in verifiable steps.
 
+## The imaging core (the crux)
+
+fog-node core is just the imaging essentials; everything else is a plugin:
+
+1. **iPXE boot generation + forwarding** — generate the per-host iPXE script and
+   forward/chain the machine to the right next stage (FOS + kernel on the storage
+   node hosting its image). `GET /boot.ipxe` is the start of this.
+2. **Storage node** — who is hosting the images (and serves/receives the bytes).
+3. **Hosts** — the machines being imaged (+ Images, + Tasks/Workflow).
+
+Note: a host's `useAD`/`ADDomain`/… are a *post-deploy domain-join* concern
+(handled by FOS/fog-client), **not** the `fog-plugin-activedirectory` plugin
+(which is AD authentication for logging into fog-node).
+
 ## Context (from the sibling repos)
 
 - **fog-too** — the earlier "FOG 2.0" Sails app; **fog-node** is the current
