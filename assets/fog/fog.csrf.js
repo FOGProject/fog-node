@@ -7,9 +7,10 @@
  *   - window.fetch (the create/edit modal, credential + account panels)
  *   - full-page form submits (login, edit) via an injected hidden _csrf field
  *
- * The token comes from `SAILS_LOCALS._csrf` (exposed by exposeLocalsToBrowser)
- * when present, otherwise from `GET /csrfToken`. `/api/v1/*` is exempt server
- * side, so token-authenticated API clients are unaffected.
+ * The token comes (in order) from the `<meta name="csrf-token">` rendered into
+ * every page's <head> (synchronous, so it's set before any on-load AJAX),
+ * then `SAILS_LOCALS._csrf`, then an async `GET /csrfToken`. `/api/v1/*` is
+ * exempt server side, so token-authenticated API clients are unaffected.
  */
 (function () {
   var token = null;
@@ -55,7 +56,16 @@
     }
   }
 
-  var local = (window.SAILS_LOCALS && window.SAILS_LOCALS._csrf) || null;
+  // Prefer the synchronous token: a <meta name="csrf-token"> rendered into every
+  // page's <head>, so $.ajaxSetup + the fetch wrapper are wired before the page
+  // fires any AJAX. Fall back to SAILS_LOCALS, then to an async GET /csrfToken.
+  function metaToken() {
+    var m = document.querySelector('meta[name="csrf-token"]');
+    var v = m && m.getAttribute('content');
+    return v ? v : null;
+  }
+
+  var local = metaToken() || (window.SAILS_LOCALS && window.SAILS_LOCALS._csrf) || null;
   if (local) {
     apply(local);
   } else if (window.fetch) {

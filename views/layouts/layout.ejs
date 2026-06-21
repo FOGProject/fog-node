@@ -12,6 +12,11 @@
     <!-- Viewport mobile tag for sensible mobile support -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
+    <%/* CSRF token, available synchronously to fog.csrf.js (which wires the token
+         into jQuery AJAX + fetch) before any on-load request fires. Rendered on
+         every page from the per-request session token. */%>
+    <meta name="csrf-token" content="<%= (typeof _csrf !== 'undefined' && _csrf) ? _csrf : '' %>">
+
     <%/* If you want to discourage search engines from indexing this site, uncomment the following line: */%>
     <%/* <meta name="robots" content="noindex"> */%>
 
@@ -212,6 +217,7 @@
     <script src="/js/pdfmake/build/pdfmake.min.js"></script>
     <script src="/js/select2/dist/js/select2.full.min.js"></script>
     <script src="/fog/fog.common.js"></script>
+    <script src="/fog/fog.csrf.js"></script>
     <script src="/fog/fog.maclist.js"></script>
     <script src="/fog/fog.search.js"></script>
     <script src="/fog/fog.select2.js"></script>

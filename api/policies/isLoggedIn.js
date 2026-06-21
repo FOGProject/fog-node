@@ -26,7 +26,13 @@ module.exports = async (req, res, next) => {
       if (!user) return next();
       req.authVia = 'session';
       user = user.toJSON();
-      await req.login(user, async (err) => err ? next(err) : next());
+      // keepSessionInfo: Passport >=0.6 regenerates the session on req.login
+      // (fixation protection). Since this policy re-logs-in on every
+      // authenticated request, a plain login would wipe the session each time --
+      // including the CSRF secret -- so the token rendered on a GET never
+      // validates on the following POST (403). Preserve existing session data
+      // across the regenerate. (The apitoken path above is stateless: session:false.)
+      await req.login(user, { keepSessionInfo: true }, async (err) => err ? next(err) : next());
     })(req, res);
   } catch (e) {
     next();
