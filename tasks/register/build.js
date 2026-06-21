@@ -12,7 +12,7 @@
  */
 module.exports = function(grunt) {
   grunt.registerTask('build', [
-    'polyfill:dev', //« uncomment to ALSO transpile during development (for broader browser compat.)
+    // 'polyfill:dev', // disabled — babel-polyfill not needed for modern target browsers (see PR #61)
     'compileAssets',
     'babel',        //« uncomment to ALSO transpile during development (for broader browser compat.)
     'linkAssetsBuild',
