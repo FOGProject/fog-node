@@ -44,6 +44,11 @@ module.exports = {
       { model: 'user', label: 'Users', fields: ['username', 'email', 'displayName'] }
     ];
 
+    // Append entities contributed by enabled plugins (snapins, printers, ...).
+    if (sails.plugins && Array.isArray(sails.plugins.search)) {
+      searchConfig = searchConfig.concat(sails.plugins.search);
+    }
+
     for (let cfg of searchConfig) {
       let Model = sails.models[cfg.model];
       if (!Model) { continue; }

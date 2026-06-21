@@ -49,6 +49,10 @@ module.exports = {
     printer: { create: false, read: false, update: false, destroy: false }
   },
 
+  search: [
+    { model: 'printer', label: 'Printers', fields: ['name', 'description', 'printerModel', 'ip'] }
+  ],
+
   menuItems: [
     {
       text: 'Printer',
