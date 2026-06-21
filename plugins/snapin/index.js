@@ -57,6 +57,10 @@ module.exports = {
     snapin: { create: false, read: false, update: false, destroy: false }
   },
 
+  search: [
+    { model: 'snapin', label: 'Snapins', fields: ['name', 'description', 'file'] }
+  ],
+
   menuItems: [
     {
       text: 'Snapin',

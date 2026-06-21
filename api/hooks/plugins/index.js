@@ -28,6 +28,7 @@ module.exports = function definePluginsHook(sails) {
     hostExtensions = [],
     models = {},
     permissions = {},
+    search = [],
     loaded = [],
     loadError = null;
 
@@ -41,6 +42,7 @@ module.exports = function definePluginsHook(sails) {
       if (plugin.menuItems) { menuItems = menuItems.concat(plugin.menuItems); }
       if (plugin.models) { Object.assign(models, plugin.models); }
       if (plugin.permissions) { Object.assign(permissions, plugin.permissions); }
+      if (plugin.search) { search = search.concat(plugin.search); }
       if (plugin.extends && plugin.extends.host) {
         hostExtensions.push(Object.assign({ name: plugin.name || name }, plugin.extends.host));
       }
@@ -85,6 +87,9 @@ module.exports = function definePluginsHook(sails) {
       sails.plugins = {
         loaded: loadError ? [] : loaded,
         hostExtensions: loadError ? [] : hostExtensions,
+        // Search entities contributed by plugins (model/label/fields), appended
+        // to core global search only while the plugin is enabled.
+        search: loadError ? [] : search,
         // Merge every plugin's host form contributions into one formItems object.
         hostForm: async function (record) {
           let out = {};

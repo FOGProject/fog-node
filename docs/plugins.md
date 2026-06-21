@@ -46,6 +46,12 @@ module.exports = {
     snapin: { create: false, read: false, update: false, destroy: false }
   },
 
+  // Optional: add the entity to global search (only while the plugin is enabled,
+  // so disabling it can't break search). model/label/fields.
+  search: [
+    { model: 'snapin', label: 'Snapins', fields: ['name', 'description', 'file'] }
+  ],
+
   // Optional: extend a core entity's form/data without touching the core model.
   // form(record) -> extra formItems (from the plugin's own collection);
   // save(hostId, params) -> persist the plugin's slice; destroy(hostId) -> cascade.
