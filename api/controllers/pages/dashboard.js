@@ -57,8 +57,16 @@ module.exports = {
       { name: 'Used: ' + await sails.helpers.readableBytes(used), color: 'danger' }
     ];
 
-    // Activity placeholders until real task data is wired up.
-    let staged = 3, active = 6, avail = 10 - (staged + active);
+    // Imaging activity from the Task collection. `state < 5` = not finished
+    // (same convention as task-history); among those, in-progress (progress > 0)
+    // is Active and not-yet-started is Staged. "Available" = open imaging slots =
+    // total enabled storage-node capacity (sum of maxClients) minus what's in use.
+    // (The active/staged split is provisional until the Task state enum is fixed.)
+    let active = await Task.count({ state: { '<': 5 }, progress: { '>': 0 } }),
+      staged = await Task.count({ state: { '<': 5 }, progress: 0 }),
+      storageNodes = await StorageNode.find({ isEnabled: true }),
+      capacity = storageNodes.reduce((sum, n) => sum + (Number(n.maxClients) || 0), 0),
+      avail = Math.max(0, capacity - active - staged);
 
     let data = {
       header: 'Dashboard',
