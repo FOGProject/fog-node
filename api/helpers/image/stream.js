@@ -1,7 +1,6 @@
 const path = require('path'),
   fs = require('fs'),
-  progress = require('progress-stream'),
-  imageDir = path.join(__dirname, '..', '..', '..', 'images');
+  progress = require('progress-stream');
 module.exports = {
   friendlyName: 'Stream',
   description: 'Stream image.',
@@ -39,7 +38,8 @@ module.exports = {
   fn: async function (inputs, exits) {
     let id = inputs.id,
       partition = inputs.partition,
-      target = inputs.target;
+      target = inputs.target,
+      imageDir = sails.config.custom.imageStorePath || '/images';
     await sails.helpers.image.aquireReadLock(id).switch({
       error: async (err) => {
         return exits.error(err);

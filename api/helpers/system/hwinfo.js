@@ -2,7 +2,6 @@ const si = require('systeminformation'),
   fs = require('fs-extra'),
   path = require('path'),
   appRoot = path.join(__dirname, '..', '..', '..'),
-  imagePath = `${path.parse(appRoot).root}images`,
   moment = require('moment'),
   checkDiskSpace = require('check-disk-space').default;
 module.exports = {
@@ -50,6 +49,7 @@ module.exports = {
     });
 
     // Filesystem info
+    let imagePath = sails.config.custom.imageStorePath || '/images';
     size = await checkDiskSpace(imagePath).then(async diskspace => {
       let free = diskspace.free,
         total = diskspace.size,

@@ -10,6 +10,11 @@
 
 module.exports.custom = {
 
+  // Image store: one folder per image -> <imageStorePath>/<image>/<partition>.img.
+  // Single source of truth for the deploy streamer, dashboard/hwinfo disk usage,
+  // and the image-store scan. Matches FOG's storageLocation (default /images).
+  imageStorePath: '/images',
+
   /***************************************************************************
   *                                                                          *
   * Any other custom config this Sails app should use during development.    *
