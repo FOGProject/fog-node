@@ -55,6 +55,7 @@ module.exports.routes = {
   'GET /api/v1/search':                      {action: 'search'},
 
   // General API elements.
+  'POST /api/v1/image/scan':                 {action: 'image/scan'},
   'POST /api/v1/:model':                     {action: 'general/create'},
   'DELETE /api/v1/:model/:id?':              {action: 'general/destroy'},
   'GET /api/v1/:model/:id':                  {action: 'general/find'},
