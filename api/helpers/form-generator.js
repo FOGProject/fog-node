@@ -138,28 +138,49 @@ module.exports = {
           return field;
         }
         case 'checktable': {
+          // Multi (collection) association picker: a filterable, select-all
+          // checkbox table. Behaviour wired by assets/fog/fog.assoc.js; styled
+          // by assets/styles/zz-fog-assoc.css.
+          let opts = input.options || [];
+          let total = opts.length;
+          let selected = opts.filter((o) => o.checked).length;
           field += `
             <div class="row mb-3">
               <label class="col-sm-2 col-form-label">${input.text}</label>
-              <div class="col-sm-10">
-                <div class="border rounded" style="max-height:220px;overflow:auto">
-                  <table class="table table-sm table-hover mb-0">
-                    <tbody>`;
-          if (!(input.options || []).length) {
+              <div class="col-sm-10">`;
+          if (!total) {
             field += `
-                      <tr><td class="text-muted">None available.</td></tr>`;
+                <div class="assoc-empty">None available.</div>`;
+          } else {
+            field += `
+                <div class="assoc-picker" data-assoc-picker>
+                  <div class="assoc-toolbar">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="assoc-all-${item}" data-assoc-all/>
+                      <label class="form-check-label" for="assoc-all-${item}">Select all</label>
+                    </div>
+                    <span class="assoc-count text-muted" data-assoc-count><strong>${selected}</strong> of ${total} selected</span>
+                    <div class="assoc-search">
+                      <input type="search" class="form-control form-control-sm" data-assoc-search placeholder="Filter&hellip;" aria-label="Filter ${input.text}"/>
+                    </div>
+                  </div>
+                  <div class="assoc-scroll">
+                    <table class="table table-sm table-striped table-hover align-middle mb-0">
+                      <tbody>`;
+            opts.forEach((o) => {
+              field += `
+                        <tr class="assoc-row${o.checked ? ' selected' : ''}">
+                          <td class="assoc-check"><input type="checkbox" class="form-check-input" name="${item}[]" value="${o.value}"${o.checked ? ' checked' : ''}/></td>
+                          <td class="assoc-name">${o.label}</td>
+                        </tr>`;
+            });
+            field += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>`;
           }
-          (input.options || []).forEach((o) => {
-            field += `
-                      <tr>
-                        <td style="width:2.5rem"><input type="checkbox" class="form-check-input" name="${item}[]" value="${o.value}"${o.checked ? ' checked' : ''}/></td>
-                        <td>${o.label}</td>
-                      </tr>`;
-          });
           field += `
-                    </tbody>
-                  </table>
-                </div>
               </div>
             </div>`;
           return field;
