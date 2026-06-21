@@ -86,6 +86,11 @@ module.exports = {
       Object.assign(formItems, await sails.helpers.associationFields.with({ model, record }));
     }
 
+    // Plugin-contributed host fields (e.g. the AD plugin's tab).
+    if (model === 'host' && sails.plugins && sails.plugins.hostForm) {
+      Object.assign(formItems, await sails.plugins.hostForm(record));
+    }
+
     let title = model.charAt(0).toUpperCase() + model.slice(1),
       data = {
         model,

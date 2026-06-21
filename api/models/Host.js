@@ -81,25 +81,9 @@ module.exports = {
     createdBy: {
       type: 'string'
     },
-    useAD: {
-      type: 'boolean',
-      defaultsTo: false
-    },
-    ADDomain: {
-      type: 'string'
-    },
-    ADOU: {
-      type: 'string'
-    },
-    ADUser: {
-      type: 'string'
-    },
-    ADPass: {
-      type: 'string'
-    },
-    ADPassLegacy: {
-      type: 'string'
-    },
+    // Active Directory domain-join fields moved OUT to the `ad` plugin
+    // (plugins/ad) -- it owns its own collection + contributes the AD tab via
+    // the host:form/host:save/host:destroy hooks. See docs/adr/0001.
     productKey: {
       type: 'string'
     },

@@ -109,6 +109,10 @@ module.exports = {
       for (let assoc of _.keys(collections)) {
         await sails.models[model].replaceCollection(recordId, assoc).members(collections[assoc]);
       }
+      // Let plugins persist their slice of a host save (their own collections).
+      if (model === 'host' && sails.plugins && sails.plugins.hostSave) {
+        await sails.plugins.hostSave(recordId, req.allParams());
+      }
     } catch (err) {
       let back = isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`,
         msg = (err && err.message) ? String(err.message).slice(0, 200) : 'Could not save. Please check your input.';
