@@ -140,6 +140,15 @@ module.exports.http = {
     /**
      * local.js
      */
+    const ds = payload.datastores.fogdb;
+    // Only emit credentials when a username was provided. Emitting an empty (or
+    // undefined) user+password makes sails-mongo attempt authentication and fail
+    // against a no-auth Mongo with "Authentication failed".
+    const credLines = ds.username
+      ? `
+      user: '${encodeURIComponent(ds.username)}',
+      password: '${encodeURIComponent(ds.password || '')}',`
+      : '';
     rawtext = `module.exports = {
   auth: {
     bcrypt: {
@@ -171,11 +180,9 @@ module.exports.http = {
   datastores: {
     fogdb: {
       adapter: 'sails-mongo',
-      host: '${encodeURIComponent(payload.datastores.fogdb.host)}',
-      port: ${payload.datastores.fogdb.port},
-      user: '${encodeURIComponent(payload.datastores.fogdb.username)}',
-      password: '${encodeURIComponent(payload.datastores.fogdb.password)}',
-      database: '${encodeURIComponent(payload.datastores.fogdb.database)}'
+      host: '${encodeURIComponent(ds.host)}',
+      port: ${ds.port},${credLines}
+      database: '${encodeURIComponent(ds.database)}'
     }
   },
   schema: 1
