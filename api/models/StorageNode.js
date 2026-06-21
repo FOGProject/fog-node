@@ -34,8 +34,7 @@ module.exports = {
       required: true
     },
     ftppath: {
-      type: 'string',
-      required: true
+      type: 'string'
     },
     snapinpath: {
       type: 'string'
@@ -47,12 +46,10 @@ module.exports = {
       type: 'string'
     },
     user: {
-      type: 'string',
-      required: true
+      type: 'string'
     },
     pass: {
-      type: 'string',
-      required: true
+      type: 'string'
     },
     key: {
       type: 'string'

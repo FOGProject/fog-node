@@ -2,7 +2,6 @@ const fs = require('fs-extra'),
   path = require('path'),
   appRoot = path.join(__dirname, '..', '..', '..'),
   partialPath = path.join(appRoot, 'views', 'pages', 'partials'),
-  imagePath = `${path.parse(appRoot).root}images`,
   si = require('systeminformation'),
   moment = require('moment'),
   checkDiskSpace = require('check-disk-space').default;
@@ -41,7 +40,8 @@ module.exports = {
 
     // Disk usage of the image store. Fall back to the filesystem root when the
     // image path does not exist (e.g. in development).
-    let free = 0, size = 0, used = 0;
+    let imagePath = sails.config.custom.imageStorePath || '/images',
+      free = 0, size = 0, used = 0;
     try {
       let diskSpace = await checkDiskSpace(imagePath);
       size = diskSpace.size; free = diskSpace.free; used = size - free;

@@ -11,21 +11,23 @@
   let qavail = Number($('#avail').val()) || 0,
     qactive = Number($('#active').val()) || 0,
     qstaged = Number($('#staged').val()) || 0,
+    qtotal = qavail + qactive + qstaged,
     activeUsageCanvas = $('#activityUsage').get(0);
   if (activeUsageCanvas) {
+    // Empty state: a 0/0/0 doughnut renders blank, so when there's no capacity
+    // and no tasks show a single neutral "No activity" ring instead of nothing.
+    let activityData = qtotal > 0
+      ? {
+        labels: [`Available: ${qavail}`, `Active: ${qactive}`, `Staged: ${qstaged}`],
+        datasets: [{ data: [qavail, qactive, qstaged], backgroundColor: ['#28a745', '#dc3545', '#007bff'] }]
+      }
+      : {
+        labels: ['No activity'],
+        datasets: [{ data: [1], backgroundColor: ['#adb5bd'] }]
+      };
     new Chart(activeUsageCanvas.getContext('2d'), {
       type: 'doughnut',
-      data: {
-        labels: [
-          `Available: ${qavail}`,
-          `Active: ${qactive}`,
-          `Staged: ${qstaged}`
-        ],
-        datasets: [{
-          data: [qavail, qactive, qstaged],
-          backgroundColor: ['#28a745', '#dc3545', '#007bff']
-        }]
-      },
+      data: activityData,
       options: {
         responsive: true,
         maintainAspectRatio: false,
