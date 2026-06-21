@@ -3,7 +3,7 @@ const chalk = require('chalk'),
   path = require('path'),
   header = require('../lib/header'),
   config = require('../lib/config'),
-  cfgPath = path.join(config.appPath, 'config');
+  cfgPath = path.join(config.appPath, 'config'),
   httpCfg = path.join(cfgPath, 'http.js'),
   modelsCfg = path.join(cfgPath, 'models.js'),
   localCfg = path.join(cfgPath, 'local.js'),
@@ -40,16 +40,6 @@ async.waterfall([
       next();
     });
   },
-  // Web Config
-  (next) => {
-    header.printSection('Webserver Configuration');
-    inquire.getWebserverInfo((answers) => {
-      payload.port = answers.port;
-      delete answers.port;
-      payload.webserver = answers;
-      next();
-    });
-  },
   // Secure session
   (next) => {
     header.printSection('Securing Installation');
@@ -83,19 +73,6 @@ async.waterfall([
     status.stop();
     console.log('JWT secret generated');
     next();
-  },
-  // Secure Keypair
-  (next) => {
-    header.printSection('Generating Keypair');
-    var status = new Spinner('Generating key pair');
-    status.start();
-    secure.generateKeypair((err, keypair) => {
-      status.stop();
-      if (err) return next(`Failed to generate keypair: ${err}`);
-      console.log('Keypair generated');
-      payload.defaultKey = keypair;
-      next();
-    });
   },
   // Save configuration
   (next) => {
@@ -183,6 +160,13 @@ module.exports.http = {
         //secure: true
       }
     },
+  },
+  // Session store: a per-install secret + Redis. Required for CSRF (the CSRF
+  // token's secret lives in the session). Point url at your Redis.
+  session: {
+    secret: '${payload.session.secret}',
+    adapter: '@sailshq/connect-redis',
+    url: 'redis://127.0.0.1:6379/0'
   },
   datastores: {
     fogdb: {
