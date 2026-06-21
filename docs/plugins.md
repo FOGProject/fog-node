@@ -28,17 +28,41 @@ module.exports = {
     'POST /api/v1/host/:id/wol': async function (req, res) { /* … */ }
   },
   // Optional: appended to the sidebar menu (config/globals.js menuItems shape).
-  menuItems: []
+  menuItems: [],
+
+  // Optional: contribute full Waterline MODELS. Merged into the ORM
+  // (sails.config.orm.moduleDefinitions.models) before Waterline initializes, so
+  // the entity gets the entire generic CRUD for free: /api/v1/<identity>,
+  // datatables, the generic edit page, global search, associations. Keyed by
+  // identity; config/models.js defaults (datastore, id, timestamps) are applied.
+  models: {
+    snapin: { identity: 'snapin', globalId: 'Snapin', attributes: { /* … */ } }
+  },
+
+  // Optional: contribute permissions for those entities. Merged into
+  // sails.config.permissions.stock; admin roles auto-receive them, non-admin
+  // roles can be granted them. Without this the CRUD policies 403.
+  permissions: {
+    snapin: { create: false, read: false, update: false, destroy: false }
+  },
+
+  // Optional: extend a core entity's form/data without touching the core model.
+  // form(record) -> extra formItems (from the plugin's own collection);
+  // save(hostId, params) -> persist the plugin's slice; destroy(hostId) -> cascade.
+  extends: {
+    host: { form: async (record) => ({}), save: async (id, p) => {}, destroy: async (id) => {} }
+  }
 };
 ```
 
-The shipped **`wol`** plugin (`plugins/wol/`) is the reference example: it adds
-`POST /api/v1/host/:id/wol` to send a Wake-on-LAN magic packet to a host's MACs.
+The shipped **`wol`** plugin (`plugins/wol/`) is the route-only reference; **`ad`**
+(`plugins/ad/`) is the `extends.host` reference (its own `plugin_ad` collection +
+an injected "Active Directory" tab).
 
 ## Status / roadmap
 
 - ✅ Loader + `wol` proof.
-- Next: extension points so a plugin can also add a **model**, its own **pages**,
-  and contribute to a **core entity's form** (e.g. a "Snapins" tab on the host
-  edit page) — needed before extracting today's in-core Snapins/Printers/AD out
-  into `fog-plugin-snapin` / `fog-plugin-print` / `fog-plugin-activedirectory`.
+- ✅ `extends.host` form/save/destroy extension points (AD plugin).
+- ✅ Plugins contribute **models** + **permissions** → full generic CRUD.
+- Next: extract today's in-core Snapins/Printers into `fog-plugin-snapin` /
+  `fog-plugin-print` using `models` (catalog CRUD) + `extends.host` (assignment).
