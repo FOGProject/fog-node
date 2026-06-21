@@ -189,10 +189,6 @@ module.exports = {
     image: {
       model: 'image'
     },
-    groups: {
-      collection: 'group',
-      via: 'hosts'
-    },
     workflows: {
       collection: 'workflow',
       via: 'host'
