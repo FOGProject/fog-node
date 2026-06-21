@@ -20,8 +20,12 @@
           <% if (typeof req !== 'undefined' && req.query && req.query.failed) { %>
           <div class="alert alert-danger m-3"><%= req.query.msg || 'Could not save. Please check your input.' %></div>
           <% } %>
-          <% if (typeof form === 'undefined') form = '' %>
-          <%- form %>
+          <% if (typeof form === 'undefined') form = ''; %>
+          <%/* Inject the CSRF token into the generated form server-side, so the
+                submit never depends on client-side JS/timing. Covers the full-page
+                edit POST and the create modal (which reads this form's fields). */%>
+          <% var _csrfField = (typeof _csrf !== 'undefined' && _csrf) ? ('<input type="hidden" name="_csrf" value="' + _csrf + '">') : ''; %>
+          <%- form.replace(/(<form\b[^>]*>)/i, '$1' + _csrfField) %>
         </div>
       </div>
     </div>
