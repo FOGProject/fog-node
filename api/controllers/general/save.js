@@ -114,13 +114,20 @@ module.exports = {
         await sails.plugins.hostSave(recordId, req.allParams());
       }
     } catch (err) {
-      let back = isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`,
-        msg = (err && err.message) ? String(err.message).slice(0, 200) : 'Could not save. Please check your input.';
+      let msg = (err && err.message) ? String(err.message).slice(0, 200) : 'Could not save. Please check your input.';
+      // Modal/AJAX submit -> JSON; full-page submit -> redirect back with the message.
+      if (req.wantsJSON) {
+        return res.status(400).json({ ok: false, message: msg });
+      }
+      let back = isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`;
       return res.redirect(`${back}?failed=1&msg=${encodeURIComponent(msg)}`);
     }
 
-    // Stay on the record's edit page with a success flag (instead of bouncing to
-    // the list).
+    // Modal/AJAX submit -> JSON ({ok,id}); full-page submit -> stay on the
+    // record's edit page with a success flag.
+    if (req.wantsJSON) {
+      return res.json({ ok: true, id: recordId });
+    }
     return res.redirect(`/${plural}/edit/${recordId}?saved=1`);
   }
 };

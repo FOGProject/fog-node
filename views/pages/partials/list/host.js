@@ -13,6 +13,7 @@
     });
   }
   $('#listtable').registerTable(undefined, {
+    createMode: 'page',
     order: [
       [0, 'asc']
     ],

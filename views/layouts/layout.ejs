@@ -113,6 +113,21 @@
     <!--TEMPLATES-->
     <!--TEMPLATES END-->
 
+    <% if (req.user) { %>
+    <!-- Shared "create new <thing>" modal, populated by fogCreateModal() in fog.common.js -->
+    <div class="modal fade" id="entityModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body"></div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
 
     <!--
         Server-side View Locals
@@ -161,11 +176,12 @@
     <script src="/js/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/pace-js/pace.min.js"></script>
     <script src="/dependencies/cloud.js"></script>
-    <script src="/dependencies/parasails.js"></script>
+    <script src="/js/datatables.net/js/dataTables.min.js"></script>
     <script src="/js/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="/js/datatables.net-autofill/js/dataTables.autoFill.min.js"></script>
     <script src="/js/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
     <script src="/js/datatables.net-buttons/js/buttons.colVis.min.js"></script>
+    <script src="/js/datatables.net-buttons/js/buttons.html5.min.js"></script>
     <script src="/js/datatables.net-buttons/js/buttons.print.min.js"></script>
     <script src="/js/datatables.net-colreorder/js/dataTables.colReorder.min.js"></script>
     <script src="/js/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
@@ -178,7 +194,7 @@
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
     <script src="/js/@pnotify/core/dist/PNotify.js"></script>
     <script src="/js/@pnotify/mobile/dist/PNotifyMobile.js"></script>
-    <script src="/js/chartjs-plugin-labels.js"></script>
+    <script src="/js/chart.umd.min.js"></script>
     <script src="/js/datatables.net-autofill-bs4/js/autoFill.bootstrap4.min.js"></script>
     <script src="/js/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
     <script src="/js/datatables.net-colreorder-bs4/js/colReorder.bootstrap4.min.js"></script>
@@ -191,10 +207,10 @@
     <script src="/js/datatables.net-select-bs4/js/select.bootstrap4.min.js"></script>
     <script src="/js/inputmask/dist/jquery.inputmask.min.js"></script>
     <script src="/js/jszip/dist/jszip.min.js"></script>
-    <script src="/js/pages/create.page.js"></script>
-    <script src="/js/pages/list.page.js"></script>
     <script src="/js/pdfmake/build/pdfmake.min.js"></script>
     <script src="/fog/fog.common.js"></script>
+    <script src="/fog/fog.maclist.js"></script>
+    <script src="/fog/fog.search.js"></script>
     <!--SCRIPTS END-->
     <% if (partialname) { %>
     <script type="text/javascript">

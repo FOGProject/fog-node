@@ -1,6 +1,7 @@
 (function($) {
   let path = $(location).attr('pathname').replace(/s$/,'');
   $('#listtable').registerTable(undefined, {
+    createMode: 'modal',
     order: [
       [0, 'asc']
     ],
