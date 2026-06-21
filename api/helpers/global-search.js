@@ -32,11 +32,22 @@ module.exports = {
 
     // Escape the query so it is matched as a literal substring (no regex
     // injection / ReDoS from user input), then match case-insensitively.
-    let escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      escaped = escapeRe(q);
 
-    // The user-facing entities and which string fields to search.
+    // MACs are stored as bare lower-case hex with no separators (e.g.
+    // "aabbccddeeff"), so strip any colon/hyphen/dot/space the user typed first
+    // -- lets "aa:bb:cc", "AA-BB-CC" and "aabbcc" all match the `macs` array.
+    let macStripped = q.replace(/[\s.:-]/g, ''),
+      macEscaped = macStripped ? escapeRe(macStripped) : '';
+
+    // The user-facing entities and which string fields to search. Hosts also
+    // match on their hardware identifiers (macs/serial/asset/guid) and their
+    // `tags` array, so a tech can paste a MAC/serial or type a (partial) tag and
+    // land on the host. `tags` is a string array; a case-insensitive substring
+    // regex matches any element, giving partial-tag matches for free.
     let searchConfig = [
-      { model: 'host', label: 'Hosts', fields: ['name', 'description', 'ip'] },
+      { model: 'host', label: 'Hosts', fields: ['name', 'description', 'ip', 'macs', 'serial', 'asset', 'guid', 'tags'] },
       { model: 'image', label: 'Images', fields: ['name', 'description'] },
       { model: 'storagegroup', label: 'Storage Groups', fields: ['name', 'description'] },
       { model: 'storagenode', label: 'Storage Nodes', fields: ['name', 'description', 'ip'] },
@@ -63,10 +74,18 @@ module.exports = {
         // (Waterline's `contains` is case-sensitive under sails-mongo).
         let db = sails.getDatastore(Model.datastore).manager,
           collection = db.collection(Model.tableName),
-          docs = await collection
-            .find({ $or: fields.map((f) => ({ [f]: { $regex: escaped, $options: 'i' } })) })
-            .limit(inputs.limit)
-            .toArray();
+          or = [];
+        for (let f of fields) {
+          if (f === 'macs') {
+            // Only search the bare-hex array when the stripped query still has
+            // something to match (skip e.g. a lone ":" that strips to empty).
+            if (macEscaped) { or.push({ macs: { $regex: macEscaped, $options: 'i' } }); }
+          } else {
+            or.push({ [f]: { $regex: escaped, $options: 'i' } });
+          }
+        }
+        if (!or.length) { continue; }
+        let docs = await collection.find({ $or: or }).limit(inputs.limit).toArray();
         if (docs.length) {
           groups.push({
             model: cfg.model,
