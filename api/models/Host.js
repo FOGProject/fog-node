@@ -193,11 +193,6 @@ module.exports = {
       collection: 'workflow',
       via: 'host'
     },
-    snapins: {
-      collection: 'snapin',
-      via: 'hosts',
-      dominant: true
-    },
     printers: {
       collection: 'printer',
       via: 'hosts',

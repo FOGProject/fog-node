@@ -1,7 +1,8 @@
 {
   "enabled": [
     "wol",
-    "ad"
+    "ad",
+    "snapin"
   ],
   "disabled": [
     "tftp-server",

@@ -58,12 +58,6 @@ module.exports.permissions = {
       read: false,
       update: false
     },
-    snapin: {
-      create: false,
-      destroy: false,
-      read: false,
-      update: false
-    },
     printer: {
       create: false,
       destroy: false,
