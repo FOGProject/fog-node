@@ -26,6 +26,8 @@ module.exports = function definePluginsHook(sails) {
     routes = {},
     menuItems = [],
     hostExtensions = [],
+    models = {},
+    permissions = {},
     loaded = [],
     loadError = null;
 
@@ -37,6 +39,8 @@ module.exports = function definePluginsHook(sails) {
       let plugin = require(dir);
       if (plugin.routes) { Object.assign(routes, plugin.routes); }
       if (plugin.menuItems) { menuItems = menuItems.concat(plugin.menuItems); }
+      if (plugin.models) { Object.assign(models, plugin.models); }
+      if (plugin.permissions) { Object.assign(permissions, plugin.permissions); }
       if (plugin.extends && plugin.extends.host) {
         hostExtensions.push(Object.assign({ name: plugin.name || name }, plugin.extends.host));
       }
@@ -48,6 +52,28 @@ module.exports = function definePluginsHook(sails) {
 
   return {
     routes: { after: loadError ? {} : routes },
+    // Contribute plugin Waterline models into the ORM (merged after api/models,
+    // before Waterline initializes) so plugin entities get the full generic CRUD.
+    configure: function () {
+      if (loadError) { return; }
+      if (Object.keys(models).length) {
+        sails.config.orm = sails.config.orm || {};
+        sails.config.orm.moduleDefinitions = sails.config.orm.moduleDefinitions || {};
+        sails.config.orm.moduleDefinitions.models = Object.assign(
+          sails.config.orm.moduleDefinitions.models || {},
+          models
+        );
+      }
+      // Contribute plugin entity permissions so roles can be granted them
+      // (admin roles auto-receive every config permission).
+      if (Object.keys(permissions).length) {
+        sails.config.permissions = sails.config.permissions || {};
+        sails.config.permissions.stock = Object.assign(
+          sails.config.permissions.stock || {},
+          permissions
+        );
+      }
+    },
     initialize: async function () {
       if (loadError) {
         sails.log.error(`Plugins hook failed to load plugins.json: ${loadError}`);
