@@ -150,18 +150,6 @@ module.exports.globals = {
       ],
     },
     {
-      text: 'Snapin',
-      plural: 'Snapins',
-      link: '/snapins',
-      icon: 'fa-cogs',
-      subLinks: [
-        {
-          link: '/snapins/create',
-          text: 'Create New Snapin'
-        }
-      ]
-    },
-    {
       text: 'Printer',
       plural: 'Printers',
       link: '/printers',

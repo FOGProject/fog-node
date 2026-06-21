@@ -60,6 +60,7 @@ config.json
 /plugins/*
 !/plugins/wol/
 !/plugins/ad/
+!/plugins/snapin/
 images
 
 ################################################

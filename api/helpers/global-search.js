@@ -38,7 +38,6 @@ module.exports = {
     let searchConfig = [
       { model: 'host', label: 'Hosts', fields: ['name', 'description', 'ip'] },
       { model: 'image', label: 'Images', fields: ['name', 'description'] },
-      { model: 'snapin', label: 'Snapins', fields: ['name', 'description', 'file'] },
       { model: 'printer', label: 'Printers', fields: ['name', 'description', 'printerModel', 'ip'] },
       { model: 'storagegroup', label: 'Storage Groups', fields: ['name', 'description'] },
       { model: 'storagenode', label: 'Storage Nodes', fields: ['name', 'description', 'ip'] },

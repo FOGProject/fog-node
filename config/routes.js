@@ -102,9 +102,6 @@ module.exports.routes = {
   'POST /storagenodes/create':               {action: 'general/save'},
 
   // Snapin Views
-  'GET /snapins':                            {action: 'pages/list/snapins'},
-  'GET /snapins/create':                     {action: 'pages/create/snapins'},
-  'POST /snapins/create':                    {action: 'general/save'},
 
   // Printer Views
   'GET /printers':                           {action: 'pages/list/printers'},
@@ -125,8 +122,6 @@ module.exports.routes = {
   'POST /storagegroups/edit/:id':            {action: 'general/save'},
   'GET /storagenodes/edit/:id':              {action: 'pages/edit'},
   'POST /storagenodes/edit/:id':             {action: 'general/save'},
-  'GET /snapins/edit/:id':                    {action: 'pages/edit'},
-  'POST /snapins/edit/:id':                   {action: 'general/save'},
   'GET /printers/edit/:id':                   {action: 'pages/edit'},
   'POST /printers/edit/:id':                  {action: 'general/save'},
   'GET /pxemenus/edit/:id':                   {action: 'pages/edit'},
