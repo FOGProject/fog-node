@@ -99,10 +99,16 @@ Two unrelated things, do not conflate:
   tags + bulk actions fully replace groups; no inheritance/"smart group" concept
   is needed in core.
 
+## Built
+
+- **Host extension points** (`host:form`/`host:save`/`host:destroy`) +
+  `sails.plugins` dispatch; AD host-join extracted to `plugins/ad`. (PR #48)
+- **Host fingerprint identity** (`helpers/identifyHost`): weighted scorer
+  guid 100 / serial 50 / asset 30 / mac 40, threshold 40; wired into
+  `boot.ipxe`. (PR #49)
+
 ## Open questions
 
-- **Identity scoring weights/threshold** (UUID > serial > MAC?) — lift from the
-  1.6 `feature-198-unique-host-identifier` scorer.
 - **Cross-collection list columns**: showing a plugin's value (e.g. "AD:
   joined") in the host list is a per-plugin list contribution + lookup, not a
   host field.
