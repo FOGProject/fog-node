@@ -43,6 +43,16 @@ function normalizeMacs(values, proceed) {
   return proceed();
 }
 
+// Canonicalise the fingerprint fields so identity matching is stable: trim, and
+// lower-case the guid/serial/asset (SMBIOS values vary in case across firmware).
+function normalizeIdentity(values) {
+  ['guid', 'serial', 'asset'].forEach((k) => {
+    if (Object.prototype.hasOwnProperty.call(values, k) && typeof values[k] === 'string') {
+      values[k] = values[k].trim().toLowerCase();
+    }
+  });
+}
+
 module.exports = {
   attributes: {
     name: {
@@ -64,6 +74,15 @@ module.exports = {
     },
     macs: {
       type: 'json'
+    },
+    // --- Hardware fingerprint (issue #198): a host is identified by the scored
+    //     makeup of the physical machine, not by MAC alone. iPXE exposes these
+    //     SMBIOS values natively. `guid` is the SMBIOS product UUID. ---
+    serial: {
+      type: 'string'
+    },
+    asset: {
+      type: 'string'
     },
     // --- FOG 1.x `hosts` scalar fields (friendly names; snake_case
     //     security fields normalised to camelCase) ---
@@ -163,9 +182,11 @@ module.exports = {
     }
   },
   beforeCreate: function(values, proceed) {
+    normalizeIdentity(values);
     return normalizeMacs(values, proceed);
   },
   beforeUpdate: function(values, proceed) {
+    normalizeIdentity(values);
     return normalizeMacs(values, proceed);
   }
 };
