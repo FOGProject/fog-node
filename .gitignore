@@ -59,6 +59,7 @@ config.json
 # pattern (it would match api/hooks/plugins too).
 /plugins/*
 !/plugins/wol/
+!/plugins/ad/
 images
 
 ################################################

@@ -56,6 +56,10 @@ module.exports = {
       partial = path.join(partialPath, `${data.model}.js`);
     // Offer the host's associations on the create form too (no current values).
     Object.assign(data.formItems, await sails.helpers.associationFields.with({ model: 'host', record: null }));
+    // Plugin-contributed host fields (e.g. the AD plugin's tab).
+    if (sails.plugins && sails.plugins.hostForm) {
+      Object.assign(data.formItems, await sails.plugins.hostForm(null));
+    }
     let tabOrder = await sails.helpers.formTabs.with({ model: data.model, formItems: data.formItems });
     data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`,
     data.form = await sails.helpers.formGenerator.with({

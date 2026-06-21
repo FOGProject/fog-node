@@ -10,6 +10,13 @@ module.exports = {
     if (!Array.isArray(id)) {
       id = [id];
     }
-    return await sails.models[model].destroy({id}).fetch();
+    let destroyed = await sails.models[model].destroy({id}).fetch();
+    // Cascade: let plugins remove their host-linked records.
+    if (model === 'host' && sails.plugins && sails.plugins.hostDestroy) {
+      for (let hid of id) {
+        await sails.plugins.hostDestroy(hid);
+      }
+    }
+    return destroyed;
   }
 };

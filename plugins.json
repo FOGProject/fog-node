@@ -1,6 +1,7 @@
 {
   "enabled": [
-    "wol"
+    "wol",
+    "ad"
   ],
   "disabled": [
     "tftp-server",

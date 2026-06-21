@@ -5,8 +5,7 @@ const HOST_MAP = {
   macs: 'MAC Addresses',
   kernel: 'Boot', kernelArgs: 'Boot', kernelDevice: 'Boot', init: 'Boot',
   biosexit: 'Boot', efiexit: 'Boot',
-  useAD: 'Active Directory', ADDomain: 'Active Directory', ADOU: 'Active Directory',
-  ADUser: 'Active Directory', ADPass: 'Active Directory', ADPassLegacy: 'Active Directory',
+  // (Active Directory fields now come from the `ad` plugin, which sets their tab.)
   printerLevel: 'Printers', defaultPrinter: 'Printers', printers: 'Printers',
   snapins: 'Snapins',
   productKey: 'Service', pending: 'Service', pubKey: 'Service', secToken: 'Service',
@@ -31,7 +30,9 @@ module.exports = {
 
     if (model === 'host') {
       Object.keys(formItems).forEach((k) => {
-        formItems[k].tab = HOST_MAP[k] || 'General';
+        // Preserve a tab a plugin already set (e.g. the AD plugin's fields);
+        // otherwise use the core host map.
+        formItems[k].tab = formItems[k].tab || HOST_MAP[k] || 'General';
       });
       return HOST_ORDER;
     }
