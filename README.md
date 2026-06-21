@@ -9,25 +9,33 @@ rewrite of the FOG Project server, backed by MongoDB.
 ## Requirements
 
 - **Node.js** — tested on Node 22 (LTS) and Node 26.
-- **MongoDB** — 7.x recommended.
+- **MongoDB** — 7.x recommended (primary datastore).
+- **Redis** — 7.x (session store). **Required**: CSRF protection stores its
+  secret in the session, so login and every form submit fail without it.
 
 ## Development quickstart
 
-A fresh clone can be brought up in four steps:
+A fresh clone comes up in a few steps. The bundled compose file starts both
+MongoDB and Redis:
 
 ```sh
 # 1. Install dependencies
 npm install
 
-# 2. Start a development MongoDB (no auth — dev only)
+# 2. Start MongoDB + Redis (no auth — dev only)
 docker compose up -d        # or: podman compose up -d
-# No compose plugin? Run Mongo directly:
+# No compose plugin? Run them directly:
 #   podman run -d --name fog-node-mongo -p 127.0.0.1:27017:27017 docker.io/library/mongo:7
+#   podman run -d --name fog-node-redis -p 127.0.0.1:6379:6379 docker.io/library/redis:7-alpine
 
-# 3. Write dev config + seed the Administrator account (non-interactive)
+# 3. Write dev config (config/local.js + config/models.js) + seed the Administrator
 npm run setup:dev
 
-# 4. Start the server
+# 4. (Optional) load sample data to click around -- a storage group + node,
+#    a couple of images, and a handful of hosts. Resets the dev database.
+npm run seed:dev
+
+# 5. Start the server
 npm start                   # or: node app.js
 ```
 
@@ -35,21 +43,33 @@ Then browse to <http://localhost:1337> and log in as `Administrator`
 (default password `fogadmin1` — change it, or override at setup time).
 
 `setup:dev` writes the git-ignored `config/local.js` and `config/models.js`
-with localhost defaults. Override any of them via env vars (see the header of
+with localhost defaults (Mongo on `:27017`, Redis via `config/session.js` on
+`:6379`, `migrate: 'safe'`). Override any of them via env vars (see the header of
 [tools/setup/dev.js](tools/setup/dev.js)), e.g.:
 
 ```sh
 FOG_DEV_ADMIN_PASSWORD='supersecret' FOG_DEV_DB_NAME='fogdev' npm run setup:dev
 ```
 
+> **Heads-up:** the schema uses `migrate: 'safe'` (never auto-migrate — Mongo is
+> schemaless, so none is needed). Don't point two app instances at one database
+> with `migrate: 'alter'`; that can wipe it.
+
 ## Production install
 
-For a real install, run the interactive installer instead of `setup:dev`:
+For a real install, run the interactive installer:
 
 ```sh
-node tools/setup/index.js   # prompts for DB, admin account, webserver, etc.
-npm start                   # NODE_ENV=production node app.js
+npm run setup              # prompts for DB, admin account, webserver, etc.
+npm start                  # NODE_ENV=production node app.js
 ```
+
+You still need **MongoDB and Redis** reachable. The installer writes the DB
+connection; sessions default to `redis://127.0.0.1:6379/0` in
+[config/session.js](config/session.js) — point that at your Redis. For a durable
+systemd + Podman (Quadlet) deployment behind nginx — covering the Mongo and Redis
+containers, the service units, and the reverse proxy — see the **Persistent
+deployment** section below.
 
 ## Persistent deployment (systemd autostart + nginx reverse proxy)
 

@@ -24,7 +24,10 @@ module.exports = {
     if (!cfg.schema) cfg.schema = 1;
     cfg.appPath = config.appPath;
     cfg.models = {};
-    cfg.models.migrate = 'alter';
+    // 'safe' = never auto-migrate. Mongo is schemaless so no migration is needed,
+    // and 'alter' can drop/recreate collections (data loss) -- catastrophically so
+    // if another app instance is pointed at the same database while this runs.
+    cfg.models.migrate = 'safe';
     adminUser.email = adminEmail;
     adminUser.password = adminPassword;
     sails.load(cfg, async (err) => {
