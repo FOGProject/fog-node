@@ -98,7 +98,10 @@ writeIfMissing(localCfg, 'config/local.js', `module.exports = {
 
 writeIfMissing(modelsCfg, 'config/models.js', `module.exports.models = {
   schema: true,
-  migrate: 'alter',
+  // 'safe' = never auto-migrate. Mongo is schemaless so no migration is needed,
+  // and 'alter' can drop/recreate collections (data loss) -- especially with more
+  // than one app instance pointed at the same database.
+  migrate: 'safe',
   attributes: {
     createdAt: { type: 'number', autoCreatedAt: true },
     updatedAt: { type: 'number', autoUpdatedAt: true },
