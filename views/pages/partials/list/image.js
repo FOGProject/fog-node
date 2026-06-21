@@ -5,6 +5,26 @@
     order: [
       [0, 'asc']
     ],
+    // Discover images already on disk (a folder with partition .img files) and
+    // create records for any not yet defined -- so synced/copied images appear
+    // without building each definition by hand.
+    extraButtons: [
+      {
+        text: '<i class="fa fa-folder-open"></i> Scan store',
+        action: function(e, dt) {
+          $.ajax({
+            url: '/api/v1/image/scan',
+            type: 'POST',
+            complete: function(xhr) {
+              let r = (xhr && xhr.responseJSON) || {},
+                n = (r.created || []).length;
+              window.alert(r.error ? r.error : (n ? `Discovered ${n} new image(s).` : 'No new images found.'));
+              dt.ajax.reload();
+            }
+          });
+        }
+      }
+    ],
     columns: [
       {data: 'name'},
       {data: 'protected'},
