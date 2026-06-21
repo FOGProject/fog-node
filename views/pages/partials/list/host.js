@@ -12,6 +12,22 @@
       complete: function() { dt.ajax.reload(); }
     });
   }
+  // Apply a bulk change to the selected rows, or -- when nothing is selected --
+  // to every host matching the current search (confirmed by count). With
+  // infinite scroll, selection only covers loaded rows, so "all matching" is how
+  // you act on the whole filtered set. `desc` is shown in the confirm prompt.
+  function applyBulk(dt, body, desc) {
+    let ids = selectedIds(dt);
+    if (ids.length) {
+      bulk(dt, $.extend({id: ids}, body));
+      return;
+    }
+    let n = dt.page.info().recordsDisplay,
+      search = dt.search() || '',
+      scope = search ? `all ${n} host(s) matching "${search}"` : `ALL ${n} host(s)`;
+    if (!window.confirm(`No rows selected — ${desc} for ${scope}?`)) { return; }
+    bulk(dt, $.extend({all: true, search: search}, body));
+  }
   $('#listtable').registerTable(undefined, {
     createMode: 'page',
     order: [
@@ -22,31 +38,25 @@
       {
         text: '<i class="fa fa-tag"></i> Add Tag',
         action: function(e, dt) {
-          let ids = selectedIds(dt);
-          if (!ids.length) { window.alert('Select one or more hosts.'); return; }
-          let tag = window.prompt(`Tag to ADD to ${ids.length} host(s):`);
+          let tag = window.prompt('Tag to ADD:');
           if (!tag) { return; }
-          bulk(dt, {id: ids, addTags: [tag]});
+          applyBulk(dt, {addTags: [tag]}, `add tag "${tag}"`);
         }
       },
       {
         text: '<i class="fa fa-tag"></i> Remove Tag',
         action: function(e, dt) {
-          let ids = selectedIds(dt);
-          if (!ids.length) { window.alert('Select one or more hosts.'); return; }
-          let tag = window.prompt(`Tag to REMOVE from ${ids.length} host(s):`);
+          let tag = window.prompt('Tag to REMOVE:');
           if (!tag) { return; }
-          bulk(dt, {id: ids, removeTags: [tag]});
+          applyBulk(dt, {removeTags: [tag]}, `remove tag "${tag}"`);
         }
       },
       {
         text: '<i class="fa fa-desktop"></i> Set Image',
         action: function(e, dt) {
-          let ids = selectedIds(dt);
-          if (!ids.length) { window.alert('Select one or more hosts.'); return; }
-          let name = window.prompt(`Image NAME to assign to ${ids.length} host(s) (blank to clear):`);
+          let name = window.prompt('Image NAME to assign (blank to clear):');
           if (name === null) { return; }
-          bulk(dt, {id: ids, image: name});
+          applyBulk(dt, {image: name}, name ? `set image "${name}"` : 'clear image');
         }
       }
     ],

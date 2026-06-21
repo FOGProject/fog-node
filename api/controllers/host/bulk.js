@@ -17,9 +17,6 @@ module.exports = {
 
     if (!perms || !perms.update) { return res.forbidden(); }
 
-    let ids = Array.isArray(p.id) ? p.id : (p.id ? [p.id] : []);
-    if (!ids.length) { return res.badRequest({ error: 'No hosts selected.' }); }
-
     let toArr = (v) => (Array.isArray(v) ? v : (v ? [v] : [])).map((x) => String(x).trim()).filter(Boolean),
       addTags = toArr(p.addTags),
       removeTags = toArr(p.removeTags).map((t) => t.toLowerCase());
@@ -37,8 +34,23 @@ module.exports = {
       }
     }
 
-    let hosts = await sails.models.host.find({ id: ids }),
-      updated = 0;
+    // Target set: an explicit selection (id list), or -- when `all` is set --
+    // every host matching the current list search (name/description/tags
+    // substring; empty search = every host). Filtering in JS keeps the match
+    // semantics predictable and avoids adapter-specific array/contains quirks.
+    let hosts, updated = 0;
+    if (p.all) {
+      let s = String(p.search || '').trim().toLowerCase(),
+        everyHost = await sails.models.host.find();
+      hosts = s
+        ? everyHost.filter((h) => [h.name, h.description, Array.isArray(h.tags) ? h.tags.join(' ') : '']
+          .join(' ').toLowerCase().indexOf(s) !== -1)
+        : everyHost;
+    } else {
+      let ids = Array.isArray(p.id) ? p.id : (p.id ? [p.id] : []);
+      if (!ids.length) { return res.badRequest({ error: 'No hosts selected.' }); }
+      hosts = await sails.models.host.find({ id: ids });
+    }
     for (let h of hosts) {
       let set = {};
       if (addTags.length || removeTags.length) {
