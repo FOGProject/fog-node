@@ -132,18 +132,25 @@
 
   if ($('#taskHistory').length) getTInterval();
 
-  // Bandwidth (category x-axis)
+  // Bandwidth: poll live interface stats into a rolling buffer and DISPLAY only
+  // the selected window. We retain up to the largest selectable window (1 hour)
+  // regardless of what's shown, so switching to a longer range instantly shows
+  // the history we already collected instead of starting over from the smaller
+  // window's oldest point. Purely client-side (matches the 1.x 2m/5m/10m/30m/1h).
+  let BANDWIDTH_MAX_RETAIN_SEC = 3600;
   let bandwidthChart,
-    bandwidthChartData,
+    bandwidthSamples = [],      // {t, label, rx, tx}; retained up to MAX_RETAIN
+    bandwidthIface = '',
+    bandwidthWindowSec = 120,   // selected DISPLAY window (default: 2 minutes)
     bandwidthinterval,
     bandwidthajax;
 
-  function bandwidthCanvas() {
+  function bandwidthCanvas(data) {
     let bandwidth = $('#bandwidth').get(0);
     if (!bandwidth) return;
     bandwidthChart = new Chart(bandwidth.getContext('2d'), {
       type: 'line',
-      data: bandwidthChartData,
+      data: data,
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -153,14 +160,28 @@
     });
   }
 
-  function addBandwidthData(chart, label, values) {
-    chart.data.labels.push(label);
-    chart.data.datasets.forEach((dataset, i) => dataset.data.push(values[i]));
-    if (chart.data.labels.length > 30) {
-      chart.data.labels.shift();
-      chart.data.datasets.forEach((dataset) => dataset.data.shift());
+  // Show only the samples inside the selected window; the rest stay buffered for
+  // when a longer window is picked. Creates the chart on first render.
+  function renderBandwidth(now) {
+    let cutoff = now - bandwidthWindowSec * 1000,
+      view = bandwidthSamples.filter((s) => s.t >= cutoff),
+      labels = view.map((s) => s.label),
+      rx = view.map((s) => s.rx),
+      tx = view.map((s) => s.tx);
+    if (!bandwidthChart) {
+      bandwidthCanvas({
+        labels: labels,
+        datasets: [
+          { label: bandwidthIface + ' RX (Mbps)', data: rx, fill: false, borderColor: '#3c8dbc', tension: 0.3 },
+          { label: bandwidthIface + ' TX (Mbps)', data: tx, fill: false, borderColor: '#00a65a', tension: 0.3 }
+        ]
+      });
+    } else {
+      bandwidthChart.data.labels = labels;
+      bandwidthChart.data.datasets[0].data = rx;
+      bandwidthChart.data.datasets[1].data = tx;
+      bandwidthChart.update('none');
     }
-    chart.update('none');
   }
 
   function updateBandwidth() {
@@ -176,21 +197,15 @@
           // (si's first sample can be -1; treat anything not > 0 as 0.)
           let stat = series.netstats[0],
             toMbps = function(bps) { return (typeof bps === 'number' && bps > 0) ? Math.round((bps * 8 / 1e6) * 100) / 100 : 0; },
-            label = new Date().toLocaleTimeString(),
-            rx = toMbps(stat.rx_sec),
-            tx = toMbps(stat.tx_sec);
-          if (!bandwidthChart) {
-            bandwidthChartData = {
-              labels: [label],
-              datasets: [
-                { label: stat.iface + ' RX (Mbps)', data: [rx], fill: false, borderColor: '#3c8dbc', tension: 0.3 },
-                { label: stat.iface + ' TX (Mbps)', data: [tx], fill: false, borderColor: '#00a65a', tension: 0.3 }
-              ]
-            };
-            bandwidthCanvas();
-          } else {
-            addBandwidthData(bandwidthChart, label, [rx, tx]);
+            now = Date.now();
+          bandwidthIface = stat.iface;
+          bandwidthSamples.push({ t: now, label: new Date(now).toLocaleTimeString(), rx: toMbps(stat.rx_sec), tx: toMbps(stat.tx_sec) });
+          // Trim the buffer to the largest window so memory stays bounded.
+          let retainCutoff = now - BANDWIDTH_MAX_RETAIN_SEC * 1000;
+          while (bandwidthSamples.length && bandwidthSamples[0].t < retainCutoff) {
+            bandwidthSamples.shift();
           }
+          renderBandwidth(now);
         },
         complete: function() {
           bandwidthinterval = setTimeout(fetchData, 2000);
@@ -200,5 +215,20 @@
     fetchData();
   }
 
-  if ($('#bandwidth').length) updateBandwidth();
+  // Time-range buttons: change the DISPLAY window and re-slice the retained
+  // buffer immediately, so a longer range shows existing history with no wait
+  // and no data loss when growing the window.
+  $('.bwTimeFilters').on('click', function(e) {
+    e.preventDefault();
+    $('.bwTimeFilters.active').removeClass('active');
+    $(this).addClass('active');
+    bandwidthWindowSec = Number($(this).attr('seconds')) || bandwidthWindowSec;
+    if (bandwidthChart) renderBandwidth(Date.now());
+  });
+
+  if ($('#bandwidth').length) {
+    let activeWindow = Number($('.bwTimeFilters.active').attr('seconds'));
+    if (activeWindow) bandwidthWindowSec = activeWindow;
+    updateBandwidth();
+  }
 })(jQuery);
