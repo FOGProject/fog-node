@@ -16,7 +16,7 @@ module.exports = function (grunt) {
 
 
   grunt.registerTask('default', [
-    'polyfill:dev', //« uncomment to ALSO transpile during development (for broader browser compat.)
+    // 'polyfill:dev', // disabled — babel-polyfill not needed for modern target browsers (re-injected the dropped <script> on every lift; see PR #61)
     'compileAssets',
     'babel',        //« uncomment to ALSO transpile during development (for broader browser compat.)
     'linkAssets',
