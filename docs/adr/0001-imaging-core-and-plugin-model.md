@@ -74,10 +74,13 @@ Two unrelated things, do not conflate:
   hosts → schedule task / bulk-edit). No membership entity needed.
 - **Organization / "group by name"** → **tags/labels on the host** (multi-valued;
   list filters + groups by tag).
-- **Heavier grouping** (continuous *inherited* config, where adding a host to a
-  group makes it conform, and group-level multicast sessions) → a **plugin**,
-  built on bulk actions + tags. Likely unnecessary if imaging is one-time
-  tasking.
+- **There is no continuous inheritance to replicate.** In 1.x, joining/leaving a
+  group does nothing to a host automatically; a group *update* (changing the
+  group's image/AD/snapins) is an **explicit bulk push to the current members**.
+  Tags (the persistent set) + bulk actions (the push) reproduce that fully — and
+  tags add by-name visibility/filtering 1.x lacks. A persistent-groups-style
+  "named static set with re-push" remains possible as a **plugin**, but isn't
+  needed in core.
 
 ## Consequences
 
@@ -89,11 +92,15 @@ Two unrelated things, do not conflate:
 - Plugins become truly modular: install/uninstall adds/removes a collection + its
   injected UI with no core residue.
 
+## Resolved during discussion
+
+- **Inherited group config is not a thing in 1.x** — join/leave does nothing
+  automatically; a group update is an explicit bulk push to current members. So
+  tags + bulk actions fully replace groups; no inheritance/"smart group" concept
+  is needed in core.
+
 ## Open questions
 
-- **Inherited group config**: do we ever need "add host to group → it conforms
-  (ongoing)"? If yes, that's the one justification for a real/"smart" group
-  (plugin). Current lean: no — bulk actions + tags suffice.
 - **Identity scoring weights/threshold** (UUID > serial > MAC?) — lift from the
   1.6 `feature-198-unique-host-identifier` scorer.
 - **Cross-collection list columns**: showing a plugin's value (e.g. "AD:
