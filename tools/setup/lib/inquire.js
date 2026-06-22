@@ -96,5 +96,27 @@ module.exports = {
       }
     ];
     inquirer.prompt(questions).then(next);
+  },
+  getDemoSeedInfo: (next) => {
+    let questions = [
+      {
+        name: 'seed',
+        type: 'confirm',
+        default: false,
+        message: 'Seed sample/test data (lots of hosts, images, storage, PXE menus) to try the UI? Not for production.'
+      },
+      {
+        name: 'hosts',
+        type: 'number',
+        message: 'How many sample hosts?',
+        default: 1000,
+        when: (answers) => answers.seed,
+        validate: (value) => {
+          if (isNaN(value) || value < 1 || value > 100000) return 'Enter a number between 1 and 100000';
+          return true;
+        }
+      }
+    ];
+    inquirer.prompt(questions).then(next);
   }
 };

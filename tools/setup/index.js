@@ -9,6 +9,7 @@ const chalk = require('chalk'),
   localCfg = path.join(cfgPath, 'local.js'),
   inquire = require('./lib/inquire'),
   schema = require('./lib/schema'),
+  seedDemo = require('./seed-demo'),
   secure = require('./lib/secure'),
   async = require('async'),
   CLI = require('clui'),
@@ -202,6 +203,30 @@ module.exports.http = {
       if (err) return next(`Failed to apply database schema: ${err}`);
       console.log('Database schema applied');
       next();
+    });
+  },
+  // Optional sample/test data -- opt-in (default no), so production installs
+  // stay clean unless the admin asks for it. Sails is already loaded by the
+  // schema step above, so seedDemoData uses the models directly.
+  (next) => {
+    header.printSection('Sample / Test Data (optional)');
+    inquire.getDemoSeedInfo((answers) => {
+      if (!answers.seed) {
+        console.log('Skipping sample data.');
+        return next();
+      }
+      let status = new Spinner(`Seeding ${answers.hosts} sample hosts (this can take a moment)...`);
+      status.start();
+      seedDemo.seedDemoData({ numHosts: answers.hosts })
+        .then((res) => {
+          status.stop();
+          console.log(`Sample data seeded: ${res.seededHosts} hosts (${res.totalHosts} total), ${res.images} images, ${res.storageGroups} storage groups.`);
+          next();
+        })
+        .catch((err) => {
+          status.stop();
+          next(`Failed to seed sample data: ${err && err.message ? err.message : err}`);
+        });
     });
   },
   // Inform user of their username/password setting
