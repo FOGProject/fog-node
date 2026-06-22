@@ -179,9 +179,15 @@
                   <div class="card-body">
                     <% Object.keys(iface).forEach(key => { %>
                     <% if ('name' === key) return; %>
+                    <% // 'vendor' is rendered inline beside the MAC, not as its own row. %>
+                    <% if ('vendor' === key) return; %>
                     <div class="row">
                       <div class="col-6"><%= key %></div>
+                      <% if ('mac' === key) { %>
+                      <div class="col-6"><%= iface[key] %><% if (iface.vendor) { %> <i class="fa fa-info-circle text-muted ms-1" title="<%= iface.vendor %>" aria-label="Vendor: <%= iface.vendor %>"></i><% } %></div>
+                      <% } else { %>
                       <div class="col-6"><%= iface[key] %></div>
+                      <% } %>
                     </div>
                     <% }); %>
                   </div>

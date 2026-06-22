@@ -34,6 +34,11 @@
     return $('<span>').text(s == null ? '' : s).html();
   }
 
+  // Escape for use inside a double-quoted HTML attribute (escHtml leaves quotes).
+  function escAttr(s) {
+    return escHtml(s).replace(/"/g, '&quot;');
+  }
+
   // Bulk "Manage tags": add (chip input) and remove (checklist) in one request.
   function openTagModal(dt) {
     let target = resolveTarget(dt);
@@ -136,13 +141,19 @@
       {
         data: 'macs',
         orderable: false,
-        render: function(data) {
+        render: function(data, type, row) {
           let mac = Array.isArray(data) ? (data.length ? data[0] : '') : (data || '');
           if (!mac) {
             return '';
           }
           let hex = String(mac).replace(/[^0-9a-fA-F]/g, '').toLowerCase();
-          return hex.length === 12 ? hex.match(/.{2}/g).join(':') : mac;
+          let disp = hex.length === 12 ? hex.match(/.{2}/g).join(':') : mac;
+          // Vendor for the primary MAC (resolved server-side, see Host.customToJSON).
+          let vendor = (row && Array.isArray(row.macVendors)) ? row.macVendors[0] : '';
+          if (!vendor) { return escHtml(disp); }
+          return escHtml(disp) +
+            ' <i class="fa fa-info-circle text-muted ms-1" title="' + escAttr(vendor) +
+            '" aria-label="Vendor: ' + escAttr(vendor) + '"></i>';
         }
       },
       {data: 'pingstatus'},
