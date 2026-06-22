@@ -70,8 +70,10 @@ module.exports = {
       }
       await si.networkStats(iface.iface).then(async tmpi => {
         tmpi.forEach(async tmp => {
+          let netif = network_ifaces.find(n => n.iface === tmp.iface);
           setIfaces({
             name: tmp.iface,
+            mac: (netif && netif.mac) ? netif.mac : '',
             tx_bytes: await sails.helpers.readableBytes(tmp.tx_bytes),
             rx_bytes: await sails.helpers.readableBytes(tmp.rx_bytes),
             tx_errors: tmp.tx_errors,

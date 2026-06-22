@@ -1,3 +1,12 @@
+const MacVendor = require('../services/MacVendor');
+
+// Escape a string for use inside a double-quoted HTML attribute.
+function escAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 module.exports = {
   friendlyName: 'Form generator',
   description: 'Generates form information automatically',
@@ -86,12 +95,20 @@ module.exports = {
               <div class="col-sm-10">
                 <div data-maclist>`;
           macs.forEach((m, idx) => {
+            // Vendor (IEEE OUI) for this already-saved MAC, shown as a hover
+            // tooltip. New rows added client-side have no value yet, so they get
+            // no addon until the host is saved and the form re-rendered.
+            let vendor = MacVendor.lookup(m);
+            let vendorAddon = vendor
+              ? `
+                    <span class="input-group-text" title="${escAttr(vendor)}" aria-label="Vendor: ${escAttr(vendor)}"><i class="fa fa-info-circle text-muted"></i></span>`
+              : '';
             field += `
                   <div class="input-group mb-1 maclist-row">
                     <div class="input-group-text">
                       <input type="radio" name="__primac" title="Primary MAC"${idx === 0 ? ' checked' : ''}/>
                     </div>
-                    <input type="text" class="form-control" name="macs[]" value="${m}" placeholder="aa:bb:cc:dd:ee:ff" pattern="[0-9A-Fa-f]{2}([:.-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. aa:bb:cc:dd:ee:ff"/>
+                    <input type="text" class="form-control" name="macs[]" value="${m}" placeholder="aa:bb:cc:dd:ee:ff" pattern="[0-9A-Fa-f]{2}([:.-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. aa:bb:cc:dd:ee:ff"/>${vendorAddon}
                     <button type="button" class="btn btn-outline-danger maclist-remove" tabindex="-1">&times;</button>
                   </div>`;
           });

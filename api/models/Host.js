@@ -5,6 +5,7 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 const MAC_HEX = /^[0-9a-fA-F]{12}$/;
+const MacVendor = require('../services/MacVendor');
 
 // Normalise + validate the `macs` json array: accept any common separator style
 // (colon/hyphen/dot) or bare 12 hex, store the canonical upper-case colon form,
@@ -188,6 +189,15 @@ module.exports = {
       collection: 'workflow',
       via: 'host'
     }
+  },
+  // Attach a `macVendors` array (vendor name per MAC, index-aligned with
+  // `macs`, '' when unknown) to every serialized host so the view layer can
+  // label each MAC with its IEEE OUI vendor without a round trip. Additive:
+  // all existing fields are preserved.
+  customToJSON: function() {
+    let obj = Object.assign({}, this);
+    obj.macVendors = MacVendor.lookupAll(Array.isArray(this.macs) ? this.macs : []);
+    return obj;
   },
   beforeCreate: function(values, proceed) {
     normalizeIdentity(values);
