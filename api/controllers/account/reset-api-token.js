@@ -10,8 +10,8 @@ module.exports = {
     let req = this.req;
     if (req.authVia === 'apitoken') return exits.forbidden();
     if (!req.user) return exits.forbidden();
-    let token = 'fpat_' + crypto.randomBytes(24).toString('hex'),
-      hash = crypto.createHash('sha256').update(token).digest('hex');
+    let token = 'fpat_' + crypto.randomBytes(24).toString('hex');
+    let hash = crypto.createHash('sha256').update(token).digest('hex');
     await User.updateOne({ id: req.user.id }).set({ apiTokenHash: hash });
     return exits.success({ ok: true, token });
   }

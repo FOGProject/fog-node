@@ -29,22 +29,29 @@ module.exports = {
     success: { description: 'All done.' }
   },
   fn: async function (inputs) {
-    let model = inputs.model,
-      formType = inputs.formType,
-      method = (inputs.method || 'post').toLowerCase() === 'get' ? 'get' : 'post',
-      action = inputs.action,
-      id = inputs.id,
-      classes = inputs.classes,
-      formItems = inputs.formItems,
-      formButtons = inputs.formButtons,
-      tabOrder = inputs.tabOrder || [];
+    let model = inputs.model;
+    let formType = inputs.formType;
+    let method = (inputs.method || 'post').toLowerCase() === 'get' ? 'get' : 'post';
+    let action = inputs.action;
+    let id = inputs.id;
+    let classes = inputs.classes;
+    let formItems = inputs.formItems;
+    let formButtons = inputs.formButtons;
+    let tabOrder = inputs.tabOrder || [];
 
     // Render a single form item to its HTML string.
     function renderField(item, input, obj) {
-      let iChecked = '', iId = '', iFor = '', iClass = '', iValue = '',
-        iPlaceholder = '', iMaxlength = '', iMinlength = '', iRegex = '',
-        iName = ` name="${item}"`,
-        field = '';
+      let iChecked = '';
+      let iId = '';
+      let iFor = '';
+      let iClass = '';
+      let iValue = '';
+      let iPlaceholder = '';
+      let iMaxlength = '';
+      let iMinlength = '';
+      let iRegex = '';
+      let iName = ` name="${item}"`;
+      let field = '';
       if (input.id) {
         iFor = ` for="${input.id}"`;
         iId = ` id="${input.id}"`;
@@ -214,11 +221,12 @@ module.exports = {
     }
 
     // Group rendered fields into tab buckets (by each item's `tab`, default General).
-    let buckets = {}, seen = [];
+    let buckets = {};
+    let seen = [];
     for (let item in formItems) {
-      let input = formItems[item],
-        obj = sails.models[model].attributes[item],
-        tab = input.tab || 'General';
+      let input = formItems[item];
+      let obj = sails.models[model].attributes[item];
+      let tab = input.tab || 'General';
       if (!buckets[tab]) { buckets[tab] = ''; seen.push(tab); }
       buckets[tab] += renderField(item, input, obj);
     }

@@ -6,8 +6,8 @@ module.exports = {
   exits: {
   },
   fn: async function (inputs) {
-    let req = this.req,
-      res = this.res;
+    let req = this.req;
+    let res = this.res;
     // passport >= 0.6 made req.logout() asynchronous -- it requires a callback
     // and throws (500) if called the old synchronous way. Await it so the action
     // doesn't return (and send a default response) before the redirect.

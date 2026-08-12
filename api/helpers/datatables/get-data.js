@@ -20,11 +20,11 @@ module.exports = {
     }
   },
   fn: async function (inputs, exits) {
-    var req = inputs.req,
-      res = inputs.res,
-      params = req.allParams(),
-      model = params.model,
-      options = params.options || params || {};
+    var req = inputs.req;
+    var res = inputs.res;
+    var params = req.allParams();
+    var model = params.model;
+    var options = params.options || params || {};
 
     if (!model || !sails.models[model]) {
       return {
@@ -83,10 +83,10 @@ module.exports = {
     var _reverse = {};
 
     // Build where Criteria
-    var where = [],
-      whereQuery = {or: []},
-      select = [],
-      order = [];
+    var where = [];
+    var whereQuery = {or: []};
+    var select = [];
+    var order = [];
 
     if (_.isArray(_options.columns)) {
       _options.columns.forEach((column, index) => {
@@ -97,8 +97,8 @@ module.exports = {
         }
         if (false === columnType || 'boolean' === columnType) return true;
         if (_.isBoolean(column.reverse)) {
-          var joinedModel = _.split(column.data, '.', 2)[0],
-            association = _.find(model.associations, ['alias', joinedModel]);
+          var joinedModel = _.split(column.data, '.', 2)[0];
+          var association = _.find(model.associations, ['alias', joinedModel]);
           if (_.isUndefined(association)) {
             _response.error = `Association ${joinedModel} not found on this model: ${model.identity}`;
             return true;

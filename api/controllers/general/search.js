@@ -2,11 +2,11 @@ module.exports = {
   friendlyName: 'Search',
   description: 'Search item',
   fn: async function () {
-    let req = this.req,
-      res = this.res,
-      params = req.allParams(),
-      query = req.query,
-      model = params.model;
+    let req = this.req;
+    let res = this.res;
+    let params = req.allParams();
+    let query = req.query;
+    let model = params.model;
     return await sails.models[model].find(query).populateAll();
   }
 };

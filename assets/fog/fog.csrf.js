@@ -17,7 +17,7 @@
 
   // Inject _csrf into a mutating form just before it submits (capture phase, so
   // it runs before the create/edit modal reads the form's FormData).
-  document.addEventListener('submit', function (e) {
+  document.addEventListener('submit', (e) => {
     var f = e.target;
     if (!f || !f.tagName || f.tagName.toLowerCase() !== 'form') { return; }
     if (f.method && f.method.toLowerCase() === 'get') { return; }
@@ -70,8 +70,8 @@
     apply(local);
   } else if (window.fetch) {
     window.fetch('/csrfToken', { credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
-      .then(function (j) { apply(j && j._csrf); })
-      .catch(function () {});
+      .then((r) => { return r.json(); })
+      .then((j) => { apply(j && j._csrf); })
+      .catch(() => {});
   }
 })();

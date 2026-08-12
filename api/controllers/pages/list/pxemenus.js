@@ -1,6 +1,6 @@
-const fs = require('fs-extra'),
-  path = require('path'),
-  partialPath = path.join(__dirname,'..','..','..','..','views','pages','partials','list');
+const fs = require('fs-extra');
+const path = require('path');
+const partialPath = path.join(__dirname,'..','..','..','..','views','pages','partials','list');
 module.exports = {
   friendlyName: 'iPXE Menus',
   description: 'iPXE/PXE boot menu list page.',

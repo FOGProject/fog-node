@@ -25,8 +25,8 @@ module.exports = {
     success: { outputFriendlyName: 'Tab order' }
   },
   fn: async function (inputs) {
-    let model = inputs.model,
-      formItems = inputs.formItems || {};
+    let model = inputs.model;
+    let formItems = inputs.formItems || {};
 
     if (model === 'host') {
       Object.keys(formItems).forEach((k) => {

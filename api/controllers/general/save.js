@@ -10,14 +10,14 @@ module.exports = {
     }
   },
   fn: async function () {
-    let req = this.req,
-      res = this.res,
-      // Derive the model from the URL, e.g. /hosts/create -> host
-      segments = req.path.split('/').filter(Boolean),
-      plural = segments[0],
-      model = plural.replace(/s$/, ''),
-      id = req.param('id'),
-      isUpdate = !!id;
+    let req = this.req;
+    let res = this.res;
+    // Derive the model from the URL, e.g. /hosts/create -> host
+    let segments = req.path.split('/').filter(Boolean);
+    let plural = segments[0];
+    let model = plural.replace(/s$/, '');
+    let id = req.param('id');
+    let isUpdate = !!id;
 
     if (!model || !sails.models[model]) {
       res.notFound();

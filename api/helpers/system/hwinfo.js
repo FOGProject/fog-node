@@ -1,9 +1,9 @@
-const si = require('systeminformation'),
-  fs = require('fs-extra'),
-  path = require('path'),
-  appRoot = path.join(__dirname, '..', '..', '..'),
-  moment = require('moment'),
-  checkDiskSpace = require('check-disk-space').default;
+const si = require('systeminformation');
+const fs = require('fs-extra');
+const path = require('path');
+const appRoot = path.join(__dirname, '..', '..', '..');
+const moment = require('moment');
+const checkDiskSpace = require('check-disk-space').default;
 module.exports = {
   friendlyName: 'Hwinfo',
   description: 'Hwinfo system.',
@@ -15,31 +15,31 @@ module.exports = {
     },
   },
   fn: async function (inputs) {
-    let default_iface = await si.networkInterfaceDefault(),
-      network_ifaces = await si.networkInterfaces(),
-      ifaces = [],
-      serverip,
-      sysinfo = await si.get({
-        cpu: 'vendor, brand, physicalCores, speed, cache',
-        mem: 'total, free, used',
-        time: 'uptime',
-        currentLoad: 'currentLoadUser, currentLoadSystem, currentLoadIdle',
-        osInfo: 'hostname'
-      }),
-      user = (sysinfo.currentLoad.currentLoadUser || 0).toFixed(2),
-      sys = (sysinfo.currentLoad.currentLoadSystem || 0).toFixed(2),
-      idle = (sysinfo.currentLoad.currentLoadIdle || 0).toFixed(2),
-      upsecs = sysinfo.time.uptime * 1000,
-      durr = moment.duration(upsecs),
-      uptime = durr.humanize(),
-      hostname = sysinfo.osInfo.hostname
-      loadaverage = `User: ${user}, Sys: ${sys}, Idle: ${idle}`,
-      cpu = sysinfo.cpu,
-      memory = sysinfo.mem,
-      size = {},
-      setIfaces = ifaceitem => {
-        ifaces.push(ifaceitem);
-      };
+    let default_iface = await si.networkInterfaceDefault();
+    let network_ifaces = await si.networkInterfaces();
+    let ifaces = [];
+    let serverip;
+    let sysinfo = await si.get({
+      cpu: 'vendor, brand, physicalCores, speed, cache',
+      mem: 'total, free, used',
+      time: 'uptime',
+      currentLoad: 'currentLoadUser, currentLoadSystem, currentLoadIdle',
+      osInfo: 'hostname'
+    });
+    let user = (sysinfo.currentLoad.currentLoadUser || 0).toFixed(2);
+    let sys = (sysinfo.currentLoad.currentLoadSystem || 0).toFixed(2);
+    let idle = (sysinfo.currentLoad.currentLoadIdle || 0).toFixed(2);
+    let upsecs = sysinfo.time.uptime * 1000;
+    let durr = moment.duration(upsecs);
+    let uptime = durr.humanize();
+    let hostname = sysinfo.osInfo.hostname;
+    loadaverage = `User: ${user}, Sys: ${sys}, Idle: ${idle}`,
+    cpu = sysinfo.cpu,
+    memory = sysinfo.mem,
+    size = {},
+    setIfaces = ifaceitem => {
+      ifaces.push(ifaceitem);
+    };
     // General information
     Object.keys(cpu.cache).forEach(async key => {
       cpu.cache[key] = await sails.helpers.readableBytes(cpu.cache[key]);
@@ -51,9 +51,9 @@ module.exports = {
     // Filesystem info
     let imagePath = sails.config.custom.imageStorePath || '/images';
     size = await checkDiskSpace(imagePath).then(async diskspace => {
-      let free = diskspace.free,
-        total = diskspace.size,
-        used = total - free;
+      let free = diskspace.free;
+      let total = diskspace.size;
+      let used = total - free;
       return {
         path: diskspace.diskPath,
         total: await sails.helpers.readableBytes(total),
@@ -63,7 +63,7 @@ module.exports = {
     });
 
     // Network information
-    for (var i = 0;i < network_ifaces.length; i++) {
+    for (var i = 0; i < network_ifaces.length; i++) {
       iface = network_ifaces[i];
       if (default_iface === iface.iface) {
         serverip = iface.ip4;

@@ -1,6 +1,6 @@
 module.exports = {
   friendlyName: 'Reset password',
-  description: "Admin: set a new password for another user. Web session only -- never via an API token.",
+  description: 'Admin: set a new password for another user. Web session only -- never via an API token.',
   inputs: {
     id: { type: 'string', required: true, description: 'Target user id.' },
     password: { type: 'string', required: true, minLength: 8 },

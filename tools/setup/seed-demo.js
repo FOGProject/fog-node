@@ -36,7 +36,8 @@ const pick = (a) => a[rint(a.length)];
 const chance = (p) => Math.random() < p;
 const pad = (n, w) => String(n).padStart(w, '0');
 function sampleK(arr, k) {
-  const c = arr.slice(), out = [];
+  const c = arr.slice();
+  const out = [];
   while (k-- > 0 && c.length) { out.push(c.splice(rint(c.length), 1)[0]); }
   return out;
 }
@@ -184,7 +185,8 @@ async function seedDemoData(opts) {
     const n = Math.min(batchSize, numHosts - batchStart);
     for (let j = 0; j < n; j++) {
       const idx = start + batchStart + j;
-      const dept = pick(DEPTS), type = pick(TYPES);
+      const dept = pick(DEPTS);
+      const type = pick(TYPES);
       const macs = [randomMac()];
       if (chance(0.18)) { macs.push(randomMac()); } // some dual-NIC hosts
       batch.push({

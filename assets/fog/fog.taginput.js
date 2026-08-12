@@ -38,8 +38,8 @@
   // Turn a bare `[data-taginput]` container into the chips + entry + hidden field.
   function build($root) {
     if ($root.data('taginputReady')) { return; }
-    let name = $root.attr('data-name') || 'tags',
-      tags = ($root.attr('data-tags') || '').split(/[\n,]+/).map((t) => $.trim(t)).filter(Boolean);
+    let name = $root.attr('data-name') || 'tags';
+    let tags = ($root.attr('data-tags') || '').split(/[\n,]+/).map((t) => $.trim(t)).filter(Boolean);
     $root.addClass('form-control fog-taginput').html(
       tags.map(chipHtml).join('') +
       '<input type="text" class="fog-taginput-entry" autocomplete="off" placeholder="add tag…">' +
@@ -57,7 +57,8 @@
   });
   // Enter or comma commits the entry; Backspace on an empty entry pops the last chip.
   $(document).on('keydown', '.fog-taginput-entry', function(e) {
-    let $entry = $(this), $root = $entry.closest('[data-taginput]');
+    let $entry = $(this);
+    let $root = $entry.closest('[data-taginput]');
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       addTag($root, $entry.val());
@@ -81,7 +82,7 @@
   function init(root) {
     $(root || document).find('[data-taginput]').each(function() { build($(this)); });
   }
-  $(function() { init(document); });
+  $(() => { init(document); });
 
   window.fogTagInput = {
     init: init,

@@ -1,6 +1,6 @@
-const fs = require('fs-extra'),
-  path = require('path'),
-  partialPath = path.join(__dirname,'..','..','..','..','views','pages','partials','list');
+const fs = require('fs-extra');
+const path = require('path');
+const partialPath = path.join(__dirname,'..','..','..','..','views','pages','partials','list');
 module.exports = {
   friendlyName: 'Roles',
   description: 'Roles pages.',
@@ -16,19 +16,19 @@ module.exports = {
     }
   },
   fn: async function (inputs) {
-    let req = this.req,
-      res = this.res,
-      data = {
-        header: 'Role List',
-        theads: [
-          'Name',
-          'Description',
-          'Is Admin?'
-        ],
-        model: 'role',
-        title: 'Role List',
-        partialname: false
-      };
+    let req = this.req;
+    let res = this.res;
+    let data = {
+      header: 'Role List',
+      theads: [
+        'Name',
+        'Description',
+        'Is Admin?'
+      ],
+      model: 'role',
+      title: 'Role List',
+      partialname: false
+    };
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
       data.partialname = partial;

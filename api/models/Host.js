@@ -57,7 +57,8 @@ function normalizeTags(values) {
   if (!Array.isArray(raw)) {
     raw = (raw === null || typeof raw === 'undefined') ? [] : [raw];
   }
-  let out = [], seen = {};
+  let out = [];
+  let seen = {};
   for (let entry of raw) {
     if (entry === null || typeof entry === 'undefined') { continue; }
     let tag = String(entry).trim();

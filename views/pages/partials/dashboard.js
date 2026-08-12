@@ -1,18 +1,18 @@
 (function($) {
   // Percentage helper for doughnut tooltips (Chart.js v4).
   function pctLabel(context) {
-    let val = Number(context.parsed) || 0,
-      total = context.dataset.data.reduce((a, b) => a + Number(b), 0),
-      pct = total ? (val / total * 100).toFixed(1) : 0;
+    let val = Number(context.parsed) || 0;
+    let total = context.dataset.data.reduce((a, b) => a + Number(b), 0);
+    let pct = total ? (val / total * 100).toFixed(1) : 0;
     return ` ${context.label}: ${pct}%`;
   }
 
   // Activity Usage
-  let qavail = Number($('#avail').val()) || 0,
-    qactive = Number($('#active').val()) || 0,
-    qstaged = Number($('#staged').val()) || 0,
-    qtotal = qavail + qactive + qstaged,
-    activeUsageCanvas = $('#activityUsage').get(0);
+  let qavail = Number($('#avail').val()) || 0;
+  let qactive = Number($('#active').val()) || 0;
+  let qstaged = Number($('#staged').val()) || 0;
+  let qtotal = qavail + qactive + qstaged;
+  let activeUsageCanvas = $('#activityUsage').get(0);
   if (activeUsageCanvas) {
     // Empty state: a 0/0/0 doughnut renders blank, so when there's no capacity
     // and no tasks show a single neutral "No activity" ring instead of nothing.
@@ -40,14 +40,14 @@
   }
 
   // Disk Usage
-  let free = Number($('#free').val()) || 0,
-    used = Number($('#used').val()) || 0,
-    hFree = $.readableBytes(free),
-    hUsed = $.readableBytes(used),
-    total = free + used,
-    freePct = total ? (free / total * 100).toFixed(1) : 0,
-    usedPct = total ? (used / total * 100).toFixed(1) : 0,
-    diskUsageCanvas = $('#diskUsage').get(0);
+  let free = Number($('#free').val()) || 0;
+  let used = Number($('#used').val()) || 0;
+  let hFree = $.readableBytes(free);
+  let hUsed = $.readableBytes(used);
+  let total = free + used;
+  let freePct = total ? (free / total * 100).toFixed(1) : 0;
+  let usedPct = total ? (used / total * 100).toFixed(1) : 0;
+  let diskUsageCanvas = $('#diskUsage').get(0);
   if (diskUsageCanvas) {
     new Chart(diskUsageCanvas.getContext('2d'), {
       type: 'doughnut',
@@ -73,8 +73,8 @@
   }
 
   // Task History (category x-axis -> no time adapter needed)
-  let taskHistoryChart,
-    taskHistoryTimeout;
+  let taskHistoryChart;
+  let taskHistoryTimeout;
 
   function historyCanvas(taskChartData) {
     let history = $('#taskHistory').get(0);
@@ -138,12 +138,12 @@
   // the history we already collected instead of starting over from the smaller
   // window's oldest point. Purely client-side (matches the 1.x 2m/5m/10m/30m/1h).
   let BANDWIDTH_MAX_RETAIN_SEC = 3600;
-  let bandwidthChart,
-    bandwidthSamples = [],      // {t, label, rx, tx}; retained up to MAX_RETAIN
-    bandwidthIface = '',
-    bandwidthWindowSec = 120,   // selected DISPLAY window (default: 2 minutes)
-    bandwidthinterval,
-    bandwidthajax;
+  let bandwidthChart;
+  let bandwidthSamples = [];      // {t, label, rx, tx}; retained up to MAX_RETAIN
+  let bandwidthIface = '';
+  let bandwidthWindowSec = 120;   // selected DISPLAY window (default: 2 minutes)
+  let bandwidthinterval;
+  let bandwidthajax;
 
   function bandwidthCanvas(data) {
     let bandwidth = $('#bandwidth').get(0);
@@ -163,11 +163,11 @@
   // Show only the samples inside the selected window; the rest stay buffered for
   // when a longer window is picked. Creates the chart on first render.
   function renderBandwidth(now) {
-    let cutoff = now - bandwidthWindowSec * 1000,
-      view = bandwidthSamples.filter((s) => s.t >= cutoff),
-      labels = view.map((s) => s.label),
-      rx = view.map((s) => s.rx),
-      tx = view.map((s) => s.tx);
+    let cutoff = now - bandwidthWindowSec * 1000;
+    let view = bandwidthSamples.filter((s) => s.t >= cutoff);
+    let labels = view.map((s) => s.label);
+    let rx = view.map((s) => s.rx);
+    let tx = view.map((s) => s.tx);
     if (!bandwidthChart) {
       bandwidthCanvas({
         labels: labels,
@@ -195,9 +195,9 @@
           // rx_sec/tx_sec are bytes/sec -> Mbps (bits/sec / 1e6), kept to 2dp so
           // sub-Mbps idle traffic is visible instead of rounding to a flat 0.
           // (si's first sample can be -1; treat anything not > 0 as 0.)
-          let stat = series.netstats[0],
-            toMbps = function(bps) { return (typeof bps === 'number' && bps > 0) ? Math.round((bps * 8 / 1e6) * 100) / 100 : 0; },
-            now = Date.now();
+          let stat = series.netstats[0];
+          let toMbps = function(bps) { return (typeof bps === 'number' && bps > 0) ? Math.round((bps * 8 / 1e6) * 100) / 100 : 0; };
+          let now = Date.now();
           bandwidthIface = stat.iface;
           bandwidthSamples.push({ t: now, label: new Date(now).toLocaleTimeString(), rx: toMbps(stat.rx_sec), tx: toMbps(stat.tx_sec) });
           // Trim the buffer to the largest window so memory stays bounded.

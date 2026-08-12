@@ -1,12 +1,12 @@
-const passport = require('passport'),
-  JWTStrategy = require('passport-jwt-cookiecombo'),
-  jwt = require('jsonwebtoken'),
-  locals = require('../../config/local'),
-  opts = {
-    secretOrPublicKey: locals.auth.jwt.secret,
-    jwtVerifyOptions: locals.auth.jwt.options,
-    session: locals.auth.jwt.session
-  };
+const passport = require('passport');
+const JWTStrategy = require('passport-jwt-cookiecombo');
+const jwt = require('jsonwebtoken');
+const locals = require('../../config/local');
+const opts = {
+  secretOrPublicKey: locals.auth.jwt.secret,
+  jwtVerifyOptions: locals.auth.jwt.options,
+  session: locals.auth.jwt.session
+};
 passport.serializeUser(async (user, done) => {
   done(null, user.id);
 });

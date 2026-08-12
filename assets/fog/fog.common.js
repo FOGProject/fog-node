@@ -60,7 +60,7 @@ $.fn.registerTable = function(onSelect, opts) {
             body: 'This cannot be undone.',
             confirmText: 'Delete',
             danger: true
-          }).then(function(ok) {
+          }).then((ok) => {
             if (!ok) { return; }
             let base = dt.ajax.url().replace(/\/datatable.*$/, '');
             $.ajax({
@@ -100,7 +100,8 @@ $.fn.registerTable = function(onSelect, opts) {
   // create route simply omit it. 'page' navigates to /{plural}/create; 'modal'
   // lazy-loads that same server-rendered form into the shared #entityModal.
   if (opts.createMode === 'modal' || opts.createMode === 'page') {
-    let createMode = opts.createMode, createLabel = opts.createLabel;
+    let createMode = opts.createMode;
+    let createLabel = opts.createLabel;
     opts.buttons = [{
       text: '<i class="fa fa-plus"></i> ' + (createLabel || 'Create New'),
       className: 'btn-success',
@@ -124,7 +125,7 @@ $.fn.registerTable = function(onSelect, opts) {
   let table = $(this).DataTable(opts);
 
   if (onSelect !== undefined && typeof onSelect === 'function') {
-    table.on('select deselect', function(e, dt, type, indexes) {
+    table.on('select deselect', (e, dt, type, indexes) => {
       onSelect(dt.rows({selected: true}));
     });
   }
@@ -164,9 +165,9 @@ $.readableBytes = function(bytes) {
   window.fogCreateModal = function(url, dt) {
     let modalEl = document.getElementById('entityModal');
     if (!modalEl || !window.bootstrap) { window.location = url; return; }
-    let body = modalEl.querySelector('.modal-body'),
-      titleEl = modalEl.querySelector('.modal-title'),
-      modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    let body = modalEl.querySelector('.modal-body');
+    let titleEl = modalEl.querySelector('.modal-title');
+    let modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
     body.innerHTML = '<div class="text-center p-4"><i class="fa fa-spinner fa-spin"></i> Loading…</div>';
     modal.show();
@@ -175,19 +176,19 @@ $.readableBytes = function(bytes) {
     // create round-trip can leave the modal open. Track the shown state and
     // defer the close until the modal has actually finished opening.
     let shown = false;
-    modalEl.addEventListener('shown.bs.modal', function() { shown = true; }, { once: true });
+    modalEl.addEventListener('shown.bs.modal', () => { shown = true; }, { once: true });
     function safeHide() {
       if (shown) { modal.hide(); }
-      else { modalEl.addEventListener('shown.bs.modal', function() { modal.hide(); }, { once: true }); }
+      else { modalEl.addEventListener('shown.bs.modal', () => { modal.hide(); }, { once: true }); }
     }
 
     fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
-      .then(function(r) { return r.text(); })
-      .then(function(html) {
-        let doc = new DOMParser().parseFromString(html, 'text/html'),
-          // Scope to the page content so we never grab a navbar/search <form>.
-          form = doc.querySelector('.app-content form') || doc.querySelector('form'),
-          hdr = doc.querySelector('.app-content-header h3, .card-title');
+      .then((r) => { return r.text(); })
+      .then((html) => {
+        let doc = new DOMParser().parseFromString(html, 'text/html');
+        // Scope to the page content so we never grab a navbar/search <form>.
+        let form = doc.querySelector('.app-content form') || doc.querySelector('form');
+        let hdr = doc.querySelector('.app-content-header h3, .card-title');
         if (titleEl) { titleEl.textContent = hdr ? hdr.textContent.trim() : 'Create'; }
         if (!form) { showError(body, 'Could not load the form.'); return; }
         body.innerHTML = '';
@@ -197,10 +198,10 @@ $.readableBytes = function(bytes) {
         let cancel = form.querySelector('.btn-warning');
         if (cancel) {
           cancel.setAttribute('type', 'button');
-          cancel.addEventListener('click', function() { modal.hide(); });
+          cancel.addEventListener('click', () => { modal.hide(); });
         }
 
-        form.addEventListener('submit', function(ev) {
+        form.addEventListener('submit', (ev) => {
           ev.preventDefault();
           clearError(body);
           let payload = new URLSearchParams(new FormData(form)).toString();
@@ -213,11 +214,11 @@ $.readableBytes = function(bytes) {
               'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: payload
-          }).then(function(r) {
-            return r.json().catch(function() { return {}; }).then(function(j) {
+          }).then((r) => {
+            return r.json().catch(() => { return {}; }).then((j) => {
               return { ok: r.ok, body: j };
             });
-          }).then(function(res) {
+          }).then((res) => {
             if (res.ok && res.body && res.body.ok) {
               safeHide();
               if (dt) { dt.ajax.reload(null, false); }
@@ -225,10 +226,10 @@ $.readableBytes = function(bytes) {
             } else {
               showError(body, (res.body && res.body.message) || 'Could not save. Please check your input.');
             }
-          }).catch(function() { showError(body, 'Network error — please try again.'); });
+          }).catch(() => { showError(body, 'Network error — please try again.'); });
         });
       })
-      .catch(function() { showError(body, 'Could not load the form.'); });
+      .catch(() => { showError(body, 'Could not load the form.'); });
   };
 })();
 
@@ -275,13 +276,13 @@ $.readableBytes = function(bytes) {
     else if (opts.body instanceof Node) { bodyEl.appendChild(opts.body); }
     document.body.appendChild(wrap);
     let m = bootstrap.Modal.getOrCreateInstance(wrap);
-    wrap.addEventListener('hidden.bs.modal', function() { m.dispose(); wrap.remove(); });
-    wrap.querySelector('[data-fog-confirm]').addEventListener('click', function() {
+    wrap.addEventListener('hidden.bs.modal', () => { m.dispose(); wrap.remove(); });
+    wrap.querySelector('[data-fog-confirm]').addEventListener('click', () => {
       let r = opts.onConfirm ? opts.onConfirm(wrap, m) : true;
-      Promise.resolve(r).then(function(keep) { if (keep !== false) { m.hide(); } });
+      Promise.resolve(r).then((keep) => { if (keep !== false) { m.hide(); } });
     });
     if (opts.onShown) {
-      wrap.addEventListener('shown.bs.modal', function() { opts.onShown(wrap); }, { once: true });
+      wrap.addEventListener('shown.bs.modal', () => { opts.onShown(wrap); }, { once: true });
     }
     m.show();
     return { el: wrap, modal: m, body: bodyEl };
@@ -290,21 +291,21 @@ $.readableBytes = function(bytes) {
   // Confirm dialog -> Promise<boolean>. Falls back to window.confirm().
   function confirm(opts) {
     opts = opts || {};
-    return new Promise(function(resolve) {
+    return new Promise((resolve) => {
       if (!window.bootstrap) {
         resolve(window.confirm(opts.body || opts.title || 'Are you sure?'));
         return;
       }
-      let answered = false,
-        ctrl = modal({
-          title: opts.title || 'Please confirm',
-          body: '<p class="mb-0">' + (opts.body || '') + '</p>',
-          confirmText: opts.confirmText || 'Confirm',
-          cancelText: opts.cancelText || 'Cancel',
-          danger: opts.danger,
-          onConfirm: function() { answered = true; resolve(true); }
-        });
-      ctrl.el.addEventListener('hidden.bs.modal', function() { if (!answered) { resolve(false); } });
+      let answered = false;
+      let ctrl = modal({
+        title: opts.title || 'Please confirm',
+        body: '<p class="mb-0">' + (opts.body || '') + '</p>',
+        confirmText: opts.confirmText || 'Confirm',
+        cancelText: opts.cancelText || 'Cancel',
+        danger: opts.danger,
+        onConfirm: function() { answered = true; resolve(true); }
+      });
+      ctrl.el.addEventListener('hidden.bs.modal', () => { if (!answered) { resolve(false); } });
     });
   }
 

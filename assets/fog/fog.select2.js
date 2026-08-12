@@ -32,16 +32,16 @@
   }
 
   // Initial page load (covers full-page forms and any selects already present).
-  $(function() { initSelect2(document); });
+  $(() => { initSelect2(document); });
 
   // The shared entity create/edit modal lazy-loads a server-rendered form;
   // enhance its selects once the modal has finished opening.
-  $(document).on('shown.bs.modal', function(e) {
+  $(document).on('shown.bs.modal', (e) => {
     initSelect2(e.target, $(e.target));
   });
 
   // DataTables builds its length <select> after the table initializes.
-  $(document).on('init.dt', function(e, settings) {
+  $(document).on('init.dt', (e, settings) => {
     initSelect2(settings.nTableWrapper || document);
   });
 

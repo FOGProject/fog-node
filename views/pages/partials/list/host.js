@@ -21,8 +21,8 @@
     if (ids.length) {
       return { body: {id: ids}, all: false, desc: `${ids.length} selected host(s)` };
     }
-    let n = dt.page.info().recordsDisplay,
-      search = dt.search() || '';
+    let n = dt.page.info().recordsDisplay;
+    let search = dt.search() || '';
     return {
       body: {all: true, search: search},
       all: true,
@@ -45,7 +45,7 @@
 
     function show(knownTags) {
       let removeHtml = knownTags.length
-        ? '<div class="fog-tag-remove-list">' + knownTags.map(function(t) {
+        ? '<div class="fog-tag-remove-list">' + knownTags.map((t) => {
           let v = escHtml(t);
           return '<div class="form-check form-check-inline">' +
             '<input class="form-check-input" type="checkbox" value="' + v + '">' +
@@ -66,8 +66,8 @@
         onShown: function(wrap) { if (window.fogTagInput) { window.fogTagInput.init(wrap); } },
         onConfirm: function(wrap) {
           let addTags = window.fogTagInput
-              ? window.fogTagInput.values(wrap.querySelector('[data-taginput]')) : [],
-            removeTags = $(wrap).find('.fog-tag-remove-list input:checked')
+              ? window.fogTagInput.values(wrap.querySelector('[data-taginput]')) : [];
+          let removeTags = $(wrap).find('.fog-tag-remove-list input:checked')
               .map(function() { return this.value; }).get();
           if (!addTags.length && !removeTags.length) {
             window.fogToast('error', 'Add or select at least one tag.');
@@ -81,28 +81,29 @@
     // Removable-tag source: the union across selected rows, or -- acting on all
     // matching -- every tag in the system.
     if (!target.all) {
-      let seen = {}, list = [];
-      dt.rows({selected: true}).data().toArray().forEach(function(r) {
-        (Array.isArray(r.tags) ? r.tags : []).forEach(function(t) {
+      let seen = {};
+      let list = [];
+      dt.rows({selected: true}).data().toArray().forEach((r) => {
+        (Array.isArray(r.tags) ? r.tags : []).forEach((t) => {
           let k = String(t).toLowerCase();
           if (!seen[k]) { seen[k] = true; list.push(t); }
         });
       });
-      list.sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+      list.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
       show(list);
     } else {
       $.getJSON('/api/v1/host/tags')
-        .done(function(res) { show((res && res.tags) || []); })
-        .fail(function() { show([]); });
+        .done((res) => { show((res && res.tags) || []); })
+        .fail(() => { show([]); });
     }
   }
 
   // Bulk "Set image": pick from a dropdown (or clear) instead of typing a name.
   function openImageModal(dt) {
     let target = resolveTarget(dt);
-    $.getJSON('/api/v1/image').done(function(images) {
+    $.getJSON('/api/v1/image').done((images) => {
       let opts = '<option value="">(clear image)</option>' +
-        (images || []).map(function(im) {
+        (images || []).map((im) => {
           let v = escHtml(im.name);
           return '<option value="' + v + '">' + v + '</option>';
         }).join('');
@@ -117,7 +118,7 @@
           bulk(dt, $.extend({}, target.body, {image: name}));
         }
       });
-    }).fail(function() { window.fogToast('error', 'Could not load images.'); });
+    }).fail(() => { window.fogToast('error', 'Could not load images.'); });
   }
 
   $('#listtable').registerTable(undefined, {
@@ -171,7 +172,7 @@
         render: function(data) {
           let tags = Array.isArray(data) ? data : (data ? [data] : []);
           if (!tags.length) { return ''; }
-          return '<span class="fog-tag-list">' + tags.map(function(t) {
+          return '<span class="fog-tag-list">' + tags.map((t) => {
             return '<span class="badge bg-primary">' + escHtml(t) + '</span>';
           }).join('') + '</span>';
         }

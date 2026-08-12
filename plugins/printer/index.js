@@ -9,8 +9,8 @@
  */
 const path = require('path');
 
-const LINK = 'plugin_printer_host',     // { host, printer }
-  CFG = 'plugin_printer_hostcfg';       // { host, level, defaultPrinter }
+const LINK = 'plugin_printer_host';     // { host, printer }
+const CFG = 'plugin_printer_hostcfg';       // { host, level, defaultPrinter }
 function linkColl() { return sails.getDatastore(sails.models.host.datastore).manager.collection(LINK); }
 function cfgColl() { return sails.getDatastore(sails.models.host.datastore).manager.collection(CFG); }
 function can(req, action) {
@@ -107,8 +107,10 @@ module.exports = {
   extends: {
     host: {
       form: async function (record) {
-        let printers = await sails.models.printer.find().sort('name ASC'),
-          checked = [], level = '0', def = '';
+        let printers = await sails.models.printer.find().sort('name ASC');
+        let checked = [];
+        let level = '0';
+        let def = '';
         if (record && record.id) {
           let links = await linkColl().find({ host: String(record.id) }).toArray();
           checked = links.map((l) => String(l.printer));

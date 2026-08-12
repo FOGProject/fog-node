@@ -1,5 +1,5 @@
-const fs = require('fs'),
-  path = require('path');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = {
   friendlyName: 'Scan image store',
@@ -12,10 +12,10 @@ module.exports = {
     success: { outputFriendlyName: 'Scan result' }
   },
   fn: async function () {
-    let dir = sails.config.custom.imageStorePath || '/images',
-      // FOG system dirs that live under the store but are not images.
-      skip = ['dev', 'lost+found', 'postdownloadscripts', 'postinitscripts'],
-      result = { path: dir, found: [], created: [], skipped: [] };
+    let dir = sails.config.custom.imageStorePath || '/images';
+    // FOG system dirs that live under the store but are not images.
+    let skip = ['dev', 'lost+found', 'postdownloadscripts', 'postinitscripts'];
+    let result = { path: dir, found: [], created: [], skipped: [] };
 
     let entries;
     try {

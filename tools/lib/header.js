@@ -1,6 +1,6 @@
-const figlet = require('figlet'),
-  chalk = require('chalk'),
-  config = require('./config');
+const figlet = require('figlet');
+const chalk = require('chalk');
+const config = require('./config');
 
 module.exports = {
   print: (message) => {

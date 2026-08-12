@@ -22,9 +22,9 @@ module.exports = {
     }
   },
   fn: async function (inputs) {
-    let q = (inputs.q || '').trim(),
-      perms = inputs.permissions || {},
-      groups = [];
+    let q = (inputs.q || '').trim();
+    let perms = inputs.permissions || {};
+    let groups = [];
 
     if (!q) {
       return groups;
@@ -32,14 +32,14 @@ module.exports = {
 
     // Escape the query so it is matched as a literal substring (no regex
     // injection / ReDoS from user input), then match case-insensitively.
-    let escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-      escaped = escapeRe(q);
+    let escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let escaped = escapeRe(q);
 
     // MACs are stored as bare lower-case hex with no separators (e.g.
     // "aabbccddeeff"), so strip any colon/hyphen/dot/space the user typed first
     // -- lets "aa:bb:cc", "AA-BB-CC" and "aabbcc" all match the `macs` array.
-    let macStripped = q.replace(/[\s.:-]/g, ''),
-      macEscaped = macStripped ? escapeRe(macStripped) : '';
+    let macStripped = q.replace(/[\s.:-]/g, '');
+    let macEscaped = macStripped ? escapeRe(macStripped) : '';
 
     // The user-facing entities and which string fields to search. Hosts also
     // match on their hardware identifiers (macs/serial/asset/guid) and their
@@ -72,9 +72,9 @@ module.exports = {
       try {
         // Use the native Mongo collection for a case-insensitive regex search
         // (Waterline's `contains` is case-sensitive under sails-mongo).
-        let db = sails.getDatastore(Model.datastore).manager,
-          collection = db.collection(Model.tableName),
-          or = [];
+        let db = sails.getDatastore(Model.datastore).manager;
+        let collection = db.collection(Model.tableName);
+        let or = [];
         for (let f of fields) {
           if (f === 'macs') {
             // Only search the bare-hex array when the stripped query still has

@@ -1,19 +1,19 @@
-const config = require('../../lib/config'),
-  sails = require('sails');
+const config = require('../../lib/config');
+const sails = require('sails');
 var adminRole = {
-    name: 'Administrator',
-    isAdmin: true,
-    permissions: {},
-  },
-  adminUser = {
-    username: 'Administrator',
-  },
-  schema = {
-    name: 'schema',
-    value: {
-      revision: 0
-    }
-  };
+  name: 'Administrator',
+  isAdmin: true,
+  permissions: {},
+};
+var adminUser = {
+  username: 'Administrator',
+};
+var schema = {
+  name: 'schema',
+  value: {
+    revision: 0
+  }
+};
 
 module.exports = {
   generate: (adminPassword, adminEmail, next) => {

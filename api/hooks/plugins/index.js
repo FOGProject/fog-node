@@ -18,19 +18,19 @@
  *
  * @docs :: https://sailsjs.com/docs/concepts/extending-sails/hooks
  */
-const path = require('path'),
-  fs = require('fs');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = function definePluginsHook(sails) {
-  let appRoot = path.join(__dirname, '..', '..', '..'),
-    routes = {},
-    menuItems = [],
-    hostExtensions = [],
-    models = {},
-    permissions = {},
-    search = [],
-    loaded = [],
-    loadError = null;
+  let appRoot = path.join(__dirname, '..', '..', '..');
+  let routes = {};
+  let menuItems = [];
+  let hostExtensions = [];
+  let models = {};
+  let permissions = {};
+  let search = [];
+  let loaded = [];
+  let loadError = null;
 
   try {
     let cfg = JSON.parse(fs.readFileSync(path.join(appRoot, 'plugins.json'), 'utf8'));
