@@ -1,6 +1,4 @@
 const sails = require('sails');
-var roleadmin = {};
-var useradmin = {};
 
 before(function(done) {
   this.timeout(11000);
@@ -23,7 +21,7 @@ before(function(done) {
             password: 'mochatestadmin',
             email: 'mochatest@admin.com',
             roles: [role.id]
-          }, (err, user) => {
+          }, (err) => {
             if (err) return done(err);
             done();
           }

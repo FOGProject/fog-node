@@ -37,7 +37,7 @@ module.exports = async (req, res, next) => {
         return next();
       });
     })(req, res);
-  } catch (e) {
+  } catch (unusedErr) {
     return next();
   }
 };

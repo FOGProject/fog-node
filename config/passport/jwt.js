@@ -1,6 +1,5 @@
 const passport = require('passport');
 const JWTStrategy = require('passport-jwt-cookiecombo');
-const jwt = require('jsonwebtoken');
 const locals = require('../../config/local');
 const opts = {
   secretOrPublicKey: locals.auth.jwt.secret,

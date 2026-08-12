@@ -26,7 +26,7 @@ const config = require('../lib/config');
 let OUI_DB = {};
 try {
   OUI_DB = require(path.join(config.appPath, 'api', 'services', 'mac-oui.json'));
-} catch (e) {
+} catch (unusedErr) {
   OUI_DB = {};
 }
 

@@ -51,7 +51,7 @@ module.exports = {
       try {
         let diskSpace = await checkDiskSpace(path.parse(appRoot).root);
         size = diskSpace.size; free = diskSpace.free; used = size - free;
-      } catch (unused2) { /* leave zeros */ }
+      } catch (unusedErr) { /* leave zeros */ }
     }
 
     let legend = [

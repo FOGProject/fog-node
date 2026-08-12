@@ -21,7 +21,6 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     var req = inputs.req;
-    var res = inputs.res;
     var params = req.allParams();
     var model = params.model;
     var options = params.options || params || {};
@@ -89,7 +88,7 @@ module.exports = {
     var order = [];
 
     if (_.isArray(_options.columns)) {
-      _options.columns.forEach((column, index) => {
+      _options.columns.forEach((column) => {
         if (_.isNull(column.data) || !column.searchable) return true;
         var columnType = false;
         if (!_.isUndefined(model.attributes[column.data])) {
@@ -105,12 +104,16 @@ module.exports = {
           }
           _reverse.model = sails.models[association.model || association.collection];
           var joinedCriteria = _.split(column.data, '.', 2)[1];
-          if (_.isUndefined(joinCriteria)) {
+          // Both reads below said `joinCriteria` -- no `ed` -- which is not
+          // declared anywhere. Reading an undeclared name throws rather than
+          // yielding undefined, so this whole reverse-association branch
+          // raised a ReferenceError and 500'd for any column using `reverse`.
+          if (_.isUndefined(joinedCriteria)) {
             _reverse.criteria = {
               id: column.search.value
             };
           } else {
-            _reverse[joinCriteria] = column.search.value;
+            _reverse[joinedCriteria] = column.search.value;
           }
           return true;
         }
@@ -151,7 +154,7 @@ module.exports = {
     whereQuery.or = where;
 
     var sortColumn = {};
-    _.forEach(_options.order, (value, key) => {
+    _.forEach(_options.order, (value) => {
       var sortBy = _options.columns[value.column].data;
       if (_.includes(sortBy, '.')) {
         sortBy = sortBy.substr(0, sortBy.indexOf('.'));

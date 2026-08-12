@@ -10,8 +10,6 @@ module.exports = {
     }
   },
   fn: async function () {
-    let req = this.req;
-    let res = this.res;
     let data = {
       model: 'host',
       header: 'Create New Host',

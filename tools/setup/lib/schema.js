@@ -34,12 +34,12 @@ module.exports = {
       if (err) return next(err);
       if (!cfg.schema) cfg.schema = 1;
       schema.value.revision = cfg.schema;
-      await Setting.findOrCreate({name: schema.name}, schema, async (err, setting) => {
+      await Setting.findOrCreate({name: schema.name}, schema, async (err) => {
         if (err) return next(err);
         await Role.findOrCreate({name: adminRole.name}, adminRole, async (err, role) => {
           if (err) return next(err);
           adminUser.roles = [role.id];
-          await User.findOrCreate({username: adminUser.username}, adminUser, async (err, user) => {
+          await User.findOrCreate({username: adminUser.username}, adminUser, async (err) => {
             if (err) return next(err);
             next();
           });

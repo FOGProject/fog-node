@@ -47,7 +47,7 @@ module.exports = {
       invalid: async (err) => {
         return exits.invalid(err);
       },
-      success: (image) => {
+      success: () => {
         let partitionPath = path.join(imageDir, id, `${partition}.img`);
         sails.log.info(`Reading: ${partitionPath}`);
         fs.exists(partitionPath, (err, exists) => {

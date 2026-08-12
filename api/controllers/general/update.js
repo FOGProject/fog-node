@@ -17,14 +17,11 @@ module.exports = {
   },
   fn: async function() {
     let req = this.req;
-    let res = this.res;
     let params = req.allParams();
     let model = params.model;
     let id = params.id;
     // API-token requests may never write credentials (password / apiTokenHash).
     if (req.authVia === 'apitoken') { delete params.password; delete params.apiTokenHash; }
-    let orig = [];
-    let toRem = [];
     let obj = await sails.models[model].updateOne({id}, params)
       // See the matching note in general/create.js: the adapter error carries
       // no detail worth surfacing, so it is deliberately dropped.

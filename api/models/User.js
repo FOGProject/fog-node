@@ -75,7 +75,7 @@ module.exports = {
       for (let i = 0; i < models.length; i++) {
         for (let j = 0; j < roles.length; j++) {
           if (roles[j].isAdmin) {
-            roles[j].permissions = deepMap(sails.config.permissions, (v, k) => {
+            roles[j].permissions = deepMap(sails.config.permissions, () => {
               return true;
             });
           } else {

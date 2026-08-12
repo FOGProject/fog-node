@@ -5,7 +5,7 @@ module.exports = {
   },
   exits: {
   },
-  fn: async function (inputs) {
+  fn: async function () {
     return await sails.helpers.system.hwinfo();
   }
 };

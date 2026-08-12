@@ -39,7 +39,7 @@ module.exports = {
       let sent = [];
       let failed = [];
       for (let mac of macs) {
-        try { await sendMagicPacket(mac); sent.push(mac); } catch (err) { failed.push(mac); }
+        try { await sendMagicPacket(mac); sent.push(mac); } catch (unusedErr) { failed.push(mac); }
       }
       return res.json({ host: host.name, sent, failed });
     }

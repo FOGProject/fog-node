@@ -5,7 +5,7 @@ module.exports = {
   },
   exits: {
   },
-  fn: async function (inputs) {
+  fn: async function () {
     let req = this.req;
     let res = this.res;
     // passport >= 0.6 made req.logout() asynchronous -- it requires a callback

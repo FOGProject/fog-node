@@ -14,7 +14,7 @@
 let DB = {};
 try {
   DB = require('./mac-oui.json');
-} catch (e) {
+} catch (unusedErr) {
   // Snapshot missing (not yet generated) -- degrade to "no vendor known"
   // rather than crash. Run scripts/build-oui.js to populate it.
   sails && sails.log ? sails.log.warn('MacVendor: mac-oui.json not found; vendor labels disabled. Run scripts/build-oui.js') : null;

@@ -1,7 +1,4 @@
 const si = require('systeminformation');
-const fs = require('fs-extra');
-const path = require('path');
-const appRoot = path.join(__dirname, '..', '..', '..');
 const moment = require('moment');
 const checkDiskSpace = require('check-disk-space').default;
 module.exports = {
@@ -14,7 +11,7 @@ module.exports = {
       description: 'All done.',
     },
   },
-  fn: async function (inputs) {
+  fn: async function () {
     let default_iface = await si.networkInterfaceDefault();
     let network_ifaces = await si.networkInterfaces();
     let ifaces = [];

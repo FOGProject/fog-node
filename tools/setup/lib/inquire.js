@@ -6,7 +6,7 @@ const database = require('../../lib/database');
 const verifyDB = (answers, next) => {
   let status = new Spinner('Verifying database information, please wait...');
   status.start();
-  database.connect(answers.host, answers.port, answers.database, answers.username, answers.password, (err, db) => {
+  database.connect(answers.host, answers.port, answers.database, answers.username, answers.password, (err) => {
     status.stop();
     let prefix = 'MongoError: ';
     if (err) {

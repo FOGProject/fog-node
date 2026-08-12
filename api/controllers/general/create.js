@@ -17,7 +17,6 @@ module.exports = {
   },
   fn: async function() {
     let req = this.req;
-    let res = this.res;
     let params = req.allParams();
     let model = params.model;
     // API-token requests may never write credentials (password / apiTokenHash).

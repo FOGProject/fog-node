@@ -64,7 +64,7 @@ module.exports = {
   },
   customToJSON: function() {
     if (this.isAdmin) {
-      this.permissions = deepMap(sails.config.permissions, (v, k) => {
+      this.permissions = deepMap(sails.config.permissions, () => {
         return true;
       });
     } else {
@@ -74,7 +74,7 @@ module.exports = {
   },
   beforeCreate: function(values, next) {
     if (values.isAdmin) {
-      values.permissions = deepMap(sails.config.permissions, (v, k) => {
+      values.permissions = deepMap(sails.config.permissions, () => {
         return true;
       });
     } else {
@@ -87,7 +87,7 @@ module.exports = {
     if (values.hasOwnProperty('permissions') && !values.isAdmin) {
       values.permissions = filterPermissions(values.permissions);
     } else if (values.isAdmin) {
-      values.permissions = deepMap(sails.config.permissions, (v, k) => {
+      values.permissions = deepMap(sails.config.permissions, () => {
         return true;
       });
     }
