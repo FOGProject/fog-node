@@ -72,8 +72,8 @@ module.exports = {
       let permissions = {};
       if (roles === undefined) return {};
       if (models === undefined) models = Object.keys(sails.models);
-      for (var i = 0; i < models.length; i++) {
-        for (var j = 0; j < roles.length; j++) {
+      for (let i = 0; i < models.length; i++) {
+        for (let j = 0; j < roles.length; j++) {
           if (roles[j].isAdmin) {
             roles[j].permissions = deepMap(sails.config.permissions, (v, k) => {
               return true;
@@ -83,7 +83,7 @@ module.exports = {
           }
         }
       }
-      for (var i = 0; i < roles.length; i++) {
+      for (let i = 0; i < roles.length; i++) {
         permissions = _.extend(permissions, roles[i].permissions);
       }
       return permissions;
