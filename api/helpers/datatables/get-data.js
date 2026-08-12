@@ -115,7 +115,7 @@ module.exports = {
           return true;
         }
         if (_.isPlainObject(column.search.value)) {
-          if ((column.search.value.from != '') && (column.search.value.to != '')) {
+          if ((column.search.value.from !== '') && (column.search.value.to !== '')) {
             whereQuery[column.data] = {
               '>=': column.search.value.from,
               '<': column.search.value.to

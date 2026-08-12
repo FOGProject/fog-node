@@ -19,15 +19,18 @@ const filterPermissions = function(permissions) {
   // by the 'left' object.
   return _.extend(sails.config.permissions, permissions);
 };
-const deepMap = function(obj, cb) {
+// `mapFn` is a value transform, not a continuation -- its result is assigned,
+// never used for control flow. It was named `cb`, which callback-return reads
+// as a Node-style callback and then (wrongly) demands be returned.
+const deepMap = function(obj, mapFn) {
   let out = {};
 
   Object.keys(obj).forEach((k) => {
     let val;
     if (obj[k] !== null && typeof obj[k] === 'object') {
-      val = deepMap(obj[k], cb);
+      val = deepMap(obj[k], mapFn);
     } else {
-      val = cb(obj[k], k);
+      val = mapFn(obj[k], k);
     }
 
     out[k] = val;

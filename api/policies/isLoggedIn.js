@@ -32,9 +32,12 @@ module.exports = async (req, res, next) => {
       // including the CSRF secret -- so the token rendered on a GET never
       // validates on the following POST (403). Preserve existing session data
       // across the regenerate. (The apitoken path above is stateless: session:false.)
-      await req.login(user, { keepSessionInfo: true }, async (err) => err ? next(err) : next());
+      await req.login(user, { keepSessionInfo: true }, async (err) => {
+        if (err) return next(err);
+        return next();
+      });
     })(req, res);
   } catch (e) {
-    next();
+    return next();
   }
 };

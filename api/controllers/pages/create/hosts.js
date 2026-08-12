@@ -69,7 +69,7 @@ module.exports = {
       Object.assign(data.formItems, await sails.plugins.hostForm(null));
     }
     let tabOrder = await sails.helpers.formTabs.with({ model: data.model, formItems: data.formItems });
-    data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`,
+    data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`;
     data.form = await sails.helpers.formGenerator.with({
       model: data.model,
       method: 'post',

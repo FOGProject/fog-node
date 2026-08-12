@@ -6,8 +6,8 @@ const database = require('../../lib/database');
 const setting = require('../../lib/setting');
 module.exports = {
   getMigrations: (start, end) => {
-    if (start == end) return [];
-    if (start < end && start == end+1) return [];
+    if (start === end) return [];
+    if (start < end && start === end+1) return [];
     let revisions = [];
     let toLoad = [];
     if (start < end) {

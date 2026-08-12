@@ -33,11 +33,15 @@ module.exports = {
     let durr = moment.duration(upsecs);
     let uptime = durr.humanize();
     let hostname = sysinfo.osInfo.hostname;
-    loadaverage = `User: ${user}, Sys: ${sys}, Idle: ${idle}`,
-    cpu = sysinfo.cpu,
-    memory = sysinfo.mem,
-    size = {},
-    setIfaces = ifaceitem => {
+    // These five were a comma-chained assignment with no `let`, so each one
+    // became an implicit global (this file is CommonJS, hence non-strict, so
+    // the assignments silently succeeded). Two concurrent callers of this
+    // helper shared them and would overwrite each other's readings mid-request.
+    let loadaverage = `User: ${user}, Sys: ${sys}, Idle: ${idle}`;
+    let cpu = sysinfo.cpu;
+    let memory = sysinfo.mem;
+    let size = {};
+    let setIfaces = ifaceitem => {
       ifaces.push(ifaceitem);
     };
     // General information
@@ -64,7 +68,8 @@ module.exports = {
 
     // Network information
     for (var i = 0; i < network_ifaces.length; i++) {
-      iface = network_ifaces[i];
+      // Was also undeclared, and so also an implicit global.
+      let iface = network_ifaces[i];
       if (default_iface === iface.iface) {
         serverip = iface.ip4;
       }

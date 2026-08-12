@@ -33,7 +33,7 @@ module.exports = {
           async (err, token) => {
             if (err) return exits.error(err);
             if (!token) return exits.error('Invalid token created');
-            if (req.param('remember-me') == 'on') res.cookie('jwt', token, sails.config.auth.jwt.cookie);
+            if (req.param('remember-me') === 'on') res.cookie('jwt', token, sails.config.auth.jwt.cookie);
             if (req.wantsJSON) return exits.success({token});
             return res.redirect('/');
           }
