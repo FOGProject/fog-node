@@ -26,7 +26,9 @@ module.exports = {
     let orig = [];
     let toRem = [];
     let obj = await sails.models[model].updateOne({id}, params)
-      .intercept('E_UNIQUE', (err) => {
+      // See the matching note in general/create.js: the adapter error carries
+      // no detail worth surfacing, so it is deliberately dropped.
+      .intercept('E_UNIQUE', (unusedErr) => {
         return {conflict: {message: 'A record already exists with that name'}};
       })
       .intercept({name: 'UsageError'}, (err) => {

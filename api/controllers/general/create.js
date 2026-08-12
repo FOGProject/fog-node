@@ -23,7 +23,10 @@ module.exports = {
     // API-token requests may never write credentials (password / apiTokenHash).
     if (req.authVia === 'apitoken') { delete params.password; delete params.apiTokenHash; }
     let obj = await sails.models[model].create(params)
-      .intercept('E_UNIQUE', (err) => {
+      // The adapter error carries no detail worth surfacing here, so it is
+      // deliberately dropped in favour of a fixed message; named `unusedErr`
+      // to say so rather than leaving a silently-ignored `err`.
+      .intercept('E_UNIQUE', (unusedErr) => {
         return {conflict: {message: 'A record already exists with that name'}};
       })
       .intercept({name: 'UsageError'}, (err) => {
