@@ -20,10 +20,10 @@ passport.deserializeUser(async (id, done) => {
   });
 });
 passport.use(new JWTStrategy(opts,
-  async (jwt_payload, done) => {
-    if (!jwt_payload) return done(null, false, {message: 'No token passed'});
-    if (!jwt_payload.user) return done(null, false, {message: 'No user information present'});
-    await User.findOne({id: jwt_payload.user}).populateAll().exec(async (err, user) => {
+  async (jwtPayload, done) => {
+    if (!jwtPayload) return done(null, false, {message: 'No token passed'});
+    if (!jwtPayload.user) return done(null, false, {message: 'No user information present'});
+    await User.findOne({id: jwtPayload.user}).populateAll().exec(async (err, user) => {
       if (err) return done(err, false, {message: 'An error occurred locating the user'});
       if (user) {
         user.isLocalAuth = true;

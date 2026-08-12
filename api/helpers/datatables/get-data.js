@@ -85,7 +85,7 @@ module.exports = {
     var where = [];
     var whereQuery = {or: []};
     var select = [];
-    var order = [];
+    var sortOrder = [];
 
     if (_.isArray(_options.columns)) {
       _options.columns.forEach((column) => {
@@ -161,7 +161,7 @@ module.exports = {
       }
       var sortDir = value.dir.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
       sortColumn[sortBy] = sortDir;
-      order.push(sortColumn);
+      sortOrder.push(sortColumn);
     });
 
     // Find the database on the query and total items in teh database;
@@ -174,7 +174,7 @@ module.exports = {
       where: whereQuery,
       skip: +_options.start || -1,
       limit: +_options.length || -1,
-      sort: order
+      sort: sortOrder
     };
 
     if (findOpts.skip < 1) delete findOpts.skip;

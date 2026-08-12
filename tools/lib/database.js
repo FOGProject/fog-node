@@ -2,8 +2,8 @@ const MongoClient = require('mongodb').MongoClient;
 
 module.exports = {
   connect: (host, port, database, username, password, next) => {
-    let db_uri = 'mongodb://';
-    db_uri += `${host}:${port}/${database}`;
+    let dbUri = 'mongodb://';
+    dbUri += `${host}:${port}/${database}`;
     let opts = {
       useUnifiedTopology: true,
       useNewUrlParser: true
@@ -17,7 +17,7 @@ module.exports = {
         password: password
       };
     }
-    MongoClient.connect(db_uri, opts, (err, db) => {
+    MongoClient.connect(dbUri, opts, (err, db) => {
       if (err) return next(err);
       next(null, db);
     });

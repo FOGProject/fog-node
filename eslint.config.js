@@ -33,7 +33,14 @@ const globals = require('globals');
 const rules = {
   'block-scoped-var':             ['error'],
   'callback-return':              ['error', ['done', 'proceed', 'next', 'onwards', 'callback', 'cb']],
-  'camelcase':                    ['warn', {'properties':'always'}],
+  // `allow` lists snake_case names that are wire format, not style drift:
+  // they are keys in the JSON returned by /system/info and /bandwidth, and the
+  // tx_/rx_ set mirrors the field names the `systeminformation` package hands
+  // us. Renaming them would change a public API response for cosmetic reasons.
+  // Purely internal snake_case locals are still reported.
+  'camelcase':                    ['warn', {'properties':'always', 'allow': [
+    '^default_iface$', '^(tx|rx)_(bytes|errors|dropped|sec)$'
+  ]}],
   'comma-style':                  ['warn', 'last'],
   // 'multi-line' rather than the template's default 'all'.  Every one of the
   // 125 hits the stricter setting produced was a single-line guard clause
