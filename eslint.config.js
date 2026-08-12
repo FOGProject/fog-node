@@ -42,7 +42,12 @@ const rules = {
   // moment a body wraps onto its own line, which is the case that actually
   // causes bugs.
   'curly':                        ['warn', 'multi-line'],
-  'eqeqeq':                       ['error', 'always'],
+  // `{null: 'ignore'}` permits `x == null`, which is the standard idiom for
+  // "null or undefined" in one comparison.  Four sites rely on it as a guard
+  // (`String(s == null ? '' : s)`); rewriting those to `===` would silently
+  // stop them catching `undefined`, turning a correct guard into a bug.  Every
+  // other loose comparison is still an error.
+  'eqeqeq':                       ['error', 'always', {'null': 'ignore'}],
   'eol-last':                     ['warn'],
   'handle-callback-err':          ['error'],
   'indent':                       ['warn', 2, {

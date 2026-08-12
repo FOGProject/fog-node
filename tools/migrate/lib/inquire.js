@@ -33,7 +33,7 @@ module.exports = {
           value = parseInt(value, 10);
           if (value > latestRevision) return `You cannot upgrade beyond the latest schema revision of ${latestRevision}`;
           if (value < 1) return 'You cannot downgrade past schema revision 1';
-          if (value == currentRev) return `FOG is already running schema revision ${currentRev}`;
+          if (value === currentRev) return `FOG is already running schema revision ${currentRev}`;
           return true;
         },
       }
