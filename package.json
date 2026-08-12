@@ -68,6 +68,7 @@
     "supertest": "^7.2.2"
   },
   "comments": {
+    "custom-tests": "The mocha suite lifts a real Sails app. PORT=1338 keeps it off 1337 so the suite can run while a dev server is up. sails_hooks__grunt=false skips the asset pipeline: it is irrelevant to these route tests, and letting it run makes sails-linker rewrite the <script>/<link> block in views/layouts/layout.ejs from whatever happens to be in .tmp — on a fresh clone or CI checkout that directory is empty, so `npm test` would silently strip every vendor tag out of a tracked file. --recursive is required or test/route/ is skipped; --exit is required because Sails leaves handles open after lower().",
     "overrides": "Force-patch vulnerable transitive deps pinned by the abandoned sails-hook-grunt/grunt-contrib-less build chain. npm audit fix can't reach them because their parents are unmaintained. Keys of the form 'pkg@N' pin one major at a time, so each consumer keeps the major it was written against. 'less' is forced to 4.x: grunt-contrib-less@1.3.0 asks for less ~2.6.0, but less >=4.6 dropped its bundled HTTP importer, which is what dragged in the unpatchable 'request' and 'image-size' advisories — 'grunt less:dev' output was verified byte-identical before and after that bump. babel-traverse@6 is knowingly left vulnerable: it comes from babel-core@6 inside sails-hook-grunt, there is no 6.x patch, and dropping it would mean dropping asset transpilation from the prod build."
   },
   "overrides": {
@@ -102,7 +103,7 @@
     "seed:dev": "node tools/setup/seed-dev.js",
     "test": "npm run lint && npm run custom-tests && echo 'Done.'",
     "lint": "./node_modules/eslint/bin/eslint.js . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your .js files look good.'",
-    "custom-tests": "echo \"(No other custom tests yet.)\" && echo"
+    "custom-tests": "PORT=1338 sails_hooks__grunt=false mocha --recursive --exit"
   },
   "main": "app.js",
   "repository": {

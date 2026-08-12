@@ -1,9 +1,16 @@
 const supertest = require('supertest');
 describe('Route tests::', () =>  {
   var token = '';
+  // `X-Requested-With` marks the request as same-origin AJAX, which is what
+  // api/policies/apiCsrfGuard.js requires before it will let a session-
+  // authenticated request mutate anything. Real clients send it for free
+  // (jQuery sets it on every $.ajax; assets/fog/fog.common.js sets it on its
+  // fetch calls), but supertest does not, so without it every POST/PUT/DELETE
+  // below is refused with a 403.
   var hook = (method = 'get') =>
     (args) =>
-      supertest(sails.hooks.http.app)[method](args);
+      supertest(sails.hooks.http.app)[method](args)
+        .set('X-Requested-With', 'XMLHttpRequest');
   var request = {
     post: hook('post'),
     get: hook('get'),
@@ -59,7 +66,8 @@ describe('Route tests::', () =>  {
   hook = (method = 'get') =>
     (args) =>
       supertest(sails.hooks.http.app)[method](args)
-        .set('Authorization', token);
+        .set('Authorization', token)
+        .set('X-Requested-With', 'XMLHttpRequest');
   var request = {
     post: hook('post'),
     get: hook('get'),
@@ -87,7 +95,14 @@ describe('Route tests::', () =>  {
             password: 'testmochauser'
           })
           .expect(200, (err, info) => {
+            // Passing a callback to .expect() hands it the assertion error
+            // instead of throwing, so this has to be checked by hand -- it was
+            // previously dropped, which let a 403 here report as a pass and
+            // surface instead as two confusing 403s from the update/destroy
+            // tests below (they were requesting /api/v1/user/undefined).
+            if (err) return done(err);
             userid = info.body.id;
+            if (!userid) return done(new Error('Create returned no user id'));
             done();
           });
       });
