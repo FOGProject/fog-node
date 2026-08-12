@@ -1,7 +1,4 @@
 const si = require('systeminformation');
-const fs = require('fs-extra');
-const path = require('path');
-const appRoot = path.join(__dirname, '..', '..', '..');
 const moment = require('moment');
 const checkDiskSpace = require('check-disk-space').default;
 module.exports = {
@@ -14,9 +11,9 @@ module.exports = {
       description: 'All done.',
     },
   },
-  fn: async function (inputs) {
-    let default_iface = await si.networkInterfaceDefault();
-    let network_ifaces = await si.networkInterfaces();
+  fn: async function () {
+    let defaultIface = await si.networkInterfaceDefault();
+    let networkIfaces = await si.networkInterfaces();
     let ifaces = [];
     let serverip;
     let sysinfo = await si.get({
@@ -67,15 +64,15 @@ module.exports = {
     });
 
     // Network information
-    for (var i = 0; i < network_ifaces.length; i++) {
+    for (var i = 0; i < networkIfaces.length; i++) {
       // Was also undeclared, and so also an implicit global.
-      let iface = network_ifaces[i];
-      if (default_iface === iface.iface) {
+      let iface = networkIfaces[i];
+      if (defaultIface === iface.iface) {
         serverip = iface.ip4;
       }
       await si.networkStats(iface.iface).then(async tmpi => {
         tmpi.forEach(async tmp => {
-          let netif = network_ifaces.find(n => n.iface === tmp.iface);
+          let netif = networkIfaces.find(n => n.iface === tmp.iface);
           setIfaces({
             name: tmp.iface,
             mac: (netif && netif.mac) ? netif.mac : '',

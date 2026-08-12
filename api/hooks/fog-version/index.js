@@ -19,7 +19,7 @@ const safeReadJSON = filepath => {
   }
   return JSON.parse(raw) || {};
 };
-module.exports = function defineFogVersionHook(sails) {
+module.exports = function defineFogVersionHook() {
   return {
     routes: {
       /**

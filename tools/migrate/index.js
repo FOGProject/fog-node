@@ -8,7 +8,6 @@ const inquire = require('./lib/inquire');
 const migrations = require('./lib/migration');
 const welcome = 'Welcome to the FOG Schema Migrator.\nYou will be guided through migrating your current database schema';
 var COMPLETED = false;
-var revision = 0;
 
 header.print(welcome);
 async.waterfall([
@@ -48,7 +47,7 @@ async.waterfall([
       next();
     });
   }
-], (err, result) => {
+], (err) => {
   if (err) console.log(chalk.bgRed(err));
   COMPLETED = true;
   process.exit();

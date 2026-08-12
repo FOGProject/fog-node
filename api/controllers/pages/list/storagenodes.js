@@ -15,7 +15,7 @@ module.exports = {
       description: 'Successful'
     }
   },
-  fn: async function (inputs) {
+  fn: async function () {
     let data = {
       header: 'Storage Node List',
       theads: [

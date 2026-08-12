@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const migrationsFolder = path.join(__dirname, '..', '..', '..', 'migrations');
 const config = require('../../lib/config');
@@ -24,7 +23,7 @@ module.exports = {
       try {
         revisions[i] = require(path.join(migrationsFolder, toLoad[i]));
         revisions[i]._meta.schema = toLoad[i];
-      } catch (e) {
+      } catch (unusedErr) {
         throw `Missing migration file for schema ${toLoad[i]}`;
       }
     }

@@ -29,14 +29,14 @@ $.fn.registerTable = function(onSelect, opts) {
       },
       {
         text: '<i class="fa fa-refresh"></i> Refresh',
-        action: function(e, dt, node, config) {
+        action: function(e, dt) {
           dt.clear().draw();
           dt.ajax.reload();
         }
       },
       {
         text: '<i class="fa fa-edit"></i> Edit',
-        action: function(e, dt, node, config) {
+        action: function(e, dt) {
           let rows = dt.rows({selected: true}).data().toArray();
           if (rows.length !== 1) {
             window.fogToast('error', 'Select exactly one row to edit.');
@@ -49,7 +49,7 @@ $.fn.registerTable = function(onSelect, opts) {
       {
         text: '<i class="fa fa-trash"></i> Delete',
         className: 'btn-danger',
-        action: function(e, dt, node, config) {
+        action: function(e, dt) {
           let ids = dt.rows({selected: true}).data().toArray().map((r) => r.id).filter(Boolean);
           if (!ids.length) {
             window.fogToast('error', 'Select one or more rows to delete.');
@@ -125,7 +125,7 @@ $.fn.registerTable = function(onSelect, opts) {
   let table = $(this).DataTable(opts);
 
   if (onSelect !== undefined && typeof onSelect === 'function') {
-    table.on('select deselect', (e, dt, type, indexes) => {
+    table.on('select deselect', (e, dt) => {
       onSelect(dt.rows({selected: true}));
     });
   }
@@ -148,7 +148,7 @@ $.readableBytes = function(bytes) {
       if (window.PNotify && typeof PNotify.alert === 'function') {
         PNotify.alert({ type: type, text: text, delay: 2500 });
       }
-    } catch (e) { /* toast is best-effort; the reloaded row is the real feedback */ }
+    } catch (unusedErr) { /* toast is best-effort; the reloaded row is the real feedback */ }
   }
   function clearError(container) {
     let e = container.querySelector('.fog-form-error');
@@ -244,7 +244,7 @@ $.readableBytes = function(bytes) {
         PNotify.alert({ type: type === 'error' ? 'error' : type, text: text, delay: 3000 });
         return;
       }
-    } catch (e) { /* fall through to native */ }
+    } catch (unusedErr) { /* fall through to native */ }
     window.alert(text);
   }
 

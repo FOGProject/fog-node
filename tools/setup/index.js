@@ -242,7 +242,7 @@ module.exports.http = {
     console.log(`Password: ${payload.admin.password}`);
     next();
   }
-], (err, result) => {
+], (err) => {
   if (err) console.log(chalk.bgRed(err));
   COMPLETED = true;
   process.exit();

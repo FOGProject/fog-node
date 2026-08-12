@@ -1,5 +1,4 @@
 const si = require('systeminformation');
-const moment = require('moment');
 module.exports = {
   friendlyName: 'Bandwidth',
   description: 'Bandwidth system.',
@@ -7,11 +6,12 @@ module.exports = {
   },
   exits: {
   },
-  fn: async function (inputs) {
-    let default_iface = await si.networkInterfaceDefault();
-    let netstats = await si.networkStats(default_iface);
+  fn: async function () {
+    let defaultIface = await si.networkInterfaceDefault();
+    let netstats = await si.networkStats(defaultIface);
     return {
-      default_iface,
+      // Key kept snake_case: it is part of the /bandwidth response shape.
+      default_iface: defaultIface,
       netstats
     };
   }

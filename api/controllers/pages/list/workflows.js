@@ -15,9 +15,7 @@ module.exports = {
       description: 'Successful'
     }
   },
-  fn: async function (inputs) {
-    let req = this.req;
-    let res = this.res;
+  fn: async function () {
     let data = {
       header: 'Workflow List',
       theads: [

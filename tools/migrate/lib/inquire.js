@@ -38,5 +38,11 @@ module.exports = {
         },
       }
     ];
+    // This was missing: the function built `questions`, then returned without
+    // prompting or ever calling `next`, so it could only ever be a no-op. Same
+    // shape as getBackupInfo above. Nothing calls getSchemaVersion today --
+    // tools/migrate/index.js only uses getBackupInfo -- which is why the gap
+    // went unnoticed.
+    inquirer.prompt(questions).then(next);
   }
 };

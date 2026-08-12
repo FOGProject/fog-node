@@ -1,7 +1,7 @@
 module.exports = {
   friendlyName: 'Listme',
   description: 'Listme user.',
-  fn: async function(inputs) {
+  fn: async function() {
     let req = this.req;
     return req.user;
   }

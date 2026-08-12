@@ -10,8 +10,6 @@ module.exports = {
     }
   },
   fn: async function () {
-    let req = this.req;
-    let res = this.res;
     let data = {
       model: 'user',
       header: 'Create New User',

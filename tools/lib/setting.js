@@ -1,6 +1,6 @@
 module.exports = {
   create: (db, name, value, next) => {
-    db.collection('setting').insert({name,value}, (err, setting) => {
+    db.collection('setting').insert({name,value}, (err) => {
       if (err) return next(err);
       next();
     });

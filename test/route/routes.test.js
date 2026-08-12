@@ -68,7 +68,7 @@ describe('Route tests::', () =>  {
       supertest(sails.hooks.http.app)[method](args)
         .set('Authorization', token)
         .set('X-Requested-With', 'XMLHttpRequest');
-  var request = {
+  request = {
     post: hook('post'),
     get: hook('get'),
     put: hook('put'),

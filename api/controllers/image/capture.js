@@ -18,7 +18,6 @@ module.exports = {
     let req = this.req;
     let res = this.res;
     let params = req.allParams();
-    let id = params.id;
     res.setTimeout(0);
     await req.file('image').upload({}, async function whenDone(err, uploadedFiles) {
       if (err) return exits.error(err);

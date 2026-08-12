@@ -142,8 +142,6 @@
   let bandwidthSamples = [];      // {t, label, rx, tx}; retained up to MAX_RETAIN
   let bandwidthIface = '';
   let bandwidthWindowSec = 120;   // selected DISPLAY window (default: 2 minutes)
-  let bandwidthinterval;
-  let bandwidthajax;
 
   function bandwidthCanvas(data) {
     let bandwidth = $('#bandwidth').get(0);
@@ -186,7 +184,7 @@
 
   function updateBandwidth() {
     function fetchData() {
-      bandwidthajax = $.ajax({
+      $.ajax({
         url: '/bandwidth',
         type: 'get',
         dataType: 'json',
@@ -208,7 +206,7 @@
           renderBandwidth(now);
         },
         complete: function() {
-          bandwidthinterval = setTimeout(fetchData, 2000);
+          setTimeout(fetchData, 2000);
         }
       });
     }

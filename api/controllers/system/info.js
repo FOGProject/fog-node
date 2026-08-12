@@ -7,7 +7,7 @@ module.exports = {
   },
   exits: {
   },
-  fn: async function (inputs) {
+  fn: async function () {
     let options = {
       time: 'uptime',
       currentLoad: 'currentLoadUser, currentLoadSystem, currentLoadIdle',
