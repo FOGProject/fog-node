@@ -38,12 +38,12 @@ module.exports = {
     success: { outputFriendlyName: 'Match', description: 'null, or { host, score, signals }.' }
   },
   fn: async function (inputs) {
-    let fp = inputs.fingerprint || {},
-      guid = norm(fp.guid || fp.uuid),
-      serial = norm(fp.serial),
-      asset = norm(fp.asset),
-      macsIn = fp.macs || fp.mac || [],
-      macs = (Array.isArray(macsIn) ? macsIn : [macsIn]).map(normMac).filter(Boolean);
+    let fp = inputs.fingerprint || {};
+    let guid = norm(fp.guid || fp.uuid);
+    let serial = norm(fp.serial);
+    let asset = norm(fp.asset);
+    let macsIn = fp.macs || fp.mac || [];
+    let macs = (Array.isArray(macsIn) ? macsIn : [macsIn]).map(normMac).filter(Boolean);
 
     // Build a query that fetches only the hosts sharing at least one signal.
     let or = [];
@@ -53,12 +53,13 @@ module.exports = {
     if (macs.length) { or.push({ macs: { $in: macs } }); }
     if (!or.length) { return null; }
 
-    let coll = sails.getDatastore(sails.models.host.datastore).manager.collection(sails.models.host.tableName),
-      candidates = await coll.find({ $or: or }).toArray();
+    let coll = sails.getDatastore(sails.models.host.datastore).manager.collection(sails.models.host.tableName);
+    let candidates = await coll.find({ $or: or }).toArray();
 
     let best = null;
     for (let c of candidates) {
-      let score = 0, signals = [];
+      let score = 0;
+      let signals = [];
       if (guid && norm(c.guid) === guid) { score += WEIGHTS.guid; signals.push('guid'); }
       if (serial && norm(c.serial) === serial) { score += WEIGHTS.serial; signals.push('serial'); }
       if (asset && norm(c.asset) === asset) { score += WEIGHTS.asset; signals.push('asset'); }

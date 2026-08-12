@@ -20,10 +20,10 @@ module.exports = {
     }
   },
   fn: async function (inputs) {
-    let req = inputs.req,
-      res = inputs.res,
-      params = req.allParams(),
-      model = params.model;
+    let req = inputs.req;
+    let res = inputs.res;
+    let params = req.allParams();
+    let model = params.model;
 
     if (!model || !sails.models[model]) {
       return {

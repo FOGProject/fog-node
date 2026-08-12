@@ -15,11 +15,11 @@ module.exports = {
     }
   },
   fn: async function (inputs, exits) {
-    let req = this.req,
-      res = this.res,
-      params = req.allParams(),
-      id = params.id,
-      partition = params.partition;
+    let req = this.req;
+    let res = this.res;
+    let params = req.allParams();
+    let id = params.id;
+    let partition = params.partition;
     await sails.helpers.image.stream(id, partition, res).switch({
       error: async (err) => {
         return exits.error(err);

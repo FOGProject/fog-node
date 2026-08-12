@@ -16,16 +16,16 @@ module.exports = {
     }
   },
   fn: async function() {
-    let req = this.req,
-      res = this.res,
-      params = req.allParams(),
-      model = params.model,
-      id = params.id;
+    let req = this.req;
+    let res = this.res;
+    let params = req.allParams();
+    let model = params.model;
+    let id = params.id;
     // API-token requests may never write credentials (password / apiTokenHash).
     if (req.authVia === 'apitoken') { delete params.password; delete params.apiTokenHash; }
-    let orig = [],
-      toRem = [],
-      obj = await sails.models[model].updateOne({id}, params)
+    let orig = [];
+    let toRem = [];
+    let obj = await sails.models[model].updateOne({id}, params)
       .intercept('E_UNIQUE', (err) => {
         return {conflict: {message: 'A record already exists with that name'}};
       })

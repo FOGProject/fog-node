@@ -4,8 +4,8 @@
  * @description :: A hook definition.  Extends Sails by adding shadow routes, implicit actions, and/or initialization logic.
  * @docs        :: https://sailsjs.com/docs/concepts/extending-sails/hooks
  */
-const delay = 1 * 60 * 1000,
-  async = require('async');
+const delay = 1 * 60 * 1000;
+const async = require('async');
 var running = false;
 module.exports = function defineWatchdogHook(sails) {
   return {

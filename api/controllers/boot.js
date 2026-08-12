@@ -7,10 +7,10 @@ module.exports = {
     }
   },
   fn: async function () {
-    let req = this.req,
-      res = this.res,
-      mac = String(req.param('mac') || '').replace(/[^0-9a-fA-F]/g, '').toLowerCase(),
-      host = null;
+    let req = this.req;
+    let res = this.res;
+    let mac = String(req.param('mac') || '').replace(/[^0-9a-fA-F]/g, '').toLowerCase();
+    let host = null;
 
     // Identify the host by its hardware fingerprint (issue #198), not MAC alone:
     // iPXE passes the SMBIOS values (${uuid}/${serial}/${asset}/${mac}).
@@ -26,8 +26,8 @@ module.exports = {
       if (match) { host = match.host; }
     } catch (unused) { /* fall through to anonymous menu */ }
 
-    let menus = await sails.models.pxemenu.find().sort('name ASC'),
-      lines = [];
+    let menus = await sails.models.pxemenu.find().sort('name ASC');
+    let lines = [];
 
     lines.push('#!ipxe');
     lines.push(':start');

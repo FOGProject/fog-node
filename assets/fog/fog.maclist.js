@@ -19,9 +19,9 @@
   });
 
   $(document).on('click', '.maclist-remove', function() {
-    let $list = $(this).closest('[data-maclist]'),
-      $row = $(this).closest('.maclist-row'),
-      wasPrimary = $row.find('input[name="__primac"]').is(':checked');
+    let $list = $(this).closest('[data-maclist]');
+    let $row = $(this).closest('.maclist-row');
+    let wasPrimary = $row.find('input[name="__primac"]').is(':checked');
     $row.remove();
     // Keep a primary selected.
     if (wasPrimary && !$list.find('input[name="__primac"]:checked').length) {

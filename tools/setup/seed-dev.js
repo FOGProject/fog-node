@@ -15,8 +15,8 @@
  *   npm run seed:dev
  *   FOG_DEV_ADMIN_PASSWORD='supersecret' npm run seed:dev
  */
-const config = require('../lib/config'),
-  sails = require('sails');
+const config = require('../lib/config');
+const sails = require('sails');
 
 if (process.env.NODE_ENV === 'production') {
   console.error('Refusing to run the dev seed with NODE_ENV=production (it clears data).');

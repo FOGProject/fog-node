@@ -1,5 +1,5 @@
-const _ = require('@sailshq/lodash'),
-  crypto = require('crypto');
+const _ = require('@sailshq/lodash');
+const crypto = require('crypto');
 
 module.exports = {
   generateSecret: () => {
@@ -7,8 +7,8 @@ module.exports = {
       creationDate: (new Date()).getTime(),
       random: Math.random() * (Math.random() * 1000),
       nodeVersion: process.version
-    },
-      basestring = '';
+    };
+    let basestring = '';
 
     _.each(factors, (val) => {
       basestring += val;

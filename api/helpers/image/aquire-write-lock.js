@@ -22,8 +22,8 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let id = inputs.id,
-      db = Image.getDatastore().manager;
+    let id = inputs.id;
+    let db = Image.getDatastore().manager;
     await db.collection(Image.tableName).update({_id: new ObjectId(id), writeLock: false, readers: 0}, {$set: {writeLock: true}}, async(err, image) => {
       if (err) return exits.error(err);
       if (!image) return exits.invalid('Image not found');

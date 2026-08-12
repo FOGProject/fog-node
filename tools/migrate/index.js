@@ -1,14 +1,14 @@
-const async = require('async'),
-  chalk = require('chalk'),
-  CLI = require('clui'),
-  Spinner = CLI.Spinner,
-  config = require('../lib/config'),
-  header = require('../lib/header'),
-  inquire = require('./lib/inquire'),
-  migrations = require('./lib/migration'),
-  welcome = 'Welcome to the FOG Schema Migrator.\nYou will be guided through migrating your current database schema';
-var COMPLETED = false,
-  revision = 0;
+const async = require('async');
+const chalk = require('chalk');
+const CLI = require('clui');
+const Spinner = CLI.Spinner;
+const config = require('../lib/config');
+const header = require('../lib/header');
+const inquire = require('./lib/inquire');
+const migrations = require('./lib/migration');
+const welcome = 'Welcome to the FOG Schema Migrator.\nYou will be guided through migrating your current database schema';
+var COMPLETED = false;
+var revision = 0;
 
 header.print(welcome);
 async.waterfall([
@@ -23,9 +23,9 @@ async.waterfall([
   // Perform Migration
   (next) => {
     header.printSection('Database Migration');
-    let status = new Spinner('Calculating deltas...'),
-      pendingText = 'Deltas calculated',
-      didMigrate = false;
+    let status = new Spinner('Calculating deltas...');
+    let pendingText = 'Deltas calculated';
+    let didMigrate = false;
     status.start();
     migrations.auto(config.preferences.datastores.fogdb, (upgrade, fromRev, toRev, description) => {
       didMigrate = true;
@@ -37,7 +37,7 @@ async.waterfall([
       status = new Spinner(pendingText);
       status.start();
     }, (err) => {
-      status.stop()
+      status.stop();
       console.log(pendingText);
       if (err) return next(err);
       if (didMigrate) {

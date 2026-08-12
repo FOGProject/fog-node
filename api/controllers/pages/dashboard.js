@@ -1,10 +1,10 @@
-const fs = require('fs-extra'),
-  path = require('path'),
-  appRoot = path.join(__dirname, '..', '..', '..'),
-  partialPath = path.join(appRoot, 'views', 'pages', 'partials'),
-  si = require('systeminformation'),
-  moment = require('moment'),
-  checkDiskSpace = require('check-disk-space').default;
+const fs = require('fs-extra');
+const path = require('path');
+const appRoot = path.join(__dirname, '..', '..', '..');
+const partialPath = path.join(appRoot, 'views', 'pages', 'partials');
+const si = require('systeminformation');
+const moment = require('moment');
+const checkDiskSpace = require('check-disk-space').default;
 module.exports = {
   friendlyName: 'View dashboard',
   description: 'Display "Dashboard" page.',
@@ -14,13 +14,13 @@ module.exports = {
     }
   },
   fn: async function () {
-    let webserver = 'Unknown',
-      defaultInet = await si.networkInterfaceDefault(),
-      interfaces = await si.networkInterfaces(),
-      timeInfo = await si.time(),
-      uptime = moment.duration((timeInfo.uptime || 0) * 1000).humanize(),
-      load = await si.currentLoad(),
-      loadaverage = 'N/A';
+    let webserver = 'Unknown';
+    let defaultInet = await si.networkInterfaceDefault();
+    let interfaces = await si.networkInterfaces();
+    let timeInfo = await si.time();
+    let uptime = moment.duration((timeInfo.uptime || 0) * 1000).humanize();
+    let load = await si.currentLoad();
+    let loadaverage = 'N/A';
 
     // systeminformation v5: currentLoad() -> avgLoad / currentLoad (camelCase)
     if (load) {
@@ -40,8 +40,10 @@ module.exports = {
 
     // Disk usage of the image store. Fall back to the filesystem root when the
     // image path does not exist (e.g. in development).
-    let imagePath = sails.config.custom.imageStorePath || '/images',
-      free = 0, size = 0, used = 0;
+    let imagePath = sails.config.custom.imageStorePath || '/images';
+    let free = 0;
+    let size = 0;
+    let used = 0;
     try {
       let diskSpace = await checkDiskSpace(imagePath);
       size = diskSpace.size; free = diskSpace.free; used = size - free;
@@ -62,11 +64,11 @@ module.exports = {
     // is Active and not-yet-started is Staged. "Available" = open imaging slots =
     // total enabled storage-node capacity (sum of maxClients) minus what's in use.
     // (The active/staged split is provisional until the Task state enum is fixed.)
-    let active = await Task.count({ state: { '<': 5 }, progress: { '>': 0 } }),
-      staged = await Task.count({ state: { '<': 5 }, progress: 0 }),
-      storageNodes = await StorageNode.find({ isEnabled: true }),
-      capacity = storageNodes.reduce((sum, n) => sum + (Number(n.maxClients) || 0), 0),
-      avail = Math.max(0, capacity - active - staged);
+    let active = await Task.count({ state: { '<': 5 }, progress: { '>': 0 } });
+    let staged = await Task.count({ state: { '<': 5 }, progress: 0 });
+    let storageNodes = await StorageNode.find({ isEnabled: true });
+    let capacity = storageNodes.reduce((sum, n) => sum + (Number(n.maxClients) || 0), 0);
+    let avail = Math.max(0, capacity - active - staged);
 
     // Alerts panel (parity with 1.x dashboard): hosts awaiting approval.
     let pendingHosts = await Host.count({ pending: true });

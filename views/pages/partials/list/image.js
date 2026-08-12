@@ -16,8 +16,8 @@
             url: '/api/v1/image/scan',
             type: 'POST',
             complete: function(xhr) {
-              let r = (xhr && xhr.responseJSON) || {},
-                n = (r.created || []).length;
+              let r = (xhr && xhr.responseJSON) || {};
+              let n = (r.created || []).length;
               if (r.error) {
                 window.fogToast('error', r.error);
               } else {

@@ -1,23 +1,23 @@
-const inquirer = require('inquirer'),
-  CLI = require('clui'),
-  Spinner = CLI.Spinner,
-  chalk = require('chalk'),
-  database = require('../../lib/database'),
-  verifyDB = (answers, next) => {
-    let status = new Spinner('Verifying database information, please wait...');
-    status.start();
-    database.connect(answers.host, answers.port, answers.database, answers.username, answers.password, (err, db) => {
-      status.stop();
-      let prefix = 'MongoError: ';
-      if (err) {
-        err = err.toString().replace(prefix, '');
-        console.log(chalk.bgRed(`--> Incorrect database information: ${err}`));
-        return next(err);
-      }
-      console.log(chalk.green('Database information verified'));
-      next();
-    });
-  };
+const inquirer = require('inquirer');
+const CLI = require('clui');
+const Spinner = CLI.Spinner;
+const chalk = require('chalk');
+const database = require('../../lib/database');
+const verifyDB = (answers, next) => {
+  let status = new Spinner('Verifying database information, please wait...');
+  status.start();
+  database.connect(answers.host, answers.port, answers.database, answers.username, answers.password, (err, db) => {
+    status.stop();
+    let prefix = 'MongoError: ';
+    if (err) {
+      err = err.toString().replace(prefix, '');
+      console.log(chalk.bgRed(`--> Incorrect database information: ${err}`));
+      return next(err);
+    }
+    console.log(chalk.green('Database information verified'));
+    next();
+  });
+};
 
 module.exports = {
   getDatabaseInfo: (next) => {

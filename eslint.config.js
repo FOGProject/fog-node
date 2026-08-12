@@ -35,7 +35,13 @@ const rules = {
   'callback-return':              ['error', ['done', 'proceed', 'next', 'onwards', 'callback', 'cb']],
   'camelcase':                    ['warn', {'properties':'always'}],
   'comma-style':                  ['warn', 'last'],
-  'curly':                        ['warn'],
+  // 'multi-line' rather than the template's default 'all'.  Every one of the
+  // 125 hits the stricter setting produced was a single-line guard clause
+  // (`if (!user) return exits.forbidden();`), a style this codebase uses
+  // consistently and deliberately.  'multi-line' still requires braces the
+  // moment a body wraps onto its own line, which is the case that actually
+  // causes bugs.
+  'curly':                        ['warn', 'multi-line'],
   'eqeqeq':                       ['error', 'always'],
   'eol-last':                     ['warn'],
   'handle-callback-err':          ['error'],
@@ -68,7 +74,10 @@ const rules = {
   'no-use-before-define':         ['error', {'functions':false}],
   'one-var':                      ['warn', 'never'],
   'prefer-arrow-callback':        ['warn', {'allowNamedFunctions':true}],
-  'quotes':                       ['warn', 'single', {'avoidEscape':false, 'allowTemplateLiterals':true}],
+  // avoidEscape lets a double-quoted string stand when it contains single
+  // quotes.  With the template's `false`, the autofix turned readable DataTables
+  // `dom` strings into escape soup ('<\'row\'<\'col-sm-12\'f>>...').
+  'quotes':                       ['warn', 'single', {'avoidEscape':true, 'allowTemplateLiterals':true}],
   'semi':                         ['warn', 'always'],
   'semi-spacing':                 ['warn', {'before':false, 'after':true}],
   'semi-style':                   ['warn', 'last']

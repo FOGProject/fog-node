@@ -11,16 +11,16 @@ module.exports = {
   friendlyName: 'List host tags',
   description: 'Distinct tags used across all hosts.',
   fn: async function () {
-    let req = this.req,
-      res = this.res;
+    let req = this.req;
+    let res = this.res;
 
     if (!_.get(req, 'user.permissions.stock.host.read')) {
       return res.forbidden();
     }
 
-    let hosts = await sails.models.host.find().select(['tags']),
-      seen = {},
-      out = [];
+    let hosts = await sails.models.host.find().select(['tags']);
+    let seen = {};
+    let out = [];
     for (let h of hosts) {
       if (!Array.isArray(h.tags)) { continue; }
       for (let t of h.tags) {

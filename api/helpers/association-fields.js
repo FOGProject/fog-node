@@ -26,10 +26,10 @@ module.exports = {
     if (!Model) {
       return {};
     }
-    let attrs = Model.attributes,
-      record = inputs.record || {},
-      skip = inputs.skip || [],
-      out = {};
+    let attrs = Model.attributes;
+    let record = inputs.record || {};
+    let skip = inputs.skip || [];
+    let out = {};
 
     for (let key of Object.keys(attrs)) {
       let attr = attrs[key];
@@ -37,11 +37,11 @@ module.exports = {
       let targetIdentity = attr.model || attr.collection;
       if (!targetIdentity || !sails.models[targetIdentity]) { continue; }
 
-      let Target = sails.models[targetIdentity],
-        sortKey = Target.attributes.name ? 'name ASC' : (Target.attributes.username ? 'username ASC' : 'createdAt ASC'),
-        candidates = await Target.find().sort(sortKey),
-        label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()),
-        labelOf = (c) => c.name || c.username || c.id;
+      let Target = sails.models[targetIdentity];
+      let sortKey = Target.attributes.name ? 'name ASC' : (Target.attributes.username ? 'username ASC' : 'createdAt ASC');
+      let candidates = await Target.find().sort(sortKey);
+      let label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
+      let labelOf = (c) => c.name || c.username || c.id;
 
       if (attr.model) {
         let curId = (record[key] && (record[key].id || record[key])) || null;

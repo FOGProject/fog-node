@@ -122,8 +122,8 @@ module.exports = {
   extends: {
     host: {
       form: async function (record) {
-        let snapins = await sails.models.snapin.find().sort('name ASC'),
-          checked = [];
+        let snapins = await sails.models.snapin.find().sort('name ASC');
+        let checked = [];
         if (record && record.id) {
           let links = await linkColl().find({ host: String(record.id) }).toArray();
           checked = links.map((l) => String(l.snapin));

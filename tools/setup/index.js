@@ -1,23 +1,23 @@
-const chalk = require('chalk'),
-  fs = require('fs'),
-  path = require('path'),
-  header = require('../lib/header'),
-  config = require('../lib/config'),
-  cfgPath = path.join(config.appPath, 'config'),
-  httpCfg = path.join(cfgPath, 'http.js'),
-  modelsCfg = path.join(cfgPath, 'models.js'),
-  localCfg = path.join(cfgPath, 'local.js'),
-  inquire = require('./lib/inquire'),
-  schema = require('./lib/schema'),
-  seedDemo = require('./seed-demo'),
-  secure = require('./lib/secure'),
-  async = require('async'),
-  CLI = require('clui'),
-  Spinner = CLI.Spinner,
-  welcome = `Welcome to the FOG installer.\nYou will be guided through configuring your new server for production.`;
+const chalk = require('chalk');
+const fs = require('fs');
+const path = require('path');
+const header = require('../lib/header');
+const config = require('../lib/config');
+const cfgPath = path.join(config.appPath, 'config');
+const httpCfg = path.join(cfgPath, 'http.js');
+const modelsCfg = path.join(cfgPath, 'models.js');
+const localCfg = path.join(cfgPath, 'local.js');
+const inquire = require('./lib/inquire');
+const schema = require('./lib/schema');
+const seedDemo = require('./seed-demo');
+const secure = require('./lib/secure');
+const async = require('async');
+const CLI = require('clui');
+const Spinner = CLI.Spinner;
+const welcome = `Welcome to the FOG installer.\nYou will be guided through configuring your new server for production.`;
 
-var COMPLETED = false,
-  payload = {};
+var COMPLETED = false;
+var payload = {};
 
 header.print(welcome);
 
@@ -70,7 +70,7 @@ async.waterfall([
     payload.auth.jwt.cookie = {
       signed: true,
       maxAge: 24 * 1000 * 60 * 60
-    }
+    };
     status.stop();
     console.log('JWT secret generated');
     next();

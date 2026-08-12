@@ -7,12 +7,12 @@ module.exports = {
     }
   },
   fn: async function () {
-    let req = this.req,
-      q = req.param('q') || '',
-      groups = await sails.helpers.globalSearch.with({
-        q,
-        permissions: _.get(req, 'user.permissions') || {}
-      });
+    let req = this.req;
+    let q = req.param('q') || '';
+    let groups = await sails.helpers.globalSearch.with({
+      q,
+      permissions: _.get(req, 'user.permissions') || {}
+    });
     return {
       title: q ? `Search: ${q}` : 'Search',
       header: q ? `Search results for "${q}"` : 'Search',

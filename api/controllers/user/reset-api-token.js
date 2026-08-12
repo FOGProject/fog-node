@@ -16,8 +16,8 @@ module.exports = {
     if (!_.get(req, 'user.permissions.stock.user.update')) return exits.forbidden();
     let target = await User.findOne({ id: inputs.id });
     if (!target) return exits.notFound();
-    let token = 'fpat_' + crypto.randomBytes(24).toString('hex'),
-      hash = crypto.createHash('sha256').update(token).digest('hex');
+    let token = 'fpat_' + crypto.randomBytes(24).toString('hex');
+    let hash = crypto.createHash('sha256').update(token).digest('hex');
     await User.updateOne({ id: inputs.id }).set({ apiTokenHash: hash });
     // The plaintext token is returned exactly once; we keep only the hash.
     return exits.success({ ok: true, token });

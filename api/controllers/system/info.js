@@ -1,5 +1,5 @@
-const si = require('systeminformation'),
-  moment = require('moment');
+const si = require('systeminformation');
+const moment = require('moment');
 module.exports = {
   friendlyName: 'Info',
   description: 'Info system.',
@@ -11,18 +11,18 @@ module.exports = {
     let options = {
       time: 'uptime',
       currentLoad: 'currentLoadUser, currentLoadSystem, currentLoadIdle',
-    },
-      sysinfo = await si.get(options),
-      user = (sysinfo.currentLoad.currentLoadUser || 0).toFixed(2),
-      sys = (sysinfo.currentLoad.currentLoadSystem || 0).toFixed(2),
-      idle = (sysinfo.currentLoad.currentLoadIdle || 0).toFixed(2),
-      upsecs = sysinfo.time.uptime * 1000,
-      durr = moment.duration(upsecs),
-      uptime = durr.humanize(),
-      loadaverage = `User: ${user}, Sys: ${sys}, Idle: ${idle}`;
+    };
+    let sysinfo = await si.get(options);
+    let user = (sysinfo.currentLoad.currentLoadUser || 0).toFixed(2);
+    let sys = (sysinfo.currentLoad.currentLoadSystem || 0).toFixed(2);
+    let idle = (sysinfo.currentLoad.currentLoadIdle || 0).toFixed(2);
+    let upsecs = sysinfo.time.uptime * 1000;
+    let durr = moment.duration(upsecs);
+    let uptime = durr.humanize();
+    let loadaverage = `User: ${user}, Sys: ${sys}, Idle: ${idle}`;
     return {
       uptime,
       loadaverage
-    }
+    };
   }
 };

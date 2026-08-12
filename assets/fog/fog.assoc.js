@@ -21,7 +21,7 @@
     return Array.prototype.slice.call(picker.querySelectorAll('.assoc-row'));
   }
   function visibleRows(picker) {
-    return rows(picker).filter(function (r) { return !r.classList.contains('assoc-hidden'); });
+    return rows(picker).filter((r) => { return !r.classList.contains('assoc-hidden'); });
   }
   function rowBox(r) {
     return r.querySelector('td.assoc-check input[type="checkbox"]');
@@ -30,9 +30,11 @@
   // Recompute row highlight, the count, and the select-all (checked /
   // indeterminate) state for a single picker.
   function refresh(picker) {
-    var all = rows(picker), selected = 0;
-    all.forEach(function (r) {
-      var cb = rowBox(r), on = !!(cb && cb.checked);
+    var all = rows(picker);
+    var selected = 0;
+    all.forEach((r) => {
+      var cb = rowBox(r);
+      var on = !!(cb && cb.checked);
       r.classList.toggle('selected', on);
       if (on) { selected++; }
     });
@@ -46,7 +48,7 @@
     if (master) {
       // Base the master state on the rows the user can currently see.
       var vis = visibleRows(picker);
-      var visOn = vis.filter(function (r) { var c = rowBox(r); return c && c.checked; }).length;
+      var visOn = vis.filter((r) => { var c = rowBox(r); return c && c.checked; }).length;
       master.checked = vis.length > 0 && visOn === vis.length;
       master.indeterminate = visOn > 0 && visOn < vis.length;
     }
@@ -58,26 +60,26 @@
   }
 
   // Checkbox changes: select-all toggles the visible rows; any change refreshes.
-  document.addEventListener('change', function (e) {
+  document.addEventListener('change', (e) => {
     var t = e.target;
     if (!t || t.type !== 'checkbox') { return; }
     var picker = t.closest && t.closest('[data-assoc-picker]');
     if (!picker) { return; }
     if (t.hasAttribute('data-assoc-all')) {
       var on = t.checked;
-      visibleRows(picker).forEach(function (r) { var c = rowBox(r); if (c) { c.checked = on; } });
+      visibleRows(picker).forEach((r) => { var c = rowBox(r); if (c) { c.checked = on; } });
     }
     refresh(picker);
   });
 
   // Filter: hide non-matching rows by their label text.
-  document.addEventListener('input', function (e) {
+  document.addEventListener('input', (e) => {
     var t = e.target;
     if (!t || !t.hasAttribute || !t.hasAttribute('data-assoc-search')) { return; }
     var picker = t.closest && t.closest('[data-assoc-picker]');
     if (!picker) { return; }
     var q = t.value.trim().toLowerCase();
-    rows(picker).forEach(function (r) {
+    rows(picker).forEach((r) => {
       var name = (r.querySelector('.assoc-name') || {}).textContent || '';
       r.classList.toggle('assoc-hidden', !!q && name.toLowerCase().indexOf(q) === -1);
     });
@@ -89,7 +91,7 @@
   else { document.addEventListener('DOMContentLoaded', ready); }
 
   // The create/edit modal injects a server-rendered form once shown.
-  document.addEventListener('shown.bs.modal', function (e) { refreshAll(e.target); });
+  document.addEventListener('shown.bs.modal', (e) => { refreshAll(e.target); });
 
   // Let code that injects its own pickers re-sync them.
   window.fogInitAssoc = refreshAll;

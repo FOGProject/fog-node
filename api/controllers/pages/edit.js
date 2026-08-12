@@ -18,12 +18,12 @@ module.exports = {
     }
   },
   fn: async function () {
-    let req = this.req,
-      segments = req.path.split('/').filter(Boolean),
-      plural = segments[0],
-      model = plural.replace(/s$/, ''),
-      id = req.param('id'),
-      skip = ['id', 'createdAt', 'updatedAt', 'password', 'permissions'];
+    let req = this.req;
+    let segments = req.path.split('/').filter(Boolean);
+    let plural = segments[0];
+    let model = plural.replace(/s$/, '');
+    let id = req.param('id');
+    let skip = ['id', 'createdAt', 'updatedAt', 'password', 'permissions'];
 
     if (!model || !sails.models[model]) {
       throw 'notFound';
@@ -35,8 +35,8 @@ module.exports = {
       throw 'notFound';
     }
 
-    let attrs = sails.models[model].attributes,
-      formItems = {};
+    let attrs = sails.models[model].attributes;
+    let formItems = {};
     Object.keys(attrs).forEach((key) => {
       let attr = attrs[key];
       if (attr.collection || attr.model) { return; } // associations
@@ -70,9 +70,9 @@ module.exports = {
         return;
       }
 
-      let label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()),
-        val = record[key],
-        item = { text: label, id: `${model}-${key}`, classes: [], textarea: false };
+      let label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
+      let val = record[key];
+      let item = { text: label, id: `${model}-${key}`, classes: [], textarea: false };
 
       if (attr.type === 'boolean') {
         item.type = 'checkbox';
@@ -98,13 +98,13 @@ module.exports = {
       Object.assign(formItems, await sails.plugins.hostForm(record));
     }
 
-    let title = model.charAt(0).toUpperCase() + model.slice(1),
-      data = {
-        model,
-        header: `Edit ${title}`,
-        title: `Edit ${title}`,
-        partialname: false
-      };
+    let title = model.charAt(0).toUpperCase() + model.slice(1);
+    let data = {
+      model,
+      header: `Edit ${title}`,
+      title: `Edit ${title}`,
+      partialname: false
+    };
     let tabOrder = await sails.helpers.formTabs.with({ model, formItems });
     data.form = await sails.helpers.formGenerator.with({
       model,

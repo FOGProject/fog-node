@@ -1,6 +1,6 @@
-const fs = require('fs-extra'),
-  path = require('path'),
-  partialPath = path.join(__dirname, '..', '..', '..','views','pages','partials');
+const fs = require('fs-extra');
+const path = require('path');
+const partialPath = path.join(__dirname, '..', '..', '..','views','pages','partials');
 module.exports = {
   friendlyName: 'View login',
   description: 'Display "Login" page.',

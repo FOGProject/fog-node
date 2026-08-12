@@ -4,33 +4,33 @@
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
-const bcrypt = require('bcryptjs'),
-  flatten = require('flat'),
-  filterPermissions = function(permissions) {
-    if (!permissions) permissions = {};
-    let toValidate = flatten(permissions);
-    // Filter out unknown permissions
-    for (var i = 0; i < toValidate.length; i++) {
-      if (!_.get(sails.config.permissions, toValidate[i])) _.set(permissions, toValidate[i], undefined);
+const bcrypt = require('bcryptjs');
+const flatten = require('flat');
+const filterPermissions = function(permissions) {
+  if (!permissions) permissions = {};
+  let toValidate = flatten(permissions);
+  // Filter out unknown permissions
+  for (var i = 0; i < toValidate.length; i++) {
+    if (!_.get(sails.config.permissions, toValidate[i])) _.set(permissions, toValidate[i], undefined);
+  }
+  // Merge in the default permissions, ensuring all values are set
+  // Note that the 'right' object being merged overrides any values set
+  // by the 'left' object.
+  return _.extend(sails.config.permissions, permissions);
+};
+const deepMap = function(obj, cb) {
+  let out = {};
+  Object.keys(obj).forEach((k) => {
+    let val;
+    if (obj[k] !== null && typeof obj[k] === 'object') {
+      val = deepMap(obj[k], cb);
+    } else {
+      val = cb(obj[k], k);
     }
-    // Merge in the default permissions, ensuring all values are set
-    // Note that the 'right' object being merged overrides any values set
-    // by the 'left' object.
-    return _.extend(sails.config.permissions, permissions);
-  },
-  deepMap = function(obj, cb) {
-    let out = {};
-    Object.keys(obj).forEach(function(k) {
-      let val;
-      if (obj[k] !== null && typeof obj[k] === 'object') {
-        val = deepMap(obj[k], cb);
-      } else {
-        val = cb(obj[k], k);
-      }
-      out[k] = val;
-    });
-    return out;
-  };
+    out[k] = val;
+  });
+  return out;
+};
 module.exports = {
   attributes: {
     username: {
@@ -73,7 +73,7 @@ module.exports = {
       for (var i = 0; i < models.length; i++) {
         for (var j = 0; j < roles.length; j++) {
           if (roles[j].isAdmin) {
-            roles[j].permissions = deepMap(sails.config.permissions, function(v, k) {
+            roles[j].permissions = deepMap(sails.config.permissions, (v, k) => {
               return true;
             });
           } else {

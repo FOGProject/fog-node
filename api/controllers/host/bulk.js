@@ -10,16 +10,16 @@ module.exports = {
   friendlyName: 'Bulk host update',
   description: 'Apply tag/image changes to many selected hosts.',
   fn: async function () {
-    let req = this.req,
-      res = this.res,
-      p = req.allParams(),
-      perms = req.user && req.user.permissions && req.user.permissions.stock && req.user.permissions.stock.host;
+    let req = this.req;
+    let res = this.res;
+    let p = req.allParams();
+    let perms = req.user && req.user.permissions && req.user.permissions.stock && req.user.permissions.stock.host;
 
     if (!perms || !perms.update) { return res.forbidden(); }
 
-    let toArr = (v) => (Array.isArray(v) ? v : (v ? [v] : [])).map((x) => String(x).trim()).filter(Boolean),
-      addTags = toArr(p.addTags),
-      removeTags = toArr(p.removeTags).map((t) => t.toLowerCase());
+    let toArr = (v) => (Array.isArray(v) ? v : (v ? [v] : [])).map((x) => String(x).trim()).filter(Boolean);
+    let addTags = toArr(p.addTags);
+    let removeTags = toArr(p.removeTags).map((t) => t.toLowerCase());
 
     // Resolve a requested image by name or id; '' (or null) clears it.
     let imageSet; // undefined => leave image alone
@@ -38,10 +38,11 @@ module.exports = {
     // every host matching the current list search (name/description/tags
     // substring; empty search = every host). Filtering in JS keeps the match
     // semantics predictable and avoids adapter-specific array/contains quirks.
-    let hosts, updated = 0;
+    let hosts;
+    let updated = 0;
     if (p.all) {
-      let s = String(p.search || '').trim().toLowerCase(),
-        everyHost = await sails.models.host.find();
+      let s = String(p.search || '').trim().toLowerCase();
+      let everyHost = await sails.models.host.find();
       hosts = s
         ? everyHost.filter((h) => [h.name, h.description, Array.isArray(h.tags) ? h.tags.join(' ') : '']
           .join(' ').toLowerCase().indexOf(s) !== -1)

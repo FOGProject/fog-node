@@ -1,5 +1,5 @@
-const passport = require('passport'),
-  jwt = require('jsonwebtoken');
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
 module.exports = {
   friendlyName: 'Login',
   description: 'Login auth.',
@@ -9,9 +9,9 @@ module.exports = {
     }
   },
   fn: async function (inputs, exits) {
-    let req = this.req,
-      res = this.res;
-    await passport.authenticate(sails.config.globals.authenticationMechanisms, async function(err, user, info) {
+    let req = this.req;
+    let res = this.res;
+    await passport.authenticate(sails.config.globals.authenticationMechanisms, async (err, user, info) => {
       if (err) return exits.error(err);
       // No user => bad credentials. Return a clean 401 (JSON) or bounce back to
       // the login form, instead of calling req.login(undefined) which throws a
@@ -24,13 +24,13 @@ module.exports = {
         }
         return res.redirect('/login?failed=1');
       }
-      await req.login(user, async function(err) {
+      await req.login(user, async (err) => {
         if (err) return exits.error(err);
         await jwt.sign(
           {user: user.id},
           sails.config.auth.jwt.secret,
           sails.config.auth.jwt.options,
-          async function(err, token) {
+          async (err, token) => {
             if (err) return exits.error(err);
             if (!token) return exits.error('Invalid token created');
             if (req.param('remember-me') == 'on') res.cookie('jwt', token, sails.config.auth.jwt.cookie);

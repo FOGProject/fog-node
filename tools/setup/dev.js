@@ -24,26 +24,26 @@
  * This is for LOCAL DEVELOPMENT ONLY. For a real install use
  * `node tools/setup/index.js`.
  */
-const fs = require('fs'),
-  path = require('path'),
-  config = require('../lib/config'),
-  secure = require('./lib/secure'),
-  schema = require('./lib/schema'),
-  cfgPath = path.join(config.appPath, 'config'),
-  localCfg = path.join(cfgPath, 'local.js'),
-  modelsCfg = path.join(cfgPath, 'models.js'),
-  env = process.env,
-  db = {
-    host: env.FOG_DEV_DB_HOST || '127.0.0.1',
-    port: env.FOG_DEV_DB_PORT || '27017',
-    name: env.FOG_DEV_DB_NAME || 'fog',
-    user: env.FOG_DEV_DB_USER || '',
-    pass: env.FOG_DEV_DB_PASS || ''
-  },
-  admin = {
-    email: env.FOG_DEV_ADMIN_EMAIL || 'admin@example.com',
-    password: env.FOG_DEV_ADMIN_PASSWORD || 'fogadmin1'
-  };
+const fs = require('fs');
+const path = require('path');
+const config = require('../lib/config');
+const secure = require('./lib/secure');
+const schema = require('./lib/schema');
+const cfgPath = path.join(config.appPath, 'config');
+const localCfg = path.join(cfgPath, 'local.js');
+const modelsCfg = path.join(cfgPath, 'models.js');
+const env = process.env;
+const db = {
+  host: env.FOG_DEV_DB_HOST || '127.0.0.1',
+  port: env.FOG_DEV_DB_PORT || '27017',
+  name: env.FOG_DEV_DB_NAME || 'fog',
+  user: env.FOG_DEV_DB_USER || '',
+  pass: env.FOG_DEV_DB_PASS || ''
+};
+const admin = {
+  email: env.FOG_DEV_ADMIN_EMAIL || 'admin@example.com',
+  password: env.FOG_DEV_ADMIN_PASSWORD || 'fogadmin1'
+};
 
 function mongoUrl() {
   let auth = '';

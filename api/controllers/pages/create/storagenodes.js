@@ -1,6 +1,6 @@
-const fs = require('fs-extra'),
-  path = require('path'),
-  partialPath = path.join(__dirname, '..', '..', '..','views','pages','partials','create');
+const fs = require('fs-extra');
+const path = require('path');
+const partialPath = path.join(__dirname, '..', '..', '..','views','pages','partials','create');
 module.exports = {
   friendlyName: 'View storage nodes create',
   description: 'Display "Storage Node create" page.',

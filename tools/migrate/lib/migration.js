@@ -1,15 +1,15 @@
-const fs = require('fs'),
-  path = require('path'),
-  migrationsFolder = path.join(__dirname, '..', '..', '..', 'migrations'),
-  config = require('../../lib/config'),
-  database = require('../../lib/database'),
-  setting = require('../../lib/setting');
+const fs = require('fs');
+const path = require('path');
+const migrationsFolder = path.join(__dirname, '..', '..', '..', 'migrations');
+const config = require('../../lib/config');
+const database = require('../../lib/database');
+const setting = require('../../lib/setting');
 module.exports = {
   getMigrations: (start, end) => {
     if (start == end) return [];
     if (start < end && start == end+1) return [];
-    let revisions = [],
-      toLoad = [];
+    let revisions = [];
+    let toLoad = [];
     if (start < end) {
       for (var i = start + 1; i <= end; i++) {
         toLoad.push(i);
@@ -50,8 +50,8 @@ module.exports = {
       if (err) return next(err);
       module.exports.getCurrentRevision(db, (err, current) => {
         if (err) return next(err);
-        let upgrade = target > current,
-          revisions;
+        let upgrade = target > current;
+        let revisions;
         try {
           revisions = module.exports.getMigrations(current, target);
         } catch (e) {

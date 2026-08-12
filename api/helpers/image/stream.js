@@ -1,6 +1,6 @@
-const path = require('path'),
-  fs = require('fs'),
-  progress = require('progress-stream');
+const path = require('path');
+const fs = require('fs');
+const progress = require('progress-stream');
 module.exports = {
   friendlyName: 'Stream',
   description: 'Stream image.',
@@ -36,10 +36,10 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let id = inputs.id,
-      partition = inputs.partition,
-      target = inputs.target,
-      imageDir = sails.config.custom.imageStorePath || '/images';
+    let id = inputs.id;
+    let partition = inputs.partition;
+    let target = inputs.target;
+    let imageDir = sails.config.custom.imageStorePath || '/images';
     await sails.helpers.image.aquireReadLock(id).switch({
       error: async (err) => {
         return exits.error(err);
@@ -56,8 +56,8 @@ module.exports = {
           fs.stat(partitionPath, (err, stat) => {
             if (err) return exits.error(err);
             if (!stat) return exits.invalid('Cannot get status of file');
-            let stream = fs.createReadStream(partitionPath),
-              progressStream = progress({length: stat.size, time: 100});
+            let stream = fs.createReadStream(partitionPath);
+            let progressStream = progress({length: stat.size, time: 100});
             stream.on('error', (err) => {
               if (err) return exits.error(err);
             });
