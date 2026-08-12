@@ -11,16 +11,16 @@ module.exports = {
     let revisions = [];
     let toLoad = [];
     if (start < end) {
-      for (var i = start + 1; i <= end; i++) {
+      for (let i = start + 1; i <= end; i++) {
         toLoad.push(i);
       }
     } else {
-      for (var i = start; i > end; i--) {
+      for (let i = start; i > end; i--) {
         toLoad.push(i);
       }
     }
 
-    for (var i = 0; i < toLoad.length; i++) {
+    for (let i = 0; i < toLoad.length; i++) {
       try {
         revisions[i] = require(path.join(migrationsFolder, toLoad[i]));
         revisions[i]._meta.schema = toLoad[i];

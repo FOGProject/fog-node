@@ -114,6 +114,11 @@ module.exports = {
           }
           return true;
         }
+        // Declared once here rather than repeated with `var` in each branch
+        // below. All four copies computed this identical expression, and the
+        // unconditional one further down recomputed it a fifth time, so a
+        // single block-scoped binding is equivalent.
+        let col = column.data.split('.')[0];
         if (_.isPlainObject(column.search.value)) {
           if ((column.search.value.from !== '') && (column.search.value.to !== '')) {
             whereQuery[column.data] = {
@@ -122,22 +127,17 @@ module.exports = {
             };
           }
         } else if (_.isString(column.search.value)) {
-          var col = column.data.split('.')[0];
           var regexp = new RegExp(column.search.value, 'i');
           if (!_.isEqual(column.search.value, '')) {
             whereQuery[col] = regexp;
           }
         } else if (_.isNumber(column.search.value)) {
-          var col = column.data.split('.')[0];
           whereQuery[col] = column.search.value;
         } else if (_.isArray(column.search.value)) {
-          var col = column.data.split('.')[0];
           whereQuery[col] = column.search.value;
         }
 
         // This handles the global search function of this column
-        var col = column.data.split('.')[0];
-
         var filter = {};
         if (!_.isEqual(_options.search.value, '')) {
           filter[col] = {
