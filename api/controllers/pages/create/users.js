@@ -82,7 +82,7 @@ module.exports = {
       partialname: false
     };
     let partial = path.join(partialPath, `${data.model}.js`);
-    data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`,
+    data.title = `Create New ${data.model.charAt(0).toUpperCase() + data.model.slice(1)}`;
     data.form = await sails.helpers.formGenerator.with({
       model: data.model,
       method: 'post',

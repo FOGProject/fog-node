@@ -18,14 +18,16 @@ const filterPermissions = function(permissions) {
   // by the 'left' object.
   return _.extend(sails.config.permissions, permissions);
 };
-const deepMap = function(obj, cb) {
+// See the matching note in api/models/Role.js: `mapFn` is a value transform,
+// not a continuation, and was named `cb` only by convention.
+const deepMap = function(obj, mapFn) {
   let out = {};
   Object.keys(obj).forEach((k) => {
     let val;
     if (obj[k] !== null && typeof obj[k] === 'object') {
-      val = deepMap(obj[k], cb);
+      val = deepMap(obj[k], mapFn);
     } else {
-      val = cb(obj[k], k);
+      val = mapFn(obj[k], k);
     }
     out[k] = val;
   });
