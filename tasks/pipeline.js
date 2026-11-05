@@ -90,7 +90,6 @@ var jsFilesToInject = [
   'js/datatables.net-rowgroup/js/dataTables.rowGroup.min.js',
   'js/datatables.net-rowreorder/js/dataTables.rowReorder.min.js',
   'js/datatables.net-scroller/js/dataTables.scroller.min.js',
-  'js/datatables.net-searchpanes/js/dataTables.searchPanes.min.js',
   'js/datatables.net-select/js/dataTables.select.min.js',
   'admin-lte/dist/js/adminlte.min.js',
   'js/**/*.js',

@@ -56,6 +56,9 @@ function buildOuiPool() {
   const blc = BRANDS.map((b) => b.toLowerCase());
   const pool = [];
   for (const oui in OUI_DB) {
+    // Sails loads api/services/mac-oui.json as a service and adds a `sails`
+    // property to the same cached object, so skip anything not a vendor name.
+    if (typeof OUI_DB[oui] !== 'string') { continue; }
     const v = OUI_DB[oui].toLowerCase();
     for (let i = 0; i < blc.length; i++) { if (v.indexOf(blc[i]) !== -1) { pool.push(oui); break; } }
   }
@@ -210,7 +213,8 @@ async function seedDemoData(opts) {
   return { seededHosts: made, totalHosts, images: imageIds.length, storageGroups: groups.length };
 }
 
-module.exports = { seedDemoData, BRANDS };
+// buildOuiPool is exported for test/setup/seed-demo.test.js.
+module.exports = { seedDemoData, BRANDS, buildOuiPool };
 
 // ---------- standalone CLI ----------
 if (require.main === module) {
