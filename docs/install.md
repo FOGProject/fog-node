@@ -126,8 +126,9 @@ check ends the install with exit code 1. It does not ask again.
 }
 ```
 
-Leave out a key to take its default. The file holds the Administrator
-password, so delete it after the install.
+Leave out a key to take its default. `admin.email` and `admin.password` have
+no default, so they are required. `seed.seed` must be `true` or `false`. The
+file holds the Administrator password, so delete it after the install.
 
 ## Start fog-node
 

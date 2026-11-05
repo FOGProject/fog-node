@@ -246,7 +246,7 @@ jobs:
         run: |
           brew tap mongodb/brew
           brew install mongodb-community@7.0 redis
-          brew services start mongodb/brew/mongodb-community@7.0
+          brew services start mongodb-community@7.0
           brew services start redis
           for i in $(seq 1 60); do
             nc -z 127.0.0.1 27017 && nc -z 127.0.0.1 6379 && exit 0

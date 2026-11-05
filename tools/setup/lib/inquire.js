@@ -16,6 +16,10 @@ const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require
 // keeps its default and its validation. A bad answer or a failed check ends
 // the install with exit code 1 instead of asking again.
 // docs/install.md shows the file format.
+const fail = (message) => {
+  console.log(chalk.bgRed(`--> ${message}`));
+  process.exit(1);
+};
 const answersAt = process.argv.indexOf('--answers');
 const answersFile = answersAt === -1 ? null : process.argv[answersAt + 1];
 let fileAnswers = null;
@@ -23,17 +27,11 @@ if (answersFile) {
   try {
     fileAnswers = JSON.parse(fs.readFileSync(answersFile, 'utf8'));
   } catch (err) {
-    console.log(chalk.bgRed(`--> Cannot read the answers file ${answersFile}: ${err.message}`));
-    process.exit(1);
+    fail(`Cannot read the answers file ${answersFile}: ${err.message}`);
   }
 } else if (answersAt !== -1) {
-  console.log(chalk.bgRed('--> --answers needs a file path'));
-  process.exit(1);
+  fail('--answers needs a file path');
 }
-const fail = (message) => {
-  console.log(chalk.bgRed(`--> ${message}`));
-  process.exit(1);
-};
 // inquirer.prompt, or the same questions answered from the answers file.
 // `section` is the answers file key for this group of questions.
 const prompt = (section, questions) => {
@@ -45,6 +43,11 @@ const prompt = (section, questions) => {
     let value = Object.prototype.hasOwnProperty.call(given, q.name) ? given[q.name] : q.default;
     if (value === undefined) value = q.type === 'confirm' ? false : '';
     if (q.type === 'number') value = Number(value);
+    // A terminal yes/no can only give a boolean. A string such as "no" is
+    // truthy, so it would mean yes; refuse it.
+    if (q.type === 'confirm' && typeof value !== 'boolean') {
+      fail(`Answers file ${section}.${q.name}: use true or false`);
+    }
     if (q.validate) {
       const ok = q.validate(value);
       if (ok !== true) fail(`Answers file ${section}.${q.name}: ${ok}`);

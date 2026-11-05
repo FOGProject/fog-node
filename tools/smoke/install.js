@@ -73,7 +73,9 @@ function runInstaller() {
   };
   const file = path.join(work, 'answers.json');
   fs.writeFileSync(file, JSON.stringify(answers));
-  const run = spawnSync(process.execPath, ['tools/setup/index.js', '--answers', file], {cwd: root, encoding: 'utf8'});
+  // A timeout, so an installer that waits on a prompt fails instead of hanging.
+  const run = spawnSync(process.execPath, ['tools/setup/index.js', '--answers', file],
+    {cwd: root, encoding: 'utf8', timeout: 300000});
   if (run.status !== 0) {
     throw new Error(`the installer exited ${run.status}:\n${(run.stdout + run.stderr).slice(-2000)}`);
   }
@@ -125,9 +127,28 @@ function socketHandshake(origin) {
 
 async function main() {
   const saved = configs.map((f) => (fs.existsSync(f) ? fs.readFileSync(f) : null));
+  // A copy on disk too, in case this process dies before it can restore.
+  const backup = path.join(work, 'config-backup');
+  fs.mkdirSync(backup);
+  configs.forEach((f, i) => saved[i] !== null && fs.writeFileSync(path.join(backup, path.basename(f)), saved[i]));
+  if (saved.some((s) => s !== null)) {
+    console.log(`Your config/local.js and config/models.js are saved in ${backup}; they are put back at the end.`);
+  }
   const log = [];
   let child;
   let failed = false;
+  const restore = () => {
+    server.stop(child);
+    configs.forEach((f, i) => (saved[i] === null ? fs.rmSync(f, {force: true}) : fs.writeFileSync(f, saved[i])));
+    fs.rmSync(work, {recursive: true, force: true});
+  };
+  // Ctrl-C or a kill while the installed config is in place: restore first.
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.on(signal, () => {
+      restore();
+      process.exit(1);
+    });
+  }
   const step = async (label, fn) => {
     await fn();
     console.log(`ok    ${label}`);
@@ -139,20 +160,18 @@ async function main() {
     await step('production lift with the installed config', () => server.waitForReady(child, base));
     await step('sign in through the login form', signIn);
     await step('sockets accept the installed URL', async () => {
-      const s = await socketHandshake(base);
-      if (s !== 'open') throw new Error(`sockets refused the installed URL: ${s}`);
+      const result = await socketHandshake(base);
+      if (result !== 'open') throw new Error(`sockets refused the installed URL: ${result}`);
     });
     await step('sockets refuse another origin', async () => {
-      const s = await socketHandshake('http://other.example');
-      if (s === 'open') throw new Error('sockets accepted http://other.example');
+      const result = await socketHandshake('http://other.example');
+      if (result === 'open') throw new Error('sockets accepted http://other.example');
     });
   } catch (e) {
     failed = true;
     console.log(`FAIL  ${e.message}`);
   } finally {
-    server.stop(child);
-    configs.forEach((f, i) => (saved[i] === null ? fs.rmSync(f, {force: true}) : fs.writeFileSync(f, saved[i])));
-    fs.rmSync(work, {recursive: true, force: true});
+    restore();
   }
   if (failed) {
     console.log(`\nLast fog-node output:\n${log.slice(-40).join('\n')}`);
