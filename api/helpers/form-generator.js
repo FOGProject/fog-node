@@ -110,12 +110,14 @@ module.exports = {
               ? `
                     <span class="input-group-text" title="${escAttr(vendor)}" aria-label="Vendor: ${escAttr(vendor)}"><i class="fa fa-info-circle text-muted"></i></span>`
               : '';
+            // `pattern` escapes the hyphen: the browser's regex `v` flag rejects
+            // a bare `-` in [:.-]. Same pattern as assets/fog/fog.maclist.js.
             field += `
                   <div class="input-group mb-1 maclist-row">
                     <div class="input-group-text">
                       <input type="radio" name="__primac" title="Primary MAC"${idx === 0 ? ' checked' : ''}/>
                     </div>
-                    <input type="text" class="form-control" name="macs[]" value="${m}" placeholder="aa:bb:cc:dd:ee:ff" pattern="[0-9A-Fa-f]{2}([:.-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. aa:bb:cc:dd:ee:ff"/>${vendorAddon}
+                    <input type="text" class="form-control" name="macs[]" value="${m}" placeholder="aa:bb:cc:dd:ee:ff" pattern="[0-9A-Fa-f]{2}([:.\\-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. aa:bb:cc:dd:ee:ff"/>${vendorAddon}
                     <button type="button" class="btn btn-outline-danger maclist-remove" tabindex="-1">&times;</button>
                   </div>`;
           });

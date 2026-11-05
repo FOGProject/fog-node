@@ -34,7 +34,7 @@ const password = process.env.FOG_UI_PASSWORD || 'fogadmin1';
 const outDir = path.join(root, 'ui-smoke-out');
 
 // Every page in config/routes.js that renders the layout, except the edit
-// pages, which need a record id (checkCreate opens one). The sidebar also
+// pages, which need a record id (checkRoundTrip opens them). The sidebar also
 // links pages that have no route yet, for example /hosts/pending; they 404
 // today, so they are not here. The list pages load their rows over AJAX into
 // DataTables, so `table: true` also waits for DataTables to initialize.
@@ -154,22 +154,66 @@ async function checkPage(page, spec) {
   }
 }
 
-// One full round trip through a form: create a storage group in the UI, find
-// it in the list, then open its edit page. This proves the CSRF token, the
-// save action, the list's AJAX load, and the edit form.
-async function checkCreate(page) {
-  const name = `ui-smoke-${Date.now()}`;
-  await page.goto(`${base}/storagegroups/create`, {waitUntil: 'networkidle'});
-  await page.fill('#sgname', name);
-  await Promise.all([page.waitForNavigation({waitUntil: 'networkidle'}), page.click('#storagegroup-create button.btn-success')]);
-  await page.goto(`${base}/storagegroups`, {waitUntil: 'networkidle'});
+// One full round trip through a form: create a record in the UI, find it in
+// the list, then open its edit page. This proves the CSRF token, the save
+// action, the list's AJAX load, and the edit form. `fill` types the fields of
+// the create form; `onEdit` runs extra checks on the edit page.
+async function checkRoundTrip(page, {list, form, name, fill, onEdit}) {
+  await page.goto(`${base}${list}/create`, {waitUntil: 'networkidle'});
+  await fill();
+  await Promise.all([page.waitForNavigation({waitUntil: 'networkidle'}), page.click(`#${form} button.btn-success`)]);
+  await page.goto(base + list, {waitUntil: 'networkidle'});
   await page.locator('table tbody', {hasText: name}).waitFor({timeout: 10000});
-  // The list's Edit button opens /<model>/edit/<row id> (assets/fog/fog.common.js).
-  const id = await page.evaluate((n) => jQuery.fn.dataTable.tables({api: true}).rows().data().toArray()
-    .find((r) => r.name === n).id, name);
-  await checkPage(page, {path: `/storagegroups/edit/${id}`});
+  // The list's Edit button opens <list>/edit/<row id> (assets/fog/fog.common.js).
+  const id = await page.evaluate((n) => {
+    const row = jQuery.fn.dataTable.tables({api: true}).rows().data().toArray().find((r) => r.name === n);
+    return row && row.id;
+  }, name);
+  if (!id) throw new Error(`no DataTables row has the name ${name}`);
+  await checkPage(page, {path: `${list}/edit/${id}`});
   if (!(await page.locator(`input[value="${name}"]`).count())) throw new Error('the edit form does not show the saved name');
+  if (onEdit) await onEdit();
 }
+
+const checkStorageGroup = (page) => {
+  const name = `ui-smoke-${Date.now()}`;
+  return checkRoundTrip(page, {
+    list: '/storagegroups', form: 'storagegroup-create', name,
+    fill: () => page.fill('#sgname', name)
+  });
+};
+
+// The host edit page is the only one with the MAC list and tag input widgets
+// (api/controllers/pages/edit.js), so it also drives both.
+const checkHost = (page) => {
+  const stamp = Date.now();
+  const name = `uismoke${stamp}`;
+  const mac = `02:00:${(stamp % 0xffffffff).toString(16).padStart(8, '0').match(/../g).join(':')}`;
+  return checkRoundTrip(page, {
+    list: '/hosts', form: 'host-create', name,
+    fill: async () => {
+      await page.fill('#hostname', name);
+      // The MAC field is on its own tab, hidden until a user opens it.
+      await page.getByRole('tab', {name: 'MAC Addresses'}).click();
+      await page.fill('input[name="macs[]"]', mac);
+    },
+    onEdit: async () => {
+      await page.getByRole('tab', {name: 'MAC Addresses'}).click();
+      const macRows = page.locator('input[name="macs[]"]');
+      const before = await macRows.count();
+      await page.click('.maclist-add');
+      if (await macRows.count() !== before + 1) throw new Error('the MAC list "add" button did not add a row');
+      // The browser must reject a bad MAC (the `pattern` attribute).
+      await macRows.last().fill('not-a-mac');
+      if (await macRows.last().evaluate((el) => el.checkValidity())) throw new Error('the MAC field accepted "not-a-mac"');
+      await macRows.last().fill('');
+      await page.getByRole('tab', {name: 'General'}).click();
+      await page.fill('.fog-taginput-entry', 'ui-smoke');
+      await page.press('.fog-taginput-entry', 'Enter');
+      await page.locator('.fog-tag', {hasText: 'ui-smoke'}).waitFor({timeout: 5000});
+    }
+  });
+};
 
 async function main() {
   const server = startServer();
@@ -204,7 +248,8 @@ async function main() {
     for (const spec of PAGES) {
       await report(page, spec.path, await collectErrors(page, () => checkPage(page, spec)));
     }
-    await report(page, 'create and edit a storage group', await collectErrors(page, () => checkCreate(page)));
+    await report(page, 'create and edit a storage group', await collectErrors(page, () => checkStorageGroup(page)));
+    await report(page, 'create and edit a host', await collectErrors(page, () => checkHost(page)));
   } catch (e) {
     failed++;
     console.log(`FAIL  ${e.message}`);

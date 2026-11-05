@@ -4,12 +4,14 @@
 // dropped.
 (function($) {
   function rowHtml() {
+    // `pattern` escapes the hyphen: the browser's regex `v` flag rejects a bare
+    // `-` in [:.-]. Same pattern as api/helpers/form-generator.js.
     return `
       <div class="input-group mb-1 maclist-row">
         <div class="input-group-text">
           <input type="radio" name="__primac" title="Primary MAC"/>
         </div>
-        <input type="text" class="form-control" name="macs[]" placeholder="aa:bb:cc:dd:ee:ff" pattern="[0-9A-Fa-f]{2}([:.-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. aa:bb:cc:dd:ee:ff"/>
+        <input type="text" class="form-control" name="macs[]" placeholder="aa:bb:cc:dd:ee:ff" pattern="[0-9A-Fa-f]{2}([:.\\-]?[0-9A-Fa-f]{2}){5}" title="A MAC address, e.g. aa:bb:cc:dd:ee:ff"/>
         <button type="button" class="btn btn-outline-danger maclist-remove" tabindex="-1">&times;</button>
       </div>`;
   }
