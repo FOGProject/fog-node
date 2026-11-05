@@ -36,7 +36,7 @@
     "grunt": "1.6.2",
     "icheck-bootstrap": "^3.0.1",
     "inputmask": "^5.0.10",
-    "inquirer": "^8.2.7",
+    "inquirer": "^14.2.5",
     "joi": "^18.3.1",
     "jquery": "^3.7.1",
     "jsonwebtoken": "~>9.0.0",
@@ -115,6 +115,6 @@
   "author": "FOG Project",
   "license": "GPL v3",
   "engines": {
-    "node": ">=18"
+    "node": "^22.13.0 || >=23.5.0"
   }
 }

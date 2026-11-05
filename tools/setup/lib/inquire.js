@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const inquirer = require('inquirer');
+// inquirer 9+ is ESM-only. Node 22 loads it with require(), and the
+// inquirer object is the module's default export.
+const inquirer = require('inquirer').default;
 const CLI = require('clui');
 const Spinner = CLI.Spinner;
 const chalk = require('chalk');
@@ -41,6 +43,9 @@ module.exports = {
         type: 'number',
         message: 'Enter the database server port:',
         default: 27017,
+        // inquirer 14 can return undefined for an emptied number field, and
+        // then skips validate. `required` rejects the empty answer instead.
+        required: true,
         validate: (value) => {
           if (isNaN(value) || value < 1 || value > 65535) return 'You must enter a valid port number';
           return true;
@@ -180,6 +185,7 @@ module.exports = {
         type: 'number',
         message: 'How many sample hosts?',
         default: 1000,
+        required: true, // See the database port question.
         when: (answers) => answers.seed,
         validate: (value) => {
           if (isNaN(value) || value < 1 || value > 100000) return 'Enter a number between 1 and 100000';

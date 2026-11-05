@@ -1,4 +1,6 @@
-const inquirer = require('inquirer');
+// inquirer 9+ is ESM-only. Node 22 loads it with require(), and the
+// inquirer object is the module's default export.
+const inquirer = require('inquirer').default;
 
 module.exports = {
   getBackupInfo: (next) => {
@@ -28,6 +30,9 @@ module.exports = {
         type: 'number',
         message: 'Enter the schema revision to migrate to:',
         default: latestRevision,
+        // inquirer 14 can return undefined for an emptied number field, and
+        // then skips validate. `required` rejects the empty answer instead.
+        required: true,
         validate: (value) => {
           if (isNaN(value)) return 'You must enter a number';
           value = parseInt(value, 10);
