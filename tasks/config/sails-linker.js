@@ -12,12 +12,6 @@
  *
  */
 
-// config/env/production.js tells browsers to cache assets for a year, and the
-// production bundles always have the same name. Without a changing URL, a
-// browser keeps the old bundle after an upgrade. Each production lift
-// rebuilds the bundles, so it also gets a new stamp.
-const buildStamp = Date.now().toString(36);
-
 module.exports = function(grunt) {
 
   grunt.config.set('sails-linker', {
@@ -60,19 +54,8 @@ module.exports = function(grunt) {
       }
     },
 
-    prodJs: {
-      options: {
-        startTag: '<!--SCRIPTS-->',
-        endTag: '<!--SCRIPTS END-->',
-        fileTmpl: `<script src="%s?v=${buildStamp}"></script>`,
-        appRoot: '.tmp/public'
-      },
-      files: {
-        '.tmp/public/**/*.html': ['.tmp/public/min/production.min.js'],
-        'views/**/*.html': ['.tmp/public/min/production.min.js'],
-        'views/**/*.ejs': ['.tmp/public/min/production.min.js']
-      }
-    },
+    // No prodJs/prodStyles targets: views/layouts/layout.ejs links the
+    // production bundles itself (see tasks/register/prod.js).
 
     prodJsBuild: {
       options: {
@@ -128,20 +111,6 @@ module.exports = function(grunt) {
         '.tmp/public/**/*.html': require('../pipeline').cssFilesToInject,
         'views/**/*.html': require('../pipeline').cssFilesToInject,
         'views/**/*.ejs': require('../pipeline').cssFilesToInject
-      }
-    },
-
-    prodStyles: {
-      options: {
-        startTag: '<!--STYLES-->',
-        endTag: '<!--STYLES END-->',
-        fileTmpl: `<link rel="stylesheet" href="%s?v=${buildStamp}">`,
-        appRoot: '.tmp/public'
-      },
-      files: {
-        '.tmp/public/index.html': ['.tmp/public/min/production.min.css'],
-        'views/**/*.html': ['.tmp/public/min/production.min.css'],
-        'views/**/*.ejs': ['.tmp/public/min/production.min.css']
       }
     },
 

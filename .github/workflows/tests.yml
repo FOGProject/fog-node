@@ -146,6 +146,12 @@ jobs:
       - name: UI smoke test (production build)
         run: npm run test:ui:prod
 
+      # A start must not change a tracked file (views/layouts/layout.ejs is
+      # the one at risk). On a production install, a changed tracked file
+      # makes the next `git pull` refuse to run.
+      - name: Starts leave the checkout clean
+        run: git diff --exit-code
+
       # A screenshot of each failed page.
       - name: Upload failure screenshots
         if: failure()
