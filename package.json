@@ -53,7 +53,7 @@
     "pnotify": "^5.2.0",
     "progress-stream": "^2.0.0",
     "sails": "~>1.5.3",
-    "sails-hook-grunt": "^5.0.0",
+    "sails-hook-grunt": "^5.0.2",
     "sails-hook-orm": "^4.0.0",
     "sails-hook-sockets": "^3.0.2",
     "sails-mongo": "fogproject/sails-mongo",
