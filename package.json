@@ -47,7 +47,7 @@
     "passport": "0.7.0",
     "passport-jwt-cookiecombo": "^1.0.5",
     "passport-local": "^1.0.0",
-    "pdfmake": "^0.3.11",
+    "pdfmake": "^0.3.13",
     "pnotify": "^5.2.0",
     "progress-stream": "^2.0.0",
     "sails": "~>1.5.3",
