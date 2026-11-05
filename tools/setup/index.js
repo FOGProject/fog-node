@@ -4,7 +4,6 @@ const path = require('path');
 const header = require('../lib/header');
 const config = require('../lib/config');
 const cfgPath = path.join(config.appPath, 'config');
-const httpCfg = path.join(cfgPath, 'http.js');
 const modelsCfg = path.join(cfgPath, 'models.js');
 const localCfg = path.join(cfgPath, 'local.js');
 const inquire = require('./lib/inquire');
@@ -30,6 +29,14 @@ async.waterfall([
       payload.datastores = payload.datastores || {};
       payload.datastores.fogdb = answers;
       payload.datastores.fogdb.adapter = 'sails-mongo';
+      next();
+    });
+  },
+  // Redis (session store) Config
+  (next) => {
+    header.printSection('Session Store Configuration');
+    inquire.getRedisInfo((answers) => {
+      payload.redisUrl = answers.url;
       next();
     });
   },
@@ -80,44 +87,29 @@ async.waterfall([
     header.printSection('Applying Configuration');
     let status = new Spinner('Saving configuration');
     status.start();
-
-    /**
-     * sails http.js config.
-     */
-    let rawtext = `const passport = require('passport');
-
-// Only run passport when a session exists. Sails skips session for asset
-// requests, so running passport.session() on those throws "Login sessions
-// require session support" and turns every CSS/JS asset into a 500.
-const onlyWithSession = (middleware) => (req, res, next) =>
-  req.session ? middleware(req, res, next) : next();
-
-module.exports.http = {
-  middleware: {
-    passportInit: onlyWithSession(passport.initialize()),
-    passportSession: onlyWithSession(passport.session()),
-    order: [
-      'cookieParser',
-      'session',
-      'passportInit',
-      'passportSession',
-      'bodyParser',
-      'compress',
-      'poweredBy',
-      'router',
-      'www',
-      'favicon'
-    ]
-  }
-};`;
-    fs.writeFileSync(httpCfg, rawtext, (err) => {
-      if (err) return next(err);
-    });
+    // config/http.js is tracked in git and is already correct. The installer
+    // used to overwrite it with an older copy, which dirtied the checkout.
+    // It now writes only the two git-ignored files, local.js and models.js.
 
     /**
      * models.js
      */
-    rawtext = `module.exports.models = {
+    // A re-run must keep the existing data encryption key. A new key makes
+    // every attribute encrypted under the old one unreadable.
+    let encKey = secure.generateSecret();
+    if (fs.existsSync(modelsCfg)) {
+      try {
+        const old = require(modelsCfg).models;
+        if (old && old.dataEncryptionKeys && old.dataEncryptionKeys.default) {
+          encKey = old.dataEncryptionKeys.default;
+          console.log('Kept the existing data encryption key from config/models.js');
+        }
+      } catch (err) {
+        status.stop();
+        return next(`config/models.js exists but cannot be read, so its encryption key cannot be kept. Fix or remove it, then re-run: ${err.message}`);
+      }
+    }
+    let rawtext = `module.exports.models = {
   schema: true,
   // 'safe' = never auto-migrate. Mongo is schemaless so no migration is needed,
   // and 'alter' can drop/recreate collections (data loss) -- especially with more
@@ -131,12 +123,18 @@ module.exports.http = {
   datastore: 'fogdb',
   cascadeOnDestroy: true,
   dataEncryptionKeys: {
-    default: '${secure.generateSecret()}'
+    default: '${encKey}'
   }
-};`;
-    fs.writeFileSync(modelsCfg, rawtext, (err) => {
-      if (err) return next(err);
-    });
+};
+`;
+    // writeFileSync takes no callback: it throws. Catch it so a write failure
+    // ends the install with the error instead of an uncaught exception.
+    try {
+      fs.writeFileSync(modelsCfg, rawtext);
+    } catch (err) {
+      status.stop();
+      return next(err);
+    }
 
     /**
      * local.js
@@ -172,11 +170,11 @@ module.exports.http = {
     },
   },
   // Session store: a per-install secret + Redis. Required for CSRF (the CSRF
-  // token's secret lives in the session). Point url at your Redis.
+  // token's secret lives in the session). The installer verified this URL.
   session: {
     secret: '${payload.session.secret}',
     adapter: '@sailshq/connect-redis',
-    url: 'redis://127.0.0.1:6379/0'
+    url: '${payload.redisUrl.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}'
   },
   datastores: {
     fogdb: {
@@ -187,10 +185,17 @@ module.exports.http = {
     }
   },
   schema: 1
-};`;
-    fs.writeFileSync(localCfg, rawtext, (err) => {
-      if (err) return next(err);
-    });
+};
+`;
+    try {
+      fs.writeFileSync(localCfg, rawtext);
+    } catch (err) {
+      status.stop();
+      return next(err);
+    }
+    // Stop the spinner here. Left running, it printed over every later step.
+    status.stop();
+    console.log('Configuration saved');
     next();
   },
   // Apply Schema Configuration
@@ -198,9 +203,10 @@ module.exports.http = {
     header.printSection('Applying database schema');
     var status = new Spinner('Applying database schema');
     status.start();
-    schema.generate(payload.admin.password, payload.admin.email, (err) => {
+    schema.generate(payload.admin.password, payload.admin.email, (err, result) => {
       status.stop();
       if (err) return next(`Failed to apply database schema: ${err}`);
+      payload.adminCreated = result.adminCreated;
       console.log('Database schema applied');
       next();
     });
@@ -238,8 +244,15 @@ module.exports.http = {
     console.log('To login, you may use either the username or the email');
     console.log('URL: http://localhost:1337');
     console.log('Username: Administrator');
-    console.log(`Email: ${payload.admin.email}`);
-    console.log(`Password: ${payload.admin.password}`);
+    // On a re-run against an existing database the Administrator already
+    // exists and keeps its old email and password. Say so, instead of
+    // printing the new values, which would not work.
+    if (payload.adminCreated) {
+      console.log(`Email: ${payload.admin.email}`);
+      console.log(`Password: ${payload.admin.password}`);
+    } else {
+      console.log(chalk.yellow('The Administrator account already existed. Its email and password did not change.'));
+    }
     next();
   }
 ], (err) => {
