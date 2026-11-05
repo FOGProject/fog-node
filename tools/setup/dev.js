@@ -10,7 +10,7 @@
  *
  *   docker compose up -d        # or: podman compose up -d
  *   npm run setup:dev
- *   node app.js                 # not npm start: production mode, see #115
+ *   node app.js                 # development mode; npm start is production
  *
  * Env overrides:
  *   FOG_DEV_DB_HOST   (default 127.0.0.1)
@@ -128,7 +128,7 @@ schema.generate(admin.password, admin.email, (err) => {
   console.log(`  Email:    ${admin.email}`);
   console.log(`  Password: ${admin.password}`);
   console.log('');
-  // Not npm start: that is production mode, and its asset build fails (#115).
+  // Development mode, not npm start: it rebuilds assets when a file changes.
   console.log('Start the server with `node app.js`.');
   process.exit(0);
 });

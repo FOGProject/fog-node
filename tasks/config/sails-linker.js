@@ -11,6 +11,13 @@
  *   https://sailsjs.com/anatomy/tasks/config/sails-linker.js
  *
  */
+
+// config/env/production.js tells browsers to cache assets for a year, and the
+// production bundles always have the same name. Without a changing URL, a
+// browser keeps the old bundle after an upgrade. Each production lift
+// rebuilds the bundles, so it also gets a new stamp.
+const buildStamp = Date.now().toString(36);
+
 module.exports = function(grunt) {
 
   grunt.config.set('sails-linker', {
@@ -57,7 +64,7 @@ module.exports = function(grunt) {
       options: {
         startTag: '<!--SCRIPTS-->',
         endTag: '<!--SCRIPTS END-->',
-        fileTmpl: '<script src="%s"></script>',
+        fileTmpl: `<script src="%s?v=${buildStamp}"></script>`,
         appRoot: '.tmp/public'
       },
       files: {
@@ -128,7 +135,7 @@ module.exports = function(grunt) {
       options: {
         startTag: '<!--STYLES-->',
         endTag: '<!--STYLES END-->',
-        fileTmpl: '<link rel="stylesheet" href="%s">',
+        fileTmpl: `<link rel="stylesheet" href="%s?v=${buildStamp}">`,
         appRoot: '.tmp/public'
       },
       files: {

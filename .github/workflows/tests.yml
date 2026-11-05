@@ -78,6 +78,11 @@ jobs:
       - name: npm test
         run: npm test
 
+      # The asset build that `npm start` runs. It failed on every Node version
+      # for months before anyone noticed (issue #115), because nothing ran it.
+      - name: Production asset build
+        run: npx grunt prod
+
   # `npm test` never builds or loads the UI, so a UI dependency bump can break
   # every page and still pass it (Dependabot PR #110 did). This job lifts
   # fog-node with the dev asset build and drives Chromium through the pages
@@ -136,6 +141,10 @@ jobs:
 
       - name: UI smoke test
         run: npm run test:ui
+
+      # The same checks against the minified production bundles.
+      - name: UI smoke test (production build)
+        run: npm run test:ui:prod
 
       # A screenshot of each failed page.
       - name: Upload failure screenshots

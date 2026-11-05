@@ -36,6 +36,7 @@
     "font-awesome": "^4.7.0",
     "global": "^4.4.0",
     "grunt": "1.6.2",
+    "grunt-terser": "^2.0.0",
     "icheck-bootstrap": "^3.0.1",
     "inputmask": "^5.0.10",
     "inquirer": "^14.2.5",
@@ -59,7 +60,8 @@
     "sails-mongo": "fogproject/sails-mongo",
     "select2": "^4.1.0",
     "systeminformation": "^5.33.19",
-    "tempusdominus-core": "^5.19.0"
+    "tempusdominus-core": "^5.19.0",
+    "terser": "^5.51.2"
   },
   "devDependencies": {
     "eslint": "10.5.0",
@@ -107,7 +109,8 @@
     "test": "npm run lint && npm run custom-tests && echo Done.",
     "lint": "eslint . --max-warnings=0 --report-unused-disable-directives && echo Your .js files look good.",
     "custom-tests": "mocha --recursive --exit",
-    "test:ui": "node tools/smoke/ui.js"
+    "test:ui": "node tools/smoke/ui.js",
+    "test:ui:prod": "node tools/smoke/ui.js --prod"
   },
   "main": "app.js",
   "repository": {

@@ -112,22 +112,23 @@ change that account's email or password, and the installer says so.
 ## Start fog-node
 
 ```sh
-node app.js
+npm start
 ```
 
-Then open the URL that you gave the installer, for example
-<http://fogserver:1337>, and log in as `Administrator`. To use a different port,
-add `--port=8080`.
+`npm start` runs `node app.js --prod`, production mode. At each start it builds
+the browser assets into two minified bundles.
 
-`npm start` runs production mode. The production asset build fails at the
-moment (issue [#115](https://github.com/FOGProject/fog-node/issues/115)), so use
-`node app.js` until that is fixed.
+Then open the URL that you gave the installer, for example
+<http://fogserver:1337>, and log in as `Administrator`. To use a different port, run `node app.js --prod --port=8080`.
+
+For development, run `node app.js`. Development mode serves each asset file
+separately and rebuilds them when you change one.
 
 ## Run fog-node as a service
 
 fog-node is one long-running Node process. Use the service manager of your OS
 to start it at boot and restart it if it stops. Set its working directory to
-the fog-node directory, and run `node app.js`.
+the fog-node directory, and run `node app.js --prod` (what `npm start` runs).
 
 - **Linux:** a systemd unit. The README section "Persistent deployment" has a
   complete example.
