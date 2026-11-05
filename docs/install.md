@@ -109,6 +109,26 @@ encryption key in `config/models.js`, because a new key makes encrypted data
 unreadable. It also keeps the existing Administrator account. A re-run does not
 change that account's email or password, and the installer says so.
 
+### Install without prompts
+
+To script an install, put the answers in a JSON file and run
+`npm run setup -- --answers answers.json`. Each key is the same question as
+above, with the same default and the same check. A wrong answer or a failed
+check ends the install with exit code 1. It does not ask again.
+
+```json
+{
+  "database": {"host": "localhost", "port": 27017, "database": "fog", "username": "", "password": ""},
+  "redis": {"url": "redis://127.0.0.1:6379/0"},
+  "server": {"urls": "http://fogserver:1337, http://10.0.0.5:1337", "imageStorePath": "/images"},
+  "admin": {"email": "admin@example.com", "password": "change-me-now"},
+  "seed": {"seed": false}
+}
+```
+
+Leave out a key to take its default. The file holds the Administrator
+password, so delete it after the install.
+
 ## Start fog-node
 
 ```sh

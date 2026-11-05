@@ -28,11 +28,14 @@ Read these first:
 | Test | `npm test` (lint, then the mocha suite) |
 | UI smoke test | `npm run test:ui` (lifts with grunt on, drives Chromium through every routed page; run `npx playwright install chromium` once) |
 | UI smoke test, production build | `npm run test:ui:prod` (the same checks against the minified bundles) |
+| Installer smoke test | `npm run test:install` (the real installer from an answers file, a production lift, a sign-in, the socket origins; keeps your `config/`) |
 
 CI (`.github/workflows/tests.yml`) runs `npm test` on Linux (Node 22 and 26)
-and on Windows (Node 22), `npx grunt prod` on Linux (Node 22 and 26), and
-`npm run test:ui` plus `npm run test:ui:prod` on Linux (Node 22), for every
-pull request and merge-queue entry. `master` takes changes only through a pull
+and on Windows (Node 22), `npx grunt prod` on Linux (Node 22 and 26),
+`npm run test:ui` plus `npm run test:ui:prod` on Linux (Node 22), and
+`npm run test:install` on Linux (Node 22 and 26), Windows, and macOS, for
+every pull request and merge-queue entry. The macOS job is not yet a required
+check. `master` takes changes only through a pull
 request and the merge queue.
 
 ## Testing
@@ -62,10 +65,10 @@ request and the merge queue.
   `@dependabot ignore` comment.** The comment hold is invisible in the repo
   and can only be lifted on an open Dependabot PR. An `ignore` rule names its
   issue and leaves with the PR that fixes it.
-- **CI never runs the interactive installer (`tools/setup/index.js`) or
-  `tools/migrate/`.** A green Dependabot PR for a package that only they use
-  (chalk, inquirer, figlet, clui) proves little. Run `npm run setup` on Node
-  22 and 26 before you merge it.
+- **CI runs the installer only from an answers file** (`npm run
+  test:install`), so the prompts themselves and `tools/migrate/` are not
+  tested. A Dependabot PR for inquirer, or for a package only
+  `tools/migrate/` uses, needs `npm run setup` run by hand on Node 22 and 26.
 - **`views/layouts/layout.ejs` changes by itself.** Grunt's sails-linker
   rewrites its `<script>`/`<link>` block from the globs in
   `tasks/pipeline.js` at each development lift. Commit only the lines your

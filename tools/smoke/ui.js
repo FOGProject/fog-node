@@ -23,12 +23,12 @@
  *   FOG_UI_PASSWORD  the Administrator password (default: fogadmin1, the
  *                    `npm run setup:dev` default)
  */
-const {spawn, spawnSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const {chromium} = require('playwright');
+const server = require('./lib/server');
 
-const root = path.join(__dirname, '..', '..');
+const root = server.root;
 const port = 1339;
 const base = `http://127.0.0.1:${port}`;
 const password = process.env.FOG_UI_PASSWORD || 'fogadmin1';
@@ -64,60 +64,7 @@ const PAGES = [
   {path: '/users/create'}
 ];
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const serverLog = [];
-
-// Starts `node app.js` in its own process group, so that the stop also ends
-// the grunt child process that sails-hook-grunt starts.
-function startServer() {
-  const child = spawn(process.execPath, ['app.js', `--port=${port}`, ...(prod ? ['--prod'] : [])], {
-    cwd: root,
-    // Production refuses to lift without socket origins. `npm run setup`
-    // writes them, but `npm run setup:dev` does not, so the test sets the one
-    // origin that its browser uses.
-    env: {...process.env, 'sails_sockets__onlyAllowOrigins': JSON.stringify([base])},
-    stdio: ['ignore', 'pipe', 'pipe'],
-    detached: process.platform !== 'win32'
-  });
-  const keep = (buf) => {
-    serverLog.push(...buf.toString().split('\n'));
-    serverLog.splice(0, Math.max(0, serverLog.length - 200));
-  };
-  child.stdout.on('data', keep);
-  child.stderr.on('data', keep);
-  return child;
-}
-
-function stopServer(child) {
-  if (!child || child.exitCode !== null) return;
-  if (process.platform === 'win32') {
-    spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F']);
-  } else {
-    try { process.kill(-child.pid, 'SIGTERM'); } catch (unused) { /* already gone */ }
-  }
-}
-
-// Waits until /login answers, then until every script and stylesheet on it
-// answers 200. Grunt builds the assets after Sails starts to listen, so the
-// first check alone is not enough.
-async function waitForReady(child) {
-  const deadline = Date.now() + 180000;
-  let missing = ['/login'];
-  while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error(`fog-node exited with code ${child.exitCode}`);
-    try {
-      const html = await (await fetch(`${base}/login`)).text();
-      const refs = [...html.matchAll(/<(?:script[^>]+src|link[^>]+href)="(\/[^"]+)"/g)].map((m) => m[1]);
-      const codes = await Promise.all(refs.map(async (u) => [u, (await fetch(base + u)).status]));
-      missing = codes.filter(([, s]) => s !== 200).map(([u, s]) => `${s} ${u}`);
-      if (refs.length && !missing.length) return;
-    } catch (unused) {
-      // Not listening yet.
-    }
-    await sleep(1000);
-  }
-  throw new Error(`fog-node was not ready in 180 s. Still failing: ${missing.slice(0, 5).join(', ')}`);
-}
 
 // Records every error that the page reports while `fn` runs.
 async function collectErrors(page, fn) {
@@ -224,7 +171,13 @@ const checkHost = (page) => {
 };
 
 async function main() {
-  const server = startServer();
+  // Production refuses to lift without socket origins. `npm run setup`
+  // writes them, but `npm run setup:dev` does not, so the test sets the one
+  // origin that its browser uses.
+  const child = server.start({
+    port, prod, log: serverLog,
+    env: {'sails_sockets__onlyAllowOrigins': JSON.stringify([base])}
+  });
   let browser;
   let failed = 0;
   const shot = async (page, label) => {
@@ -245,7 +198,7 @@ async function main() {
     await shot(page, label);
   };
   try {
-    await waitForReady(server);
+    await server.waitForReady(child, base);
     browser = await chromium.launch();
     const page = await browser.newPage();
     const loginErrors = await collectErrors(page, () => login(page));
@@ -263,7 +216,7 @@ async function main() {
     console.log(`FAIL  ${e.message}`);
   } finally {
     if (browser) await browser.close();
-    stopServer(server);
+    server.stop(child);
   }
   if (failed) {
     console.log(`\n${failed} check(s) failed. Last fog-node output:\n${serverLog.slice(-40).join('\n')}`);

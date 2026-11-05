@@ -10,6 +10,49 @@ const chalk = require('chalk').default;
 const database = require('../../lib/database');
 const redis = require('../../lib/redis');
 const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require('./server-defaults');
+
+// `npm run setup -- --answers <file.json>` takes every answer from a JSON
+// file instead of the terminal, for CI and scripted installs. Each question
+// keeps its default and its validation. A bad answer or a failed check ends
+// the install with exit code 1 instead of asking again.
+// docs/install.md shows the file format.
+const answersAt = process.argv.indexOf('--answers');
+const answersFile = answersAt === -1 ? null : process.argv[answersAt + 1];
+let fileAnswers = null;
+if (answersFile) {
+  try {
+    fileAnswers = JSON.parse(fs.readFileSync(answersFile, 'utf8'));
+  } catch (err) {
+    console.log(chalk.bgRed(`--> Cannot read the answers file ${answersFile}: ${err.message}`));
+    process.exit(1);
+  }
+} else if (answersAt !== -1) {
+  console.log(chalk.bgRed('--> --answers needs a file path'));
+  process.exit(1);
+}
+const fail = (message) => {
+  console.log(chalk.bgRed(`--> ${message}`));
+  process.exit(1);
+};
+// inquirer.prompt, or the same questions answered from the answers file.
+// `section` is the answers file key for this group of questions.
+const prompt = (section, questions) => {
+  if (!fileAnswers) return inquirer.prompt(questions);
+  const given = fileAnswers[section] || {};
+  const answers = {};
+  for (const q of questions) {
+    if (q.when && !q.when(answers)) continue;
+    let value = Object.prototype.hasOwnProperty.call(given, q.name) ? given[q.name] : q.default;
+    if (value === undefined) value = q.type === 'confirm' ? false : '';
+    if (q.type === 'number') value = Number(value);
+    if (q.validate) {
+      const ok = q.validate(value);
+      if (ok !== true) fail(`Answers file ${section}.${q.name}: ${ok}`);
+    }
+    answers[q.name] = value;
+  }
+  return Promise.resolve(answers);
+};
 const verifyDB = (answers, next) => {
   let status = new Spinner('Verifying database information, please wait...');
   status.start();
@@ -76,8 +119,9 @@ module.exports = {
         }
       }
     ];
-    inquirer.prompt(questions).then((answers) => {
+    prompt('database', questions).then((answers) => {
       verifyDB(answers, (err) => {
+        if (err && fileAnswers) fail('The database check failed. Fix database in the answers file.');
         if (err) return module.exports.getDatabaseInfo(next);
         answers.adapter = 'sails-mongo';
         next(answers);
@@ -120,7 +164,7 @@ module.exports = {
         }
       }
     ];
-    inquirer.prompt(questions).then((answers) => {
+    prompt('server', questions).then((answers) => {
       answers.origins = toOrigins(splitList(answers.urls));
       next(answers);
     });
@@ -136,13 +180,14 @@ module.exports = {
         default: 'redis://127.0.0.1:6379/0'
       }
     ];
-    inquirer.prompt(questions).then((answers) => {
+    prompt('redis', questions).then((answers) => {
       let status = new Spinner('Verifying Redis, please wait...');
       status.start();
       redis.verify(answers.url, (err) => {
         status.stop();
         if (err) {
           console.log(chalk.bgRed(`--> Redis check failed: ${err.message}`));
+          if (fileAnswers) fail('Fix redis.url in the answers file.');
           return module.exports.getRedisInfo(next);
         }
         console.log(chalk.green('Redis verified'));
@@ -171,7 +216,7 @@ module.exports = {
         }
       }
     ];
-    inquirer.prompt(questions).then(next);
+    prompt('admin', questions).then(next);
   },
   getDemoSeedInfo: (next) => {
     let questions = [
@@ -194,6 +239,6 @@ module.exports = {
         }
       }
     ];
-    inquirer.prompt(questions).then(next);
+    prompt('seed', questions).then(next);
   }
 };

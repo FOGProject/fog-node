@@ -1,0 +1,164 @@
+/**
+ * Installer smoke test.
+ *
+ * It runs the real installer (`npm run setup`) with an answers file, lifts
+ * fog-node in production mode with the config that the installer wrote, and
+ * checks what an administrator does first:
+ *   - the installer exits 0 and writes config/local.js and config/models.js;
+ *   - /login loads, and the Administrator signs in through the login form
+ *     (the CSRF token and the Redis session store must both work);
+ *   - a signed-in page loads;
+ *   - the socket server accepts the URL that the installer was given, and
+ *     refuses any other origin.
+ *
+ * Why: CI ran `npm run setup:dev`, never the installer. chalk 6 broke the
+ * installer with every check green (PR #141). This runs on Linux, Windows,
+ * and macOS, because fog-node runs on any OS.
+ *
+ * Usage: npm run test:install
+ *   It needs MongoDB and Redis. It installs into the database
+ *   fog_install_smoke, which it drops first, and an image directory under the
+ *   OS temp directory. It saves config/local.js and config/models.js first
+ *   and puts them back at the end, so a dev checkout keeps its config.
+ *
+ * Environment:
+ *   FOG_SMOKE_DB_HOST  (default 127.0.0.1)
+ *   FOG_SMOKE_REDIS    (default redis://127.0.0.1:6379/0)
+ */
+const {spawnSync} = require('child_process');
+const crypto = require('crypto');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const server = require('./lib/server');
+
+const root = server.root;
+const port = 1340;
+const base = `http://127.0.0.1:${port}`;
+const dbName = 'fog_install_smoke';
+const dbHost = process.env.FOG_SMOKE_DB_HOST || '127.0.0.1';
+const configs = ['local.js', 'models.js'].map((f) => path.join(root, 'config', f));
+const work = fs.mkdtempSync(path.join(os.tmpdir(), 'fog-install-smoke-'));
+// A new password for each run. It only ever guards the throwaway database.
+const password = crypto.randomBytes(12).toString('base64url');
+
+// The cookie jar for the sign-in: name=value pairs from Set-Cookie headers.
+const jar = new Map();
+const keepCookies = (res) => {
+  for (const c of res.headers.getSetCookie()) {
+    const [pair] = c.split(';');
+    const at = pair.indexOf('=');
+    jar.set(pair.slice(0, at), pair.slice(at + 1));
+  }
+};
+const cookieHeader = () => [...jar].map(([k, v]) => `${k}=${v}`).join('; ');
+
+async function dropDatabase() {
+  const {MongoClient} = require('mongodb');
+  const client = await MongoClient.connect(`mongodb://${dbHost}:27017`, {useUnifiedTopology: true});
+  try {
+    await client.db(dbName).dropDatabase();
+  } finally {
+    await client.close();
+  }
+}
+
+function runInstaller() {
+  const answers = {
+    database: {host: dbHost, port: 27017, database: dbName, username: ''},
+    redis: {url: process.env.FOG_SMOKE_REDIS || 'redis://127.0.0.1:6379/0'},
+    server: {urls: base, imageStorePath: path.join(work, 'images')},
+    admin: {email: 'admin@example.com', password},
+    seed: {seed: false}
+  };
+  const file = path.join(work, 'answers.json');
+  fs.writeFileSync(file, JSON.stringify(answers));
+  const run = spawnSync(process.execPath, ['tools/setup/index.js', '--answers', file], {cwd: root, encoding: 'utf8'});
+  if (run.status !== 0) {
+    throw new Error(`the installer exited ${run.status}:\n${(run.stdout + run.stderr).slice(-2000)}`);
+  }
+  for (const f of configs) {
+    if (!fs.existsSync(f)) throw new Error(`the installer did not write ${path.relative(root, f)}`);
+  }
+}
+
+async function signIn() {
+  const page = await fetch(`${base}/login`, {redirect: 'manual'});
+  keepCookies(page);
+  const html = await page.text();
+  const token = (html.match(/name="_csrf" value="([^"]+)"/) || [])[1];
+  if (!token) throw new Error('/login has no CSRF token');
+  const res = await fetch(`${base}/login`, {
+    method: 'POST',
+    redirect: 'manual',
+    // accept: text/html, as the browser's form post sends. Without it Sails
+    // treats the request as an API call and answers JSON, not the redirect.
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      accept: 'text/html',
+      cookie: cookieHeader()
+    },
+    body: new URLSearchParams({username: 'Administrator', password, _csrf: token})
+  });
+  keepCookies(res);
+  // Success redirects to /. A wrong password redirects to /login?failed=1.
+  const to = res.headers.get('location') || '';
+  if (res.status !== 302 || new URL(to, base).pathname === '/login') {
+    throw new Error(`the sign-in failed: HTTP ${res.status}, location "${to}"`);
+  }
+  const home = await fetch(`${base}/`, {redirect: 'manual', headers: {cookie: cookieHeader()}});
+  if (home.status !== 200) throw new Error(`/ after the sign-in answered HTTP ${home.status}, not 200`);
+}
+
+// A WebSocket handshake, as a browser at `origin` makes it (fog-node accepts
+// the websocket transport only). Resolves 'open', or the refusal's HTTP status.
+function socketHandshake(origin) {
+  const WebSocket = require('ws');
+  const url = `ws://127.0.0.1:${port}/socket.io/?__sails_io_sdk_version=1.2.1&EIO=4&transport=websocket`;
+  return new Promise((resolve) => {
+    const socket = new WebSocket(url, {origin});
+    socket.on('open', () => { socket.close(); resolve('open'); });
+    socket.on('unexpected-response', (req, res) => resolve(`HTTP ${res.statusCode}`));
+    socket.on('error', (err) => resolve(`error: ${err.message}`));
+  });
+}
+
+async function main() {
+  const saved = configs.map((f) => (fs.existsSync(f) ? fs.readFileSync(f) : null));
+  const log = [];
+  let child;
+  let failed = false;
+  const step = async (label, fn) => {
+    await fn();
+    console.log(`ok    ${label}`);
+  };
+  try {
+    await step('drop the smoke database', dropDatabase);
+    await step('the installer, from an answers file', runInstaller);
+    child = server.start({port, prod: true, env: {}, log});
+    await step('production lift with the installed config', () => server.waitForReady(child, base));
+    await step('sign in through the login form', signIn);
+    await step('sockets accept the installed URL', async () => {
+      const s = await socketHandshake(base);
+      if (s !== 'open') throw new Error(`sockets refused the installed URL: ${s}`);
+    });
+    await step('sockets refuse another origin', async () => {
+      const s = await socketHandshake('http://other.example');
+      if (s === 'open') throw new Error('sockets accepted http://other.example');
+    });
+  } catch (e) {
+    failed = true;
+    console.log(`FAIL  ${e.message}`);
+  } finally {
+    server.stop(child);
+    configs.forEach((f, i) => (saved[i] === null ? fs.rmSync(f, {force: true}) : fs.writeFileSync(f, saved[i])));
+    fs.rmSync(work, {recursive: true, force: true});
+  }
+  if (failed) {
+    console.log(`\nLast fog-node output:\n${log.slice(-40).join('\n')}`);
+    process.exit(1);
+  }
+  console.log('\nAll installer checks passed.');
+}
+
+main();
