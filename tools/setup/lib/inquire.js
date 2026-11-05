@@ -5,7 +5,8 @@ const path = require('path');
 const inquirer = require('inquirer').default;
 const CLI = require('clui');
 const Spinner = CLI.Spinner;
-const chalk = require('chalk');
+// chalk 5+ is ESM-only too: the chalk object is the default export.
+const chalk = require('chalk').default;
 const database = require('../../lib/database');
 const redis = require('../../lib/redis');
 const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require('./server-defaults');

@@ -1,5 +1,7 @@
 const figlet = require('figlet');
-const chalk = require('chalk');
+// chalk 5+ is ESM-only. Node 22 loads it with require(), and the chalk
+// object is the module's default export.
+const chalk = require('chalk').default;
 const config = require('./config');
 
 module.exports = {

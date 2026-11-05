@@ -1,4 +1,5 @@
-const chalk = require('chalk');
+// chalk 5+ is ESM-only: the chalk object is the default export.
+const chalk = require('chalk').default;
 const fs = require('fs');
 const path = require('path');
 const header = require('../lib/header');
