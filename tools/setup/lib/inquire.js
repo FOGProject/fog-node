@@ -1,5 +1,4 @@
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const inquirer = require('inquirer');
 const CLI = require('clui');
@@ -7,28 +6,7 @@ const Spinner = CLI.Spinner;
 const chalk = require('chalk');
 const database = require('../../lib/database');
 const redis = require('../../lib/redis');
-const splitList = (value) => value.split(',').map((v) => v.trim()).filter((v) => v.length);
-const isWebUrl = (value) => {
-  try {
-    const u = new URL(value);
-    return u.protocol === 'http:' || u.protocol === 'https:';
-  } catch (unused) {
-    return false;
-  }
-};
-// This computer's name plus each external IPv4 address, on fog-node's port.
-const defaultUrls = () => {
-  const ips = Object.values(os.networkInterfaces()).flat()
-    .filter((a) => a && a.family === 'IPv4' && !a.internal)
-    .map((a) => a.address);
-  return [os.hostname(), ...ips].map((h) => `http://${h}:1337`);
-};
-// macOS has a read-only root volume, so /images cannot be created there.
-const defaultImageStore = () => {
-  if (process.platform === 'win32') return 'C:\\fog\\images';
-  if (process.platform === 'darwin') return '/Users/Shared/fog/images';
-  return '/images';
-};
+const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require('./server-defaults');
 const verifyDB = (answers, next) => {
   let status = new Spinner('Verifying database information, please wait...');
   status.start();
@@ -100,13 +78,10 @@ module.exports = {
       });
     });
   },
-  // Sails accepts socket connections only from the origins in
-  // sockets.onlyAllowOrigins, in every mode once it is set, and production
-  // refuses to lift without it. So the installer asks for every URL that
-  // browsers use. The default is this computer's name and each IPv4 address,
-  // because FOG admins often browse by IP.
-  // The image store default follows the OS, because fog-node runs on any OS
-  // that runs Node.
+  // Once sockets.onlyAllowOrigins is set, Sails accepts socket connections
+  // only from those origins, in every mode. Production refuses to lift
+  // without it. So the installer asks for every URL that browsers use.
+  // The image store default follows the OS, because fog-node runs on any OS.
   getServerInfo: (next) => {
     let questions = [
       {
@@ -115,8 +90,9 @@ module.exports = {
         message: 'Enter each URL that browsers will use to reach fog-node, separated by commas:',
         default: defaultUrls().join(', '),
         validate: (value) => {
-          const bad = splitList(value).find((v) => !isWebUrl(v));
-          if (!splitList(value).length) return 'Enter at least one URL';
+          const parts = splitList(value);
+          if (!parts.length) return 'Enter at least one URL';
+          const bad = parts.find((v) => !isWebUrl(v));
           if (bad) return `Not a full http:// or https:// URL: ${bad}`;
           return true;
         }
@@ -139,9 +115,7 @@ module.exports = {
       }
     ];
     inquirer.prompt(questions).then((answers) => {
-      // onlyAllowOrigins takes origins: scheme, host and port, no path.
-      answers.urls = splitList(answers.urls);
-      answers.origins = [...new Set(answers.urls.map((v) => new URL(v).origin))];
+      answers.origins = toOrigins(splitList(answers.urls));
       next(answers);
     });
   },
