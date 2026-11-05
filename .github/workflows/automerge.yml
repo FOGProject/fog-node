@@ -1,18 +1,18 @@
 name: Auto-merge
 
-# Arms auto-merge on each same-repository pull request to `master` when it
-# opens, so the merge queue merges it once the required checks pass. Ported
-# from FOGProject/fogproject's automerge.yml. Read the comments there before
-# changing the token handling.
+# This job arms auto-merge on each same-repository pull request to `master`
+# when it opens. The merge queue then merges it once the required checks pass.
+# FOGProject/fogproject's automerge.yml is the source of this file. Read the
+# comments there before you change the token handling.
 #
 # THE APP TOKEN IS LOAD BEARING. Auto-merge armed with secrets.GITHUB_TOKEN
-# enqueues the pull request, but GitHub's anti-recursion rule then never fires
-# the `merge_group` run, so the queue waits for checks that never start. The
-# FOG workflows App token is not subject to that rule.
+# still puts the pull request in the queue. But GitHub's anti-recursion rule
+# then never starts the `merge_group` run. The queue waits for checks that
+# never start. The FOG workflows App token is not subject to that rule.
 #
-# Until this repository has the App's id (variable FOG_WORKFLOWS_APPID) and
-# key (secret FOG_WORKFLOWS_PRIVATE_KEY), the job is skipped, not failed. A
-# pull request then waits for a person to press "Merge when ready".
+# The `if:` skips the job when the App id (FOG_WORKFLOWS_APPID) is absent.
+# It also skips Dependabot: a Dependabot run gets no Actions secrets, so the
+# token step would fail. A person presses "Merge when ready" on those.
 
 on:
   pull_request:
@@ -28,6 +28,7 @@ jobs:
     # Same-repository only: a fork's token cannot arm auto-merge.
     if: >-
       vars.FOG_WORKFLOWS_APPID != ''
+      && github.actor != 'dependabot[bot]'
       && github.event.pull_request.head.repo.full_name == github.repository
       && github.event.pull_request.base.ref == 'master'
       && !github.event.pull_request.draft

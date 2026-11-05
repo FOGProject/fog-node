@@ -8,7 +8,7 @@ For FOG 1.x, see the security policy in
 
 ## Reporting a vulnerability
 
-Report a vulnerability privately, so that it can be fixed before it is public.
+Report a vulnerability privately, so that we can fix it before it is public.
 
 Use the **Report a vulnerability** button on this repository's **Security**
 tab. It opens a private advisory that only you and the maintainers can see.

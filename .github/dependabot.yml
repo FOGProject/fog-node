@@ -1,6 +1,7 @@
 version: 2
 updates:
-  # Every bump runs through tests.yml and the merge queue before it lands.
+  # Every bump runs tests.yml before it can merge. auto-merge skips Dependabot,
+  # so a person queues each bump.
   # The "comments" block in package.json explains the overrides, and why the
   # grunt/Babel 6 build chain keeps some advisories that no bump can fix.
   - package-ecosystem: npm

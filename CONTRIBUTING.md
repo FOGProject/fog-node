@@ -1,7 +1,6 @@
 # Contributing to fog-node
 
-fog-node is the FOG 2.0 server, a Sails.js rewrite of FOG Project. Thank you
-for helping.
+fog-node is the FOG 2.0 server, a Sails.js rewrite of FOG Project.
 
 ## Before you start
 

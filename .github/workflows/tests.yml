@@ -5,11 +5,11 @@ name: Tests
 # job names below, so renaming a job means editing that ruleset in the same
 # change, or every pull request waits for a check that never reports.
 #
-# Inline, not a reusable workflow in FOGProject/fog-workflows: fogproject keeps
-# its logic there because several long-lived branches each carry a stub. This
-# repository has one long-lived branch, so a second repository would add a
-# cross-repo edit to every CI change and buy nothing yet. Move it when a second
-# long-lived branch appears.
+# The logic lives here, not in a reusable workflow in FOGProject/fog-workflows.
+# fogproject uses fog-workflows because several long-lived branches each carry
+# a stub. This repository has one long-lived branch. A second repository would
+# add a cross-repo edit to every CI change and give nothing back. Move the
+# logic when a second long-lived branch appears.
 #
 # No push trigger: nothing here needs to run after the merge, and the merge
 # queue already ran the suite on the exact tree that lands.
@@ -66,8 +66,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # Writes the git-ignored config/local.js and config/models.js with the
-      # localhost defaults, which match the two service containers above.
+      # setup:dev writes the git-ignored config/local.js and config/models.js.
+      # Its localhost defaults match the two service containers above.
       - name: Configure (dev setup)
         run: npm run setup:dev
 
