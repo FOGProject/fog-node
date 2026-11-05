@@ -1,7 +1,8 @@
 name: Tests
 
-# Runs the whole `npm test` (eslint, then the mocha suite) on every pull
-# request and on every merge-queue entry. The `master` ruleset requires the
+# Runs the whole `npm test` (eslint, then the mocha suite) and the browser UI
+# smoke test (`npm run test:ui`) on every pull request and on every
+# merge-queue entry. The `master` ruleset requires the
 # job names below, so renaming a job means editing that ruleset in the same
 # change, or every pull request waits for a check that never reports.
 #
@@ -73,6 +74,63 @@ jobs:
 
       - name: npm test
         run: npm test
+
+  # `npm test` never builds or loads the UI, so a UI dependency bump can break
+  # every page and still pass it (Dependabot PR #110 did). This job lifts
+  # fog-node with the dev asset build and drives Chromium through the pages
+  # (tools/smoke/ui.js). The browser runs the same on every server OS, so one
+  # Linux job covers it. The services and the first steps mirror the `test`
+  # job; change both together.
+  ui:
+    name: ui smoke (Node 22)
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1})'"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # The Chromium build that matches the installed Playwright version, and
+      # the system libraries that it needs.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Configure (dev setup)
+        run: npm run setup:dev
+
+      - name: UI smoke test
+        run: npm run test:ui
+
+      # A screenshot of each failed page.
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-smoke-screenshots
+          path: ui-smoke-out/
+          if-no-files-found: ignore
 
   # fog-node runs on any OS that runs Node, so CI proves one non-Linux OS too.
   # Windows is the one that differs most: npm runs package scripts through

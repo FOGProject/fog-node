@@ -149,3 +149,6 @@ lib-cov
 *.out
 *.pid
 yarn.lock
+
+# Failure screenshots from npm run test:ui
+ui-smoke-out/

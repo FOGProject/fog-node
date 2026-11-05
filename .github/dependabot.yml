@@ -14,6 +14,13 @@ updates:
       prefix: "chore(deps)"
     labels:
       - dependencies
+    # Each DataTables extension needs a matching core version. Scroller 3.x
+    # alone (PR #110) broke every page, because the core was still 2.x. One
+    # grouped PR moves them together.
+    groups:
+      datatables:
+        patterns:
+          - "datatables.net*"
 
   - package-ecosystem: github-actions
     directory: /
