@@ -35,8 +35,8 @@ npm run setup:dev
 #    a couple of images, and a handful of hosts. Resets the dev database.
 npm run seed:dev
 
-# 5. Start the server
-npm start                   # or: node app.js
+# 5. Start the server (development mode)
+node app.js
 ```
 
 Then browse to <http://localhost:1337> and log in as `Administrator`
@@ -57,21 +57,22 @@ FOG_DEV_ADMIN_PASSWORD='supersecret' FOG_DEV_DB_NAME='fogdev' npm run setup:dev
 
 ## Production install
 
-For a real install, run the interactive installer:
+fog-node runs on Linux, Windows, and macOS. **[docs/install.md](docs/install.md)**
+is the install guide. It covers the prerequisites for each OS, the installer's
+questions, and how to run fog-node as a service.
+
+In short: install Node.js, MongoDB, and Redis with your OS's own tools, then:
 
 ```sh
-npm run setup              # prompts for MongoDB, Redis, and the admin account
-npm start                  # NODE_ENV=production node app.js
+npm ci --legacy-peer-deps
+npm run setup              # asks for MongoDB, Redis, the server URL, the image directory, and the admin account
+node app.js
 ```
 
-You still need **MongoDB and Redis** running. The installer checks that it can
-reach both, then writes their addresses to the git-ignored `config/local.js`.
-Re-running it is safe: it keeps the existing data encryption key and the
-existing Administrator account (it does not change that account's password).
-For a durable
-systemd + Podman (Quadlet) deployment behind nginx — covering the Mongo and Redis
-containers, the service units, and the reverse proxy — see the **Persistent
-deployment** section below.
+The installer configures fog-node only. It installs nothing on the system.
+For a durable Linux deployment (Podman containers for MongoDB and Redis,
+systemd units, and nginx in front), see the **Persistent deployment** section
+below.
 
 ## Persistent deployment (systemd autostart + nginx reverse proxy)
 

@@ -22,12 +22,13 @@ Read these first:
 | Dev MongoDB + Redis | `docker compose up -d` (or `podman compose up -d`) |
 | Dev config + admin | `npm run setup:dev` (writes git-ignored `config/local.js`, `config/models.js`) |
 | Production config | `npm run setup` (interactive; checks MongoDB and Redis) |
-| Run | `node app.js` (port 1337), or `npm start` for production |
+| Run | `node app.js` (port 1337). `npm start` is production mode, and its asset build fails until #115 is fixed |
 | Lint | `npm run lint` (eslint, `--max-warnings=0`) |
 | Test | `npm test` (lint, then the mocha suite) |
 
-CI (`.github/workflows/tests.yml`) runs `npm test` on Node 22 and 26 for every
-pull request and merge-queue entry. `master` takes changes only through a pull
+CI (`.github/workflows/tests.yml`) runs `npm test` on Linux (Node 22 and 26)
+and on Windows (Node 22) for every pull request and merge-queue entry.
+`docs/install.md` is the install guide for every OS. `master` takes changes only through a pull
 request and the merge queue.
 
 ## Testing
@@ -38,6 +39,13 @@ request and the merge queue.
 - A fixed bug gets the test that would have caught it.
 
 ## Rules that are easy to break
+
+- **fog-node runs on any OS that runs Node.** The installer configures fog-node
+  only. It must never install packages or services. Every npm script must run
+  in both POSIX sh and Windows cmd: no `VAR=value` prefixes, no `./path`
+  executables. CI runs the suite on Windows to catch this. Use `path.join`, not
+  string paths, and never hardcode `/images` or another Linux path as the only
+  choice.
 
 - **Do not run `npm audit fix`, `npm install <pkg>` without a reason, or
   `--force`.** The `overrides` in `package.json` and its `comments` block

@@ -1,3 +1,6 @@
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const inquirer = require('inquirer');
 const CLI = require('clui');
 const Spinner = CLI.Spinner;
@@ -73,6 +76,49 @@ module.exports = {
         answers.adapter = 'sails-mongo';
         next(answers);
       });
+    });
+  },
+  // Production Sails refuses to lift without sockets.onlyAllowOrigins, so the
+  // installer needs the URL that browsers use. The image store default follows
+  // the OS, because fog-node runs on any OS that runs Node.
+  getServerInfo: (next) => {
+    let questions = [
+      {
+        name: 'url',
+        type: 'input',
+        message: 'Enter the URL that browsers will use to reach fog-node:',
+        default: `http://${os.hostname()}:1337`,
+        validate: (value) => {
+          try {
+            const u = new URL(value);
+            if (u.protocol === 'http:' || u.protocol === 'https:') return true;
+          } catch (unused) {
+            // Falls through to the message below.
+          }
+          return 'Enter a full http:// or https:// URL, for example http://fog.example.com:1337';
+        }
+      },
+      {
+        name: 'imageStorePath',
+        type: 'input',
+        message: 'Enter the directory that holds the images:',
+        default: process.platform === 'win32' ? 'C:\\fog\\images' : '/images',
+        validate: (value) => {
+          if (!path.isAbsolute(value)) return 'Enter an absolute path';
+          try {
+            fs.mkdirSync(value, {recursive: true});
+            fs.accessSync(value, fs.constants.W_OK);
+            return true;
+          } catch (err) {
+            return `fog-node cannot write to that directory: ${err.message}`;
+          }
+        }
+      }
+    ];
+    inquirer.prompt(questions).then((answers) => {
+      // onlyAllowOrigins takes an origin: scheme, host and port, no path.
+      answers.origin = new URL(answers.url).origin;
+      next(answers);
     });
   },
   // Redis holds the session store. Without it the app lifts but every login
