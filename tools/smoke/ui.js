@@ -1,0 +1,222 @@
+/**
+ * UI smoke test.
+ *
+ * It lifts fog-node with the development asset build (grunt on), logs in
+ * through the login page, and drives a real browser (Playwright Chromium)
+ * through the main pages. A page fails when it throws a JavaScript error, logs
+ * a console error, gets an HTTP error for any request, or does not render.
+ *
+ * Why: `npm test` lifts Sails with grunt off and never loads a page in a
+ * browser. Dependabot PR #110 broke every page ("Scroller requires DataTables
+ * 3.1 or greater") and still passed all the unit tests. This script fails on
+ * that class of break.
+ *
+ * Usage: npm run test:ui
+ *   It needs MongoDB, Redis, and the config that `npm run setup:dev` writes.
+ *   It needs the browser once: npx playwright install chromium
+ *
+ * It lifts on port 1339, so it runs beside a dev server (1337) and the mocha
+ * suite (1338). It writes a screenshot of each failed check to ui-smoke-out/.
+ *
+ * Environment:
+ *   FOG_UI_PASSWORD  the Administrator password (default: fogadmin1, the
+ *                    `npm run setup:dev` default)
+ */
+const {spawn, spawnSync} = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const {chromium} = require('playwright');
+
+const root = path.join(__dirname, '..', '..');
+const port = 1339;
+const base = `http://127.0.0.1:${port}`;
+const password = process.env.FOG_UI_PASSWORD || 'fogadmin1';
+const outDir = path.join(root, 'ui-smoke-out');
+
+// Every page in config/routes.js that renders the layout, except the edit
+// pages, which need a record id (checkCreate opens one). The sidebar also
+// links pages that have no route yet, for example /hosts/pending; they 404
+// today, so they are not here. The list pages load their rows over AJAX into
+// DataTables, so `table: true` also waits for DataTables to initialize.
+const PAGES = [
+  {path: '/'},
+  {path: '/search?q=ui-smoke'},
+  {path: '/account'},
+  {path: '/hwinfo'},
+  {path: '/hosts', table: true},
+  {path: '/images', table: true},
+  {path: '/storagegroups', table: true},
+  {path: '/storagenodes', table: true},
+  {path: '/pxemenus', table: true},
+  {path: '/roles', table: true},
+  {path: '/tasks', table: true},
+  {path: '/users', table: true},
+  {path: '/workflows', table: true},
+  {path: '/hosts/create'},
+  {path: '/images/create'},
+  {path: '/storagegroups/create'},
+  {path: '/storagenodes/create'},
+  {path: '/pxemenus/create'},
+  {path: '/users/create'}
+];
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const serverLog = [];
+
+// Starts `node app.js` in its own process group, so that the stop also ends
+// the grunt child process that sails-hook-grunt starts.
+function startServer() {
+  const child = spawn(process.execPath, ['app.js', `--port=${port}`], {
+    cwd: root,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: process.platform !== 'win32'
+  });
+  const keep = (buf) => {
+    serverLog.push(...buf.toString().split('\n'));
+    serverLog.splice(0, Math.max(0, serverLog.length - 200));
+  };
+  child.stdout.on('data', keep);
+  child.stderr.on('data', keep);
+  return child;
+}
+
+function stopServer(child) {
+  if (!child || child.exitCode !== null) return;
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F']);
+  } else {
+    try { process.kill(-child.pid, 'SIGTERM'); } catch (unused) { /* already gone */ }
+  }
+}
+
+// Waits until /login answers, then until every script and stylesheet on it
+// answers 200. Grunt builds the assets after Sails starts to listen, so the
+// first check alone is not enough.
+async function waitForReady(child) {
+  const deadline = Date.now() + 180000;
+  let missing = ['/login'];
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null) throw new Error(`fog-node exited with code ${child.exitCode}`);
+    try {
+      const html = await (await fetch(`${base}/login`)).text();
+      const refs = [...html.matchAll(/<(?:script[^>]+src|link[^>]+href)="(\/[^"]+)"/g)].map((m) => m[1]);
+      const codes = await Promise.all(refs.map(async (u) => [u, (await fetch(base + u)).status]));
+      missing = codes.filter(([, s]) => s !== 200).map(([u, s]) => `${s} ${u}`);
+      if (refs.length && !missing.length) return;
+    } catch (unused) {
+      // Not listening yet.
+    }
+    await sleep(1000);
+  }
+  throw new Error(`fog-node was not ready in 180 s. Still failing: ${missing.slice(0, 5).join(', ')}`);
+}
+
+// Records every error that the page reports while `fn` runs.
+async function collectErrors(page, fn) {
+  const errors = [];
+  const onConsole = (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`); };
+  const onPageError = (e) => errors.push(`exception: ${e.message}`);
+  const onResponse = (r) => { if (r.status() >= 400) errors.push(`HTTP ${r.status()}: ${r.url()}`); };
+  const onFailed = (r) => errors.push(`request failed: ${r.url()} (${r.failure() && r.failure().errorText})`);
+  page.on('console', onConsole);
+  page.on('pageerror', onPageError);
+  page.on('response', onResponse);
+  page.on('requestfailed', onFailed);
+  try {
+    await fn();
+  } catch (e) {
+    errors.push(`check: ${e.message.split('\n')[0]}`);
+  } finally {
+    page.off('console', onConsole);
+    page.off('pageerror', onPageError);
+    page.off('response', onResponse);
+    page.off('requestfailed', onFailed);
+  }
+  return errors;
+}
+
+async function login(page) {
+  await page.goto(`${base}/login`, {waitUntil: 'networkidle'});
+  await page.fill('input[name="username"]', 'Administrator');
+  await page.fill('input[name="password"]', password);
+  await Promise.all([page.waitForNavigation({waitUntil: 'networkidle'}), page.click('button[type="submit"]')]);
+  if (new URL(page.url()).pathname === '/login') throw new Error('login failed: the page stayed on /login');
+}
+
+async function checkPage(page, spec) {
+  await page.goto(base + spec.path, {waitUntil: 'networkidle'});
+  if (new URL(page.url()).pathname === '/login') throw new Error('redirected to /login');
+  await page.locator('.app-sidebar').waitFor({state: 'visible', timeout: 5000});
+  await page.locator('.app-main').waitFor({state: 'visible', timeout: 5000});
+  if (spec.table) {
+    await page.waitForFunction(() => window.jQuery && jQuery.fn.dataTable && jQuery.fn.dataTable.tables().length > 0,
+      null, {timeout: 10000});
+  }
+}
+
+// One full round trip through a form: create a storage group in the UI, find
+// it in the list, then open its edit page. This proves the CSRF token, the
+// save action, the list's AJAX load, and the edit form.
+async function checkCreate(page) {
+  const name = `ui-smoke-${Date.now()}`;
+  await page.goto(`${base}/storagegroups/create`, {waitUntil: 'networkidle'});
+  await page.fill('#sgname', name);
+  await Promise.all([page.waitForNavigation({waitUntil: 'networkidle'}), page.click('#storagegroup-create button.btn-success')]);
+  await page.goto(`${base}/storagegroups`, {waitUntil: 'networkidle'});
+  await page.locator('table tbody', {hasText: name}).waitFor({timeout: 10000});
+  // The list's Edit button opens /<model>/edit/<row id> (assets/fog/fog.common.js).
+  const id = await page.evaluate((n) => jQuery.fn.dataTable.tables({api: true}).rows().data().toArray()
+    .find((r) => r.name === n).id, name);
+  await checkPage(page, {path: `/storagegroups/edit/${id}`});
+  if (!(await page.locator(`input[value="${name}"]`).count())) throw new Error('the edit form does not show the saved name');
+}
+
+async function main() {
+  const server = startServer();
+  let browser;
+  let failed = 0;
+  const shot = async (page, label) => {
+    fs.mkdirSync(outDir, {recursive: true});
+    const file = path.join(outDir, `${label.replace(/[^a-z0-9]+/gi, '_')}.png`);
+    try {
+      await page.screenshot({path: file, fullPage: true});
+      console.log(`    screenshot: ${file}`);
+    } catch (e) {
+      console.log(`    no screenshot: ${e.message.split('\n')[0]}`);
+    }
+  };
+  const report = async (page, label, errors) => {
+    if (!errors.length) return console.log(`ok    ${label}`);
+    failed++;
+    console.log(`FAIL  ${label}`);
+    errors.slice(0, 10).forEach((e) => console.log(`    ${e.slice(0, 300)}`));
+    await shot(page, label);
+  };
+  try {
+    await waitForReady(server);
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+    const loginErrors = await collectErrors(page, () => login(page));
+    await report(page, 'login', loginErrors);
+    // A script error on the login page still lets the pages be checked. Only a
+    // login that did not happen stops the run.
+    if (new URL(page.url()).pathname === '/login') throw new Error('cannot check the pages without a login');
+    for (const spec of PAGES) {
+      await report(page, spec.path, await collectErrors(page, () => checkPage(page, spec)));
+    }
+    await report(page, 'create and edit a storage group', await collectErrors(page, () => checkCreate(page)));
+  } catch (e) {
+    failed++;
+    console.log(`FAIL  ${e.message}`);
+  } finally {
+    if (browser) await browser.close();
+    stopServer(server);
+  }
+  if (failed) {
+    console.log(`\n${failed} check(s) failed. Last fog-node output:\n${serverLog.slice(-40).join('\n')}`);
+    process.exit(1);
+  }
+  console.log('\nAll UI checks passed.');
+}
+
+main();

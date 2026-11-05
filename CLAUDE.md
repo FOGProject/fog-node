@@ -26,9 +26,11 @@ Read these first:
 | Run | `node app.js` (port 1337). `npm start` is production mode, and its asset build fails until #115 is fixed |
 | Lint | `npm run lint` (eslint, `--max-warnings=0`) |
 | Test | `npm test` (lint, then the mocha suite) |
+| UI smoke test | `npm run test:ui` (lifts with grunt on, drives Chromium through every routed page; run `npx playwright install chromium` once) |
 
 CI (`.github/workflows/tests.yml`) runs `npm test` on Linux (Node 22 and 26)
-and on Windows (Node 22) for every pull request and merge-queue entry. `master` takes changes only through a pull
+and on Windows (Node 22), and `npm run test:ui` on Linux (Node 22), for every
+pull request and merge-queue entry. `master` takes changes only through a pull
 request and the merge queue.
 
 ## Testing
@@ -36,6 +38,9 @@ request and the merge queue.
 - The mocha suite lifts a real Sails app on port 1338, with grunt off. It needs
   MongoDB and Redis running, and the config that `npm run setup:dev` writes.
 - Put new tests under `test/`. Mocha runs with `--recursive`.
+- `npm test` never loads the UI. A change to a view, a client script, or a UI
+  dependency needs `npm run test:ui` (`tools/smoke/ui.js`). A new page goes in
+  its `PAGES` list.
 - A fixed bug gets the test that would have caught it.
 
 ## Rules that are easy to break

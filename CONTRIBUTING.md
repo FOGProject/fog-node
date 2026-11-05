@@ -32,6 +32,9 @@ The README has the Node versions and the full development quickstart.
 
 - Target `master`.
 - Run `npm test` first. CI runs the same command on Node 22 and 26.
+- If you changed a view, a client script, or a UI dependency, also run
+  `npm run test:ui`. It drives a browser through the pages. Run
+  `npx playwright install chromium` once before the first run.
 - Say what changed and why, and how you checked it.
 - A pull request merges through the merge queue after the required checks
   pass.
