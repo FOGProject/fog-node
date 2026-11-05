@@ -27,6 +27,11 @@ The README has the Node versions and the full development quickstart.
 - Add a test under `test/` for each fixed bug and each new endpoint.
 - Do not run `npm audit fix` or `--force`. The `comments` block in
   `package.json` explains why.
+- To hold back a Dependabot update, add an `ignore` rule to
+  `.github/dependabot.yml` with a comment that links the issue for the fix.
+  Do not close the PR with `@dependabot ignore`. That hold lives only inside
+  Dependabot: nobody can see it in the repo, and Dependabot accepts the
+  `unignore` command only on an open Dependabot PR.
 
 ## Open a pull request
 

@@ -36,7 +36,8 @@
     if (!$list.length) { return; }
     // Drop empty MAC rows.
     $list.find('.maclist-row').each(function() {
-      if (!$.trim($(this).find('input[name="macs[]"]').val())) {
+      // Native trim: jQuery 4 removed $.trim.
+      if (!($(this).find('input[name="macs[]"]').val() || '').trim()) {
         $(this).remove();
       }
     });

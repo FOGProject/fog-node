@@ -27,7 +27,8 @@
   }
   // Add a chip unless a case-insensitive duplicate already exists.
   function addTag($root, text) {
-    let tag = $.trim(text || '');
+    // Native trim: jQuery 4 removed $.trim.
+    let tag = String(text || '').trim();
     if (!tag) { return; }
     let lower = tag.toLowerCase();
     if (!values($root).some((t) => t.toLowerCase() === lower)) {
@@ -39,7 +40,7 @@
   function build($root) {
     if ($root.data('taginputReady')) { return; }
     let name = $root.attr('data-name') || 'tags';
-    let tags = ($root.attr('data-tags') || '').split(/[\n,]+/).map((t) => $.trim(t)).filter(Boolean);
+    let tags = ($root.attr('data-tags') || '').split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
     $root.addClass('form-control fog-taginput').html(
       tags.map(chipHtml).join('') +
       '<input type="text" class="fog-taginput-entry" autocomplete="off" placeholder="add tag…">' +
