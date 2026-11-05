@@ -3,6 +3,7 @@ const CLI = require('clui');
 const Spinner = CLI.Spinner;
 const chalk = require('chalk');
 const database = require('../../lib/database');
+const redis = require('../../lib/redis');
 const verifyDB = (answers, next) => {
   let status = new Spinner('Verifying database information, please wait...');
   status.start();
@@ -70,6 +71,31 @@ module.exports = {
       verifyDB(answers, (err) => {
         if (err) return module.exports.getDatabaseInfo(next);
         answers.adapter = 'sails-mongo';
+        next(answers);
+      });
+    });
+  },
+  // Redis holds the session store. Without it the app lifts but every login
+  // fails CSRF, so ask for it and check it here, like the database above.
+  getRedisInfo: (next) => {
+    let questions = [
+      {
+        name: 'url',
+        type: 'input',
+        message: 'Enter the Redis URL (session store):',
+        default: 'redis://127.0.0.1:6379/0'
+      }
+    ];
+    inquirer.prompt(questions).then((answers) => {
+      let status = new Spinner('Verifying Redis, please wait...');
+      status.start();
+      redis.verify(answers.url, (err) => {
+        status.stop();
+        if (err) {
+          console.log(chalk.bgRed(`--> Redis check failed: ${err.message}`));
+          return module.exports.getRedisInfo(next);
+        }
+        console.log(chalk.green('Redis verified'));
         next(answers);
       });
     });

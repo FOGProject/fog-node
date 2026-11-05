@@ -39,9 +39,12 @@ module.exports = {
         await Role.findOrCreate({name: adminRole.name}, adminRole, async (err, role) => {
           if (err) return next(err);
           adminUser.roles = [role.id];
-          await User.findOrCreate({username: adminUser.username}, adminUser, async (err) => {
+          // findOrCreate leaves an existing Administrator untouched, password
+          // included. Report whether it was created, so the installer does not
+          // print a password that the account does not have.
+          await User.findOrCreate({username: adminUser.username}, adminUser, async (err, user, created) => {
             if (err) return next(err);
-            next();
+            next(null, {adminCreated: created});
           });
         });
       });

@@ -60,13 +60,15 @@ FOG_DEV_ADMIN_PASSWORD='supersecret' FOG_DEV_DB_NAME='fogdev' npm run setup:dev
 For a real install, run the interactive installer:
 
 ```sh
-npm run setup              # prompts for DB, admin account, webserver, etc.
+npm run setup              # prompts for MongoDB, Redis, and the admin account
 npm start                  # NODE_ENV=production node app.js
 ```
 
-You still need **MongoDB and Redis** reachable. The installer writes the DB
-connection; sessions default to `redis://127.0.0.1:6379/0` in
-[config/session.js](config/session.js) — point that at your Redis. For a durable
+You still need **MongoDB and Redis** running. The installer checks that it can
+reach both, then writes their addresses to the git-ignored `config/local.js`.
+Re-running it is safe: it keeps the existing data encryption key and the
+existing Administrator account (it does not change that account's password).
+For a durable
 systemd + Podman (Quadlet) deployment behind nginx — covering the Mongo and Redis
 containers, the service units, and the reverse proxy — see the **Persistent
 deployment** section below.
