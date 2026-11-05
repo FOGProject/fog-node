@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: FOG Project forums
+    url: https://forums.fogproject.org
+    about: Questions and help with an install.
+  - name: Report a security vulnerability
+    url: https://github.com/FOGProject/fog-node/security/advisories/new
+    about: Report a vulnerability privately. Do not open a public issue.
