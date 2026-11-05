@@ -16,18 +16,12 @@ updates:
       - dependencies
     # Each DataTables extension needs a matching core version. Scroller 3.x
     # alone (PR #110) broke every page, because the core was still 2.x. One
-    # grouped PR moves them together.
+    # grouped PR moves them together. The core (datatables.net,
+    # datatables.net-bs4) is a direct dependency so the group can bump it too.
     groups:
       datatables:
         patterns:
           - "datatables.net*"
-    # The 3.x extensions need DataTables core 3.1, and the core is not a direct
-    # dependency, so the group cannot bump it (PR #121 broke every page). Hold
-    # the majors until #118 moves the core and the extensions together, then
-    # delete this rule.
-    ignore:
-      - dependency-name: "datatables.net*"
-        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
