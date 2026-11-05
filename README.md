@@ -72,7 +72,7 @@ In short: install Node.js, MongoDB, and Redis with your OS's own tools, then:
 ```sh
 npm ci --legacy-peer-deps
 npm run setup              # asks for MongoDB, Redis, the server URL, the image directory, and the admin account
-node app.js
+npm start                  # production mode; use `node app.js` for development
 ```
 
 The installer configures fog-node only. It installs nothing on the system.
@@ -166,7 +166,7 @@ StartLimitIntervalSec=0
 Type=simple
 WorkingDirectory=/home/<user>/fog-node
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
-ExecStart=/usr/local/bin/node app.js
+ExecStart=/usr/local/bin/node app.js --prod
 Restart=on-failure
 RestartSec=5
 
