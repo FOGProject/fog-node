@@ -41,7 +41,7 @@
     "jquery": "^3.7.1",
     "jsonwebtoken": "~>9.0.0",
     "jszip": "^3.10.2",
-    "moment-timezone": "^0.6.2",
+    "moment-timezone": "^0.6.6",
     "node-forge": "^1.4.1",
     "pace-js": "^1.2.4",
     "passport": "0.7.0",
