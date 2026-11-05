@@ -11,15 +11,17 @@ const database = require('../../lib/database');
 const redis = require('../../lib/redis');
 const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require('./server-defaults');
 
+// Ends the install with exit code 1, for answers-file mode.
+const fail = (message) => {
+  console.log(chalk.bgRed(`--> ${message}`));
+  process.exit(1);
+};
+
 // `npm run setup -- --answers <file.json>` takes every answer from a JSON
 // file instead of the terminal, for CI and scripted installs. Each question
 // keeps its default and its validation. A bad answer or a failed check ends
 // the install with exit code 1 instead of asking again.
 // docs/install.md shows the file format.
-const fail = (message) => {
-  console.log(chalk.bgRed(`--> ${message}`));
-  process.exit(1);
-};
 const answersAt = process.argv.indexOf('--answers');
 const answersFile = answersAt === -1 ? null : process.argv[answersAt + 1];
 let fileAnswers = null;

@@ -75,7 +75,7 @@ function runInstaller() {
   fs.writeFileSync(file, JSON.stringify(answers));
   // A timeout, so an installer that waits on a prompt fails instead of hanging.
   const run = spawnSync(process.execPath, ['tools/setup/index.js', '--answers', file],
-    {cwd: root, encoding: 'utf8', timeout: 300000});
+    {cwd: root, encoding: 'utf8', timeout: 5 * 60 * 1000});
   if (run.status !== 0) {
     throw new Error(`the installer exited ${run.status}:\n${(run.stdout + run.stderr).slice(-2000)}`);
   }
