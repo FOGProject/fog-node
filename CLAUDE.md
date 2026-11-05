@@ -68,7 +68,10 @@ request and the merge queue.
   22 and 26 before you merge it.
 - **`views/layouts/layout.ejs` changes by itself.** Grunt's sails-linker
   rewrites its `<script>`/`<link>` block from the globs in
-  `tasks/pipeline.js` at each lift. Commit only the lines your change needs.
+  `tasks/pipeline.js` at each development lift. Commit only the lines your
+  change needs. Production (`npm start`) never rewrites it: the layout links
+  the minified bundles itself, so a production install stays clean for
+  `git pull`. CI fails if a UI smoke run leaves a tracked file changed.
 - **CSRF is on** (`config/security.js`). `/api/v1/*` routes are `csrf: false`
   in `config/routes.js`, so a cookie-authenticated mutation under `/api/v1`
   must carry the `apiCsrfGuard` policy in `config/policies.js`. Page forms get

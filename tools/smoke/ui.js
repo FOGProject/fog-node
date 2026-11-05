@@ -14,8 +14,6 @@
  * Usage: npm run test:ui          (development build)
  *        npm run test:ui:prod     (production build, as `npm start` runs it)
  *   It needs MongoDB, Redis, and the config that `npm run setup:dev` writes.
- *   The production build rewrites views/layouts/layout.ejs to load the
- *   minified bundles. The next development lift writes it back.
  *   It needs the browser once: npx playwright install chromium
  *
  * It lifts on port 1339, so it runs beside a dev server (1337) and the mocha

@@ -19,8 +19,8 @@ module.exports = function(grunt) {
     'concat',
     'terser',        //« Not 'uglify': it cannot parse modern JavaScript (#115)
     'cssmin',
-    'sails-linker:prodJs',
-    'sails-linker:prodStyles',
+    // No sails-linker step: views/layouts/layout.ejs links the bundles itself
+    // in production, so a production start leaves that tracked file unchanged.
   ]);
 };
 

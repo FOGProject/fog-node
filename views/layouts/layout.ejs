@@ -42,6 +42,13 @@
             + Use a different or additional preprocessor, like SASS, SCSS or Stylus
     -->
 
+    <%# Production links the minified bundle here instead of rewriting this
+        tracked file, so a production start leaves the git checkout clean.
+        The ?v= stamp (config/bootstrap.js) changes at each lift, so a browser
+        never keeps an old bundle under production's one-year cache. %>
+    <% if (sails.config.environment === 'production') { %>
+    <link rel="stylesheet" href="/min/production.min.css?v=<%= sails.config.custom.assetStamp %>">
+    <% } else { %>
     <!--STYLES-->
     <link rel="stylesheet" href="/styles/@pnotify/core/dist/PNotify.css">
     <link rel="stylesheet" href="/styles/@pnotify/mobile/dist/PNotifyMobile.css">
@@ -66,6 +73,7 @@
     <link rel="stylesheet" href="/styles/zz-fog-select2.css">
     <link rel="stylesheet" href="/styles/zz-fog-tags.css">
     <!--STYLES END-->
+    <% } %>
   </head>
 
   <% if (req.user) { %>
@@ -176,6 +184,10 @@
 
     -->
 
+    <%# Production: the minified bundle. See the STYLES block above. %>
+    <% if (sails.config.environment === 'production') { %>
+    <script src="/min/production.min.js?v=<%= sails.config.custom.assetStamp %>"></script>
+    <% } else { %>
     <!--SCRIPTS-->
     <script src="/dependencies/sails.io.js"></script>
     <script src="/dependencies/lodash.js"></script>
@@ -222,6 +234,7 @@
     <script src="/fog/fog.select2.js"></script>
     <script src="/fog/fog.taginput.js"></script>
     <!--SCRIPTS END-->
+    <% } %>
     <% if (typeof partialname !== 'undefined' && partialname) { %>
     <script type="text/javascript">
     <%- partial(partialname) %>

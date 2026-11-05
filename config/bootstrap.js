@@ -11,6 +11,11 @@
 
 module.exports.bootstrap = async function() {
 
+  // The ?v= value on the production bundle links (views/layouts/layout.ejs).
+  // A production lift rebuilds the bundles, so each lift gets a new value and
+  // browsers fetch the new bundle despite production's one-year cache.
+  sails.config.custom.assetStamp = Date.now().toString(36);
+
   // By convention, this is a good place to set up fake data during development.
   //
   // For example:
