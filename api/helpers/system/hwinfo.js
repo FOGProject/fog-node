@@ -1,6 +1,8 @@
 const si = require('systeminformation');
 const moment = require('moment');
-const checkDiskSpace = require('check-disk-space').default;
+// check-disk-space 4 is ESM-only and exports no `require` entry, so load it
+// with import(). It has a named export and no default.
+const checkDiskSpace = async (dir) => (await import('check-disk-space')).checkDiskSpace(dir);
 module.exports = {
   friendlyName: 'Hwinfo',
   description: 'Hwinfo system.',

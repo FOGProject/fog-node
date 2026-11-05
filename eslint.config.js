@@ -116,7 +116,9 @@ module.exports = [
     // Backend code: Node.js/Sails habitat.
     files: ['**/*.js'],
     languageOptions: {
-      ecmaVersion: 2018,
+      // 2020 for dynamic import(), which loads ESM-only packages such as
+      // check-disk-space 4. Node 22, the oldest supported Node, has it.
+      ecmaVersion: 2020,
       // Flat config defaults `.js` to `sourceType: 'module'`, which would parse
       // this CommonJS codebase as ESM (implicit strict mode, no `require`).
       // The old eslintrc default was 'script'; 'commonjs' is its flat-config
