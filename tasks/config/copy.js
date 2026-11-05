@@ -81,8 +81,8 @@ module.exports = function(grunt) {
             'datatables.net-rowreorder-bs4/js/rowReorder.bootstrap4.min.js*',
             'datatables.net-scroller/js/dataTables.scroller.min.js*',
             'datatables.net-scroller-bs4/js/scroller.bootstrap4.min.js*',
-            'datatables.net-searchpanes/js/dataTables.searchPanes.min.js*',
-            'datatables.net-searchpanes-bs4/js/searchPanes.bootstrap4.min.js*',
+            // No SearchPanes: 3.x is commercial (DataTables Plus), and no
+            // table used it.
             'datatables.net-select/js/dataTables.select.min.js*',
             'datatables.net-select-bs4/js/select.bootstrap4.min.js*',
           ],
@@ -102,7 +102,6 @@ module.exports = function(grunt) {
             'datatables.net-rowgroup-bs4/css/rowGroup.bootstrap4.min.css*',
             'datatables.net-rowreorder-bs4/css/rowReorder.bootstrap4.min.css*',
             'datatables.net-scroller-bs4/css/scroller.bootstrap4.min.css*',
-            'datatables.net-searchpanes-bs4/css/searchPanes.bootstrap4.min.css*',
             'datatables.net-select-bs4/css/select.bootstrap4.min.css*',
           ],
           dest: '.tmp/public/styles'
