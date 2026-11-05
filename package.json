@@ -15,7 +15,7 @@
     "animate.css": "^4.1.1",
     "bcryptjs": "^3.0.3",
     "bootstrap": "^5.3.3",
-    "chalk": "^4.1.2",
+    "chalk": "^6.0.1",
     "chart.js": "^4.6.1",
     "check-disk-space": "^4.0.0",
     "clui": "^0.3.6",
