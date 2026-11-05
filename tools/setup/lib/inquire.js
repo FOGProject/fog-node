@@ -7,6 +7,28 @@ const Spinner = CLI.Spinner;
 const chalk = require('chalk');
 const database = require('../../lib/database');
 const redis = require('../../lib/redis');
+const splitList = (value) => value.split(',').map((v) => v.trim()).filter((v) => v.length);
+const isWebUrl = (value) => {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch (unused) {
+    return false;
+  }
+};
+// This computer's name plus each external IPv4 address, on fog-node's port.
+const defaultUrls = () => {
+  const ips = Object.values(os.networkInterfaces()).flat()
+    .filter((a) => a && a.family === 'IPv4' && !a.internal)
+    .map((a) => a.address);
+  return [os.hostname(), ...ips].map((h) => `http://${h}:1337`);
+};
+// macOS has a read-only root volume, so /images cannot be created there.
+const defaultImageStore = () => {
+  if (process.platform === 'win32') return 'C:\\fog\\images';
+  if (process.platform === 'darwin') return '/Users/Shared/fog/images';
+  return '/images';
+};
 const verifyDB = (answers, next) => {
   let status = new Spinner('Verifying database information, please wait...');
   status.start();
@@ -78,31 +100,32 @@ module.exports = {
       });
     });
   },
-  // Production Sails refuses to lift without sockets.onlyAllowOrigins, so the
-  // installer needs the URL that browsers use. The image store default follows
-  // the OS, because fog-node runs on any OS that runs Node.
+  // Sails accepts socket connections only from the origins in
+  // sockets.onlyAllowOrigins, in every mode once it is set, and production
+  // refuses to lift without it. So the installer asks for every URL that
+  // browsers use. The default is this computer's name and each IPv4 address,
+  // because FOG admins often browse by IP.
+  // The image store default follows the OS, because fog-node runs on any OS
+  // that runs Node.
   getServerInfo: (next) => {
     let questions = [
       {
-        name: 'url',
+        name: 'urls',
         type: 'input',
-        message: 'Enter the URL that browsers will use to reach fog-node:',
-        default: `http://${os.hostname()}:1337`,
+        message: 'Enter each URL that browsers will use to reach fog-node, separated by commas:',
+        default: defaultUrls().join(', '),
         validate: (value) => {
-          try {
-            const u = new URL(value);
-            if (u.protocol === 'http:' || u.protocol === 'https:') return true;
-          } catch (unused) {
-            // Falls through to the message below.
-          }
-          return 'Enter a full http:// or https:// URL, for example http://fog.example.com:1337';
+          const bad = splitList(value).find((v) => !isWebUrl(v));
+          if (!splitList(value).length) return 'Enter at least one URL';
+          if (bad) return `Not a full http:// or https:// URL: ${bad}`;
+          return true;
         }
       },
       {
         name: 'imageStorePath',
         type: 'input',
         message: 'Enter the directory that holds the images:',
-        default: process.platform === 'win32' ? 'C:\\fog\\images' : '/images',
+        default: defaultImageStore(),
         validate: (value) => {
           if (!path.isAbsolute(value)) return 'Enter an absolute path';
           try {
@@ -116,8 +139,9 @@ module.exports = {
       }
     ];
     inquirer.prompt(questions).then((answers) => {
-      // onlyAllowOrigins takes an origin: scheme, host and port, no path.
-      answers.origin = new URL(answers.url).origin;
+      // onlyAllowOrigins takes origins: scheme, host and port, no path.
+      answers.urls = splitList(answers.urls);
+      answers.origins = [...new Set(answers.urls.map((v) => new URL(v).origin))];
       next(answers);
     });
   },

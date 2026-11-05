@@ -80,16 +80,27 @@ that the current chart.js does not meet.
 
 | Question | Default | Notes |
 |---|---|---|
-| MongoDB address, port, and database name | `localhost`, `27017`, `fog` | It connects to check them |
-| MongoDB username and password | none | Leave the username empty for a MongoDB with no authentication |
+| Database server address, port, and name (MongoDB) | `localhost`, `27017`, `fog` | It connects to check them |
+| Database username and password (MongoDB) | none | Leave the username empty for a MongoDB with no authentication |
 | Redis URL | `redis://127.0.0.1:6379/0` | It sends PING to check it. Put a password in the URL: `redis://:password@host:6379/0` |
-| URL that browsers use | `http://<this computer's name>:1337` | Production mode accepts socket connections from this origin only |
-| Image directory | `/images`, or `C:\fog\images` on Windows | It creates the directory and checks that it can write there |
+| Each URL that browsers use, separated by commas | this computer's name and each of its IPv4 addresses, on port 1337 | See "Browser URLs" below |
+| Image directory | `/images` on Linux, `/Users/Shared/fog/images` on macOS, `C:\fog\images` on Windows | It creates the directory and checks that it can write there |
 | Administrator email and password | none | At least 8 characters |
 | Sample data | no | For trying the UI. Not for production |
 
 The installer writes two git-ignored files, `config/local.js` and
 `config/models.js`. It changes no tracked file.
+
+### Browser URLs
+
+fog-node accepts socket (socket.io) connections only from the URLs that you
+give the installer. This applies in every mode, not only in production. From
+any other address, the browser console shows socket connection errors. No page
+needs sockets yet, but live task progress will use them (see `docs/imaging.md`).
+For example, if you give only `http://fogserver:1337`, then
+`http://10.0.0.5:1337` gets socket errors. List every name and address that
+people use. If a reverse proxy is in
+front, list the proxy's URL, for example `https://fog.example.com`.
 
 You can run `npm run setup` again to change the answers. It keeps the data
 encryption key in `config/models.js`, because a new key makes encrypted data
@@ -128,7 +139,7 @@ connect and exits, so set the service to restart on failure.
 ## Put a web server in front (optional)
 
 fog-node listens on port 1337. To serve it on 80 and 443, put a reverse proxy
-in front: nginx, Caddy, Apache, or IIS with URL Rewrite. The proxy must pass
-WebSocket upgrades through, because the UI uses socket.io. If you do this, give
-the installer the proxy's URL (for example `https://fog.example.com`), not
-`:1337`.
+in front: nginx, Caddy, Apache, or IIS with URL Rewrite. Set the proxy to pass
+WebSocket upgrades through, because every page opens a socket.io connection.
+If you do this, give the installer the proxy's URL (for example
+`https://fog.example.com`), not `:1337`.
