@@ -34,7 +34,7 @@
     "flat": "^6.0.1",
     "font-awesome": "^4.7.0",
     "global": "^4.4.0",
-    "grunt": "1.6.2",
+    "grunt": "1.6.3",
     "grunt-terser": "^2.0.0",
     "icheck-bootstrap": "^3.0.1",
     "inputmask": "^5.0.10",
