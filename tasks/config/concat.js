@@ -10,6 +10,19 @@
  *   https://sailsjs.com/anatomy/tasks/config/concat.js
  *
  */
+const path = require('path');
+
+// The production CSS bundle is served from /min/, not from each file's own
+// folder, so a relative url() in a source file points to the wrong place. For
+// example, font-awesome's url(../fonts/x.woff2) became /fonts/x.woff2, a 404
+// (issue #115). Rewrite each relative url() to an absolute path, based on the
+// file it came from. data:, http(s):, absolute, and #fragment URLs stay.
+const absoluteCssUrls = (src, filepath) => {
+  const dir = path.posix.dirname(filepath.split(path.sep).join('/').replace(/^\.tmp\/public\//, ''));
+  return src.replace(/url\(\s*(['"]?)(?!data:|https?:|\/|#)([^'")]+)\1\s*\)/g,
+    (match, quote, rel) => `url(${quote}/${path.posix.join(dir, rel)}${quote})`);
+};
+
 module.exports = function(grunt) {
 
   grunt.config.set('concat', {
@@ -18,6 +31,7 @@ module.exports = function(grunt) {
       dest: '.tmp/public/concat/production.js'
     },
     css: {
+      options: {process: absoluteCssUrls},
       src: require('../pipeline').cssFilesToInject,
       dest: '.tmp/public/concat/production.css'
     }

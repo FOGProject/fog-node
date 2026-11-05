@@ -23,7 +23,8 @@ Read these first:
 | Dev MongoDB + Redis | `docker compose up -d` (or `podman compose up -d`) |
 | Dev config + admin | `npm run setup:dev` (writes git-ignored `config/local.js`, `config/models.js`) |
 | Production config | `npm run setup` (interactive; checks MongoDB and Redis) |
-| Run | `node app.js` (port 1337). `npm start` is production mode, and its asset build fails until #115 is fixed |
+| Run | `node app.js` (development, port 1337). `npm start` runs production mode: minified bundles, built at each start |
+| UI smoke test, production build | `npm run test:ui:prod` |
 | Lint | `npm run lint` (eslint, `--max-warnings=0`) |
 | Test | `npm test` (lint, then the mocha suite) |
 | UI smoke test | `npm run test:ui` (lifts with grunt on, drives Chromium through every routed page; run `npx playwright install chromium` once) |

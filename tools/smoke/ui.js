@@ -11,8 +11,11 @@
  * 3.1 or greater") and still passed all the unit tests. This script fails on
  * that class of break.
  *
- * Usage: npm run test:ui
+ * Usage: npm run test:ui          (development build)
+ *        npm run test:ui:prod     (production build, as `npm start` runs it)
  *   It needs MongoDB, Redis, and the config that `npm run setup:dev` writes.
+ *   The production build rewrites views/layouts/layout.ejs to load the
+ *   minified bundles. The next development lift writes it back.
  *   It needs the browser once: npx playwright install chromium
  *
  * It lifts on port 1339, so it runs beside a dev server (1337) and the mocha
@@ -31,6 +34,9 @@ const root = path.join(__dirname, '..', '..');
 const port = 1339;
 const base = `http://127.0.0.1:${port}`;
 const password = process.env.FOG_UI_PASSWORD || 'fogadmin1';
+// --prod lifts with the production asset build: concatenated and minified
+// bundles (issue #115 broke that build, and nothing noticed).
+const prod = process.argv.includes('--prod');
 const outDir = path.join(root, 'ui-smoke-out');
 
 // Every page in config/routes.js that renders the layout, except the edit
@@ -66,8 +72,12 @@ const serverLog = [];
 // Starts `node app.js` in its own process group, so that the stop also ends
 // the grunt child process that sails-hook-grunt starts.
 function startServer() {
-  const child = spawn(process.execPath, ['app.js', `--port=${port}`], {
+  const child = spawn(process.execPath, ['app.js', `--port=${port}`, ...(prod ? ['--prod'] : [])], {
     cwd: root,
+    // Production refuses to lift without socket origins. `npm run setup`
+    // writes them, but `npm run setup:dev` does not, so the test sets the one
+    // origin that its browser uses.
+    env: {...process.env, 'sails_sockets__onlyAllowOrigins': JSON.stringify([base])},
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: process.platform !== 'win32'
   });
