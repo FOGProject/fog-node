@@ -36,7 +36,7 @@
     "grunt": "1.6.2",
     "icheck-bootstrap": "^3.0.1",
     "inputmask": "^5.0.6",
-    "inquirer": "^8.2.7",
+    "inquirer": "^14.2.5",
     "joi": "^18.3.1",
     "jquery": "^3.7.1",
     "jsonwebtoken": "~>9.0.0",
