@@ -15,7 +15,7 @@ module.exports = {
     let u;
     try {
       u = new URL(url);
-    } catch (err) {
+    } catch (unused) {
       return next(new Error(`Not a valid URL: ${url}`));
     }
     if (u.protocol !== 'redis:') return next(new Error('The URL must start with redis://'));
@@ -30,13 +30,16 @@ module.exports = {
 
     let buf = '';
     let done = false;
+    let sock;
     const finish = (err) => {
       if (done) return;
       done = true;
       sock.destroy();
       next(err);
     };
-    const sock = net.connect({host: u.hostname, port: Number(u.port) || 6379});
+    // URL keeps the brackets on an IPv6 host ("[::1]"); net.connect wants "::1".
+    const host = u.hostname.replace(/^\[(.*)\]$/, '$1');
+    sock = net.connect({host: host, port: Number(u.port) || 6379});
     sock.setTimeout(5000, () => finish(new Error('No answer from Redis within 5 seconds')));
     sock.on('error', finish);
     sock.on('connect', () => sock.write(cmds.map(encode).join('')));

@@ -97,12 +97,13 @@ async.waterfall([
     // A re-run must keep the existing data encryption key. A new key makes
     // every attribute encrypted under the old one unreadable.
     let encKey = secure.generateSecret();
+    let keptKey = false;
     if (fs.existsSync(modelsCfg)) {
       try {
         const old = require(modelsCfg).models;
         if (old && old.dataEncryptionKeys && old.dataEncryptionKeys.default) {
           encKey = old.dataEncryptionKeys.default;
-          console.log('Kept the existing data encryption key from config/models.js');
+          keptKey = true;
         }
       } catch (err) {
         status.stop();
@@ -195,6 +196,8 @@ async.waterfall([
     }
     // Stop the spinner here. Left running, it printed over every later step.
     status.stop();
+    // Printed after the spinner stops, so the two do not share a line.
+    if (keptKey) console.log('Kept the existing data encryption key from config/models.js');
     console.log('Configuration saved');
     next();
   },
