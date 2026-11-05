@@ -9,6 +9,7 @@ Read these first:
 
 - `docs/roadmap.md`: where the rewrite stands, the phases, and the decisions.
 - `docs/imaging.md`: the imaging design (HTTP stream, per-client authorization).
+- `docs/install.md`: the install guide for every OS.
 - `docs/plugins.md`: the plugin contract. Core is imaging; the rest is plugins.
 - `docs/adr/`: architecture decisions. ADR 0001 removed Groups on purpose
   (host tags and bulk actions replace them). Do not reintroduce Groups.
@@ -27,8 +28,7 @@ Read these first:
 | Test | `npm test` (lint, then the mocha suite) |
 
 CI (`.github/workflows/tests.yml`) runs `npm test` on Linux (Node 22 and 26)
-and on Windows (Node 22) for every pull request and merge-queue entry.
-`docs/install.md` is the install guide for every OS. `master` takes changes only through a pull
+and on Windows (Node 22) for every pull request and merge-queue entry. `master` takes changes only through a pull
 request and the merge queue.
 
 ## Testing

@@ -1,5 +1,4 @@
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const inquirer = require('inquirer');
 const CLI = require('clui');
@@ -7,6 +6,7 @@ const Spinner = CLI.Spinner;
 const chalk = require('chalk');
 const database = require('../../lib/database');
 const redis = require('../../lib/redis');
+const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require('./server-defaults');
 const verifyDB = (answers, next) => {
   let status = new Spinner('Verifying database information, please wait...');
   status.start();
@@ -78,31 +78,30 @@ module.exports = {
       });
     });
   },
-  // Production Sails refuses to lift without sockets.onlyAllowOrigins, so the
-  // installer needs the URL that browsers use. The image store default follows
-  // the OS, because fog-node runs on any OS that runs Node.
+  // Once sockets.onlyAllowOrigins is set, Sails accepts socket connections
+  // only from those origins, in every mode. Production refuses to lift
+  // without it. So the installer asks for every URL that browsers use.
+  // The image store default follows the OS, because fog-node runs on any OS.
   getServerInfo: (next) => {
     let questions = [
       {
-        name: 'url',
+        name: 'urls',
         type: 'input',
-        message: 'Enter the URL that browsers will use to reach fog-node:',
-        default: `http://${os.hostname()}:1337`,
+        message: 'Enter each URL that browsers will use to reach fog-node, separated by commas:',
+        default: defaultUrls().join(', '),
         validate: (value) => {
-          try {
-            const u = new URL(value);
-            if (u.protocol === 'http:' || u.protocol === 'https:') return true;
-          } catch (unused) {
-            // Falls through to the message below.
-          }
-          return 'Enter a full http:// or https:// URL, for example http://fog.example.com:1337';
+          const parts = splitList(value);
+          if (!parts.length) return 'Enter at least one URL';
+          const bad = parts.find((v) => !isWebUrl(v));
+          if (bad) return `Not a full http:// or https:// URL: ${bad}`;
+          return true;
         }
       },
       {
         name: 'imageStorePath',
         type: 'input',
         message: 'Enter the directory that holds the images:',
-        default: process.platform === 'win32' ? 'C:\\fog\\images' : '/images',
+        default: defaultImageStore(),
         validate: (value) => {
           if (!path.isAbsolute(value)) return 'Enter an absolute path';
           try {
@@ -116,8 +115,7 @@ module.exports = {
       }
     ];
     inquirer.prompt(questions).then((answers) => {
-      // onlyAllowOrigins takes an origin: scheme, host and port, no path.
-      answers.origin = new URL(answers.url).origin;
+      answers.origins = toOrigins(splitList(answers.urls));
       next(answers);
     });
   },

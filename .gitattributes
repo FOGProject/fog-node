@@ -1,0 +1,5 @@
+# Check out text files with LF line endings on every OS. Git on Windows
+# converts to CRLF by default, and eslint's linebreak-style rule then fails
+# every file (npm test fails on a fresh Windows clone). Git detects binary
+# files itself and leaves them alone.
+* text=auto eol=lf

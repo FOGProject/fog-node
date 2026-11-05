@@ -48,7 +48,13 @@ with localhost defaults (Mongo on `:27017`, Redis via `config/session.js` on
 [tools/setup/dev.js](tools/setup/dev.js)), e.g.:
 
 ```sh
+# Linux / macOS (sh, bash, zsh)
 FOG_DEV_ADMIN_PASSWORD='supersecret' FOG_DEV_DB_NAME='fogdev' npm run setup:dev
+```
+
+```powershell
+# Windows PowerShell
+$env:FOG_DEV_ADMIN_PASSWORD='supersecret'; $env:FOG_DEV_DB_NAME='fogdev'; npm run setup:dev
 ```
 
 > **Heads-up:** the schema uses `migrate: 'safe'` (never auto-migrate — Mongo is

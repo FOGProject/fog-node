@@ -189,9 +189,10 @@ async.waterfall([
     adapter: '@sailshq/connect-redis',
     url: '${jsStr(payload.redisUrl)}'
   },
-  // Production Sails refuses to lift unless socket origins are restricted.
+  // Sails accepts socket connections only from these origins, in every mode.
+  // Production refuses to lift without the list. Re-run npm run setup to change it.
   sockets: {
-    onlyAllowOrigins: ['${jsStr(payload.server.origin)}']
+    onlyAllowOrigins: [${payload.server.origins.map((o) => `'${jsStr(o)}'`).join(', ')}]
   },
   custom: {
     imageStorePath: '${jsStr(payload.server.imageStorePath)}'
@@ -264,8 +265,10 @@ async.waterfall([
     console.log(`You will likely want to configure a DNS name for this server`);
     header.printSection('Login Information');
     console.log('To login, you may use either the username or the email');
-    console.log(`URL: ${payload.server.url}`);
-    console.log('Start fog-node with: npm start');
+    console.log(`URL: ${payload.server.origins.join(', ')}`);
+    console.log('Browse with one of these URLs. Sockets refuse connections from any other address.');
+    // Not npm start: the production asset build fails until #115 is fixed.
+    console.log('Start fog-node with: node app.js');
     console.log('Username: Administrator');
     // On a re-run against an existing database the Administrator already
     // exists and keeps its old email and password. Say so, instead of
