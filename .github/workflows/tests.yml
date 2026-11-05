@@ -1,0 +1,75 @@
+name: Tests
+
+# Runs the whole `npm test` (eslint, then the mocha suite) on every pull
+# request and on every merge-queue entry. The `master` ruleset requires the
+# job names below, so renaming a job means editing that ruleset in the same
+# change, or every pull request waits for a check that never reports.
+#
+# Inline, not a reusable workflow in FOGProject/fog-workflows: fogproject keeps
+# its logic there because several long-lived branches each carry a stub. This
+# repository has one long-lived branch, so a second repository would add a
+# cross-repo edit to every CI change and buy nothing yet. Move it when a second
+# long-lived branch appears.
+#
+# No push trigger: nothing here needs to run after the merge, and the merge
+# queue already ran the suite on the exact tree that lands.
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The two majors the README supports.
+        node: ['22', '26']
+
+    # The suite lifts a real Sails app. It needs MongoDB (the datastore) and
+    # Redis (the session store: CSRF keeps its secret in the session).
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1})'"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      # --legacy-peer-deps: chart.js@4 conflicts with an old plugin's peer
+      # range, and the repository has always installed this way.
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # Writes the git-ignored config/local.js and config/models.js with the
+      # localhost defaults, which match the two service containers above.
+      - name: Configure (dev setup)
+        run: npm run setup:dev
+
+      - name: npm test
+        run: npm test

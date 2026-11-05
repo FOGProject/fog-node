@@ -1,0 +1,71 @@
+name: Auto-merge
+
+# Arms auto-merge on each same-repository pull request to `master` when it
+# opens, so the merge queue merges it once the required checks pass. Ported
+# from FOGProject/fogproject's automerge.yml. Read the comments there before
+# changing the token handling.
+#
+# THE APP TOKEN IS LOAD BEARING. Auto-merge armed with secrets.GITHUB_TOKEN
+# enqueues the pull request, but GitHub's anti-recursion rule then never fires
+# the `merge_group` run, so the queue waits for checks that never start. The
+# FOG workflows App token is not subject to that rule.
+#
+# Until this repository has the App's id (variable FOG_WORKFLOWS_APPID) and
+# key (secret FOG_WORKFLOWS_PRIVATE_KEY), the job is skipped, not failed. A
+# pull request then waits for a person to press "Merge when ready".
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  arm:
+    name: arm auto-merge
+    # Same-repository only: a fork's token cannot arm auto-merge.
+    if: >-
+      vars.FOG_WORKFLOWS_APPID != ''
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.base.ref == 'master'
+      && !github.event.pull_request.draft
+      && github.event.pull_request.head.ref != 'master'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.FOG_WORKFLOWS_APPID }}
+          private-key: ${{ secrets.FOG_WORKFLOWS_PRIVATE_KEY }}
+          owner: FOGProject
+          repositories: "fog-node"
+
+      # Auto-merge on a branch with no required checks merges at once,
+      # untested. Refuse instead of arming.
+      - name: Refuse to arm without required checks
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          n=$(gh api "repos/${{ github.repository }}/rules/branches/$BASE" \
+            --jq '[.[] | select(.type == "required_status_checks")
+                   | .parameters.required_status_checks[]] | length')
+          if [ "${n:-0}" -lt 1 ]; then
+            echo "::error::$BASE has no required status checks, so auto-merge would merge untested. Not arming."
+            exit 1
+          fi
+          echo "$BASE enforces $n required checks; arming."
+
+      - name: Enable auto-merge
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr merge "$PR" \
+            --repo "${{ github.repository }}" \
+            --merge \
+            --auto

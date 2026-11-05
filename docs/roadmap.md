@@ -71,11 +71,11 @@ Phase 1); the remaining gaps are behavior, breadth, and views — not schema:
 - [x] One-command dev MongoDB (`docker-compose.yml`).
 - [x] Non-interactive dev setup (`npm run setup:dev`).
 - [x] Document supported Node versions + dev quickstart (README).
-- [ ] Make `npm run lint` runnable again — installed `eslint@10` only supports
-      flat config, but the repo ships a v4-style `.eslintrc`. Either migrate to
-      `eslint.config.js` (and clean up the resulting warnings, since the lint
-      script runs with `--max-warnings=0`) or pin `eslint` to v8. Deferred —
-      decide the eslint direction first.
+- [x] `npm run lint` runs again — migrated to flat config (`eslint.config.js`),
+      `--max-warnings=0`.
+- [x] CI: `.github/workflows/tests.yml` runs `npm test` on Node 22 and 26 for
+      every pull request and merge-queue entry; `master` takes changes only
+      through the merge queue.
 - [x] Resolved the lockfile split — standardized on **npm**: `package-lock.json`
       is committed; the stray `yarn.lock` (gitignored, never tracked) is removed
       and stays ignored. (README, `.npmrc`, and the scripts already use npm.)

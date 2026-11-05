@@ -1,0 +1,43 @@
+# Contributing to fog-node
+
+fog-node is the FOG 2.0 server, a Sails.js rewrite of FOG Project. Thank you
+for helping.
+
+## Before you start
+
+- Read `docs/roadmap.md` for the current phase and the decisions already made.
+- For a new feature, open an issue first, so we can agree on the approach.
+- For a security problem, do not open an issue. Follow `SECURITY.md`.
+
+## Set up
+
+```sh
+npm ci --legacy-peer-deps
+docker compose up -d        # MongoDB + Redis for development (or podman compose)
+npm run setup:dev           # writes config/local.js and config/models.js
+node app.js                 # http://localhost:1337
+```
+
+The README has the Node versions and the full development quickstart.
+
+## Make a change
+
+- Branch from `master`.
+- Keep a pull request to one change.
+- Match the existing style. `npm run lint` must report no warnings.
+- Add a test under `test/` for each fixed bug and each new endpoint.
+- Do not run `npm audit fix` or `--force`. The `comments` block in
+  `package.json` explains why.
+
+## Open a pull request
+
+- Target `master`.
+- Run `npm test` first. CI runs the same command on Node 22 and 26.
+- Say what changed and why, and how you checked it.
+- A pull request merges through the merge queue after the required checks
+  pass.
+
+## License
+
+By contributing, you agree that your contribution is licensed under the
+GPL v3, the same license as the project.
