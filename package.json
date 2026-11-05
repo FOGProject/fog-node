@@ -40,7 +40,7 @@
     "inputmask": "^5.0.10",
     "inquirer": "^14.2.5",
     "joi": "^18.3.1",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
     "jsonwebtoken": "~>9.0.0",
     "jszip": "^3.10.2",
     "moment-timezone": "^0.6.6",
