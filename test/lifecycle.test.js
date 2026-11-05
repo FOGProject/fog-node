@@ -3,6 +3,10 @@ const sails = require('sails');
 before(function(done) {
   this.timeout(11000);
   sails.lift({
+    // These were PORT=1338 and sails_hooks__grunt=false in the npm script.
+    // That syntax fails in Windows cmd, so the options live here instead.
+    port: 1338,
+    hooks: {grunt: false},
     log: {level: 'debug'}
   }, (err) => {
     if (err) return done(err);

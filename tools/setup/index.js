@@ -18,6 +18,10 @@ const welcome = `Welcome to the FOG installer.\nYou will be guided through confi
 var COMPLETED = false;
 var payload = {};
 
+// Escape a value for a single-quoted JS string in a generated config file.
+// A Windows path has backslashes, which would otherwise become escapes.
+const jsStr = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+
 header.print(welcome);
 
 async.waterfall([
@@ -37,6 +41,14 @@ async.waterfall([
     header.printSection('Session Store Configuration');
     inquire.getRedisInfo((answers) => {
       payload.redisUrl = answers.url;
+      next();
+    });
+  },
+  // Server URL + image store
+  (next) => {
+    header.printSection('Server Configuration');
+    inquire.getServerInfo((answers) => {
+      payload.server = answers;
       next();
     });
   },
@@ -175,7 +187,14 @@ async.waterfall([
   session: {
     secret: '${payload.session.secret}',
     adapter: '@sailshq/connect-redis',
-    url: '${payload.redisUrl.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}'
+    url: '${jsStr(payload.redisUrl)}'
+  },
+  // Production Sails refuses to lift unless socket origins are restricted.
+  sockets: {
+    onlyAllowOrigins: ['${jsStr(payload.server.origin)}']
+  },
+  custom: {
+    imageStorePath: '${jsStr(payload.server.imageStorePath)}'
   },
   datastores: {
     fogdb: {
@@ -245,7 +264,8 @@ async.waterfall([
     console.log(`You will likely want to configure a DNS name for this server`);
     header.printSection('Login Information');
     console.log('To login, you may use either the username or the email');
-    console.log('URL: http://localhost:1337');
+    console.log(`URL: ${payload.server.url}`);
+    console.log('Start fog-node with: npm start');
     console.log('Username: Administrator');
     // On a re-run against an existing database the Administrator already
     // exists and keeps its old email and password. Say so, instead of

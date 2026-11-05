@@ -73,3 +73,41 @@ jobs:
 
       - name: npm test
         run: npm test
+
+  # fog-node runs on any OS that runs Node, so CI proves one non-Linux OS too.
+  # Windows is the one that differs most: npm runs package scripts through
+  # cmd.exe, so a POSIX-only script (VAR=value, ./path) fails here first.
+  # Service containers need Linux, so MongoDB and Redis run natively instead.
+  windows:
+    name: tests (Windows, Node 22)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      # The runner image ships MongoDB 7.0 as a disabled Windows service.
+      - name: Start MongoDB
+        shell: pwsh
+        run: |
+          Set-Service -Name MongoDB -StartupType Manual
+          Start-Service -Name MongoDB
+
+      # Redis has no official Windows build. Memurai is a Redis-compatible
+      # Windows service, and its installer starts it on port 6379.
+      - name: Install Redis (Memurai)
+        shell: pwsh
+        run: choco install memurai-developer -y --no-progress
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Configure (dev setup)
+        run: npm run setup:dev
+
+      - name: npm test
+        run: npm test
