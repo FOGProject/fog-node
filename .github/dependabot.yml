@@ -21,6 +21,13 @@ updates:
       datatables:
         patterns:
           - "datatables.net*"
+    # The 3.x extensions need DataTables core 3.1, and the core is not a direct
+    # dependency, so the group cannot bump it (PR #121 broke every page). Hold
+    # the majors until #118 moves the core and the extensions together, then
+    # delete this rule.
+    ignore:
+      - dependency-name: "datatables.net*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
