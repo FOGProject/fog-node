@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "eslint": "10.5.0",
-    "globals": "^17.11.0",
+    "globals": "^17.14.0",
     "mocha": "^11.7.6",
     "playwright": "~1.64.0",
     "supertest": "^7.3.1"
