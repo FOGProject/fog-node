@@ -117,14 +117,16 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # The Chromium build that matches the installed Playwright version, and
-      # the system libraries that it needs. It hung once for over 8 minutes
-      # (PR #127). A normal install takes about 10 seconds, so give each try
-      # 3 minutes and try three times.
+      # The Chromium build that matches the installed Playwright version. No
+      # --with-deps: the runner image already has Chromium's libraries, and
+      # the apt step it adds hung twice (PR #127, PR #129). A killed try also
+      # left apt-get holding the dpkg lock, so every retry failed. The CLI runs
+      # directly, not through npx, so `timeout` stops the process that
+      # downloads. A normal install takes about 10 seconds.
       - name: Install Chromium
         run: |
           for i in 1 2 3; do
-            timeout 180 npx playwright install --with-deps chromium && exit 0
+            timeout 180 node node_modules/playwright/cli.js install chromium && exit 0
             echo "Chromium install try $i failed or timed out."
           done
           exit 1
