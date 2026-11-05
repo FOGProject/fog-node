@@ -116,9 +116,10 @@ npm start
 ```
 
 `npm start` runs `node app.js --prod`, production mode. At each start it builds
-the browser assets into two minified bundles. Then open the URL that you gave
-the installer, for example <http://fogserver:1337>, and log in as
-`Administrator`. To use a different port, run `node app.js --prod --port=8080`.
+the browser assets into two minified bundles.
+
+Then open the URL that you gave the installer, for example
+<http://fogserver:1337>, and log in as `Administrator`. To use a different port, run `node app.js --prod --port=8080`.
 
 For development, run `node app.js`. Development mode serves each asset file
 separately and rebuilds them when you change one.

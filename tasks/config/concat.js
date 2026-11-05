@@ -4,7 +4,7 @@
  * ---------------------------------------------------------------
  *
  * An intermediate step to generate monolithic files that can
- * then be passed in to `uglify` and/or `cssmin` for minification.
+ * then be passed in to `terser` and/or `cssmin` for minification.
  *
  * For more information, see:
  *   https://sailsjs.com/anatomy/tasks/config/concat.js
