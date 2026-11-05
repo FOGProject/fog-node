@@ -17,7 +17,7 @@
     "bootstrap": "^5.3.3",
     "chalk": "^4.1.2",
     "chart.js": "^4.5.1",
-    "check-disk-space": "^3.0.1",
+    "check-disk-space": "^4.0.0",
     "clui": "^0.3.6",
     "datatables.net-autofill-bs4": "^2.3.9",
     "datatables.net-buttons-bs4": "^3.2.6",
@@ -35,7 +35,7 @@
     "global": "^4.4.0",
     "grunt": "1.6.2",
     "icheck-bootstrap": "^3.0.1",
-    "inputmask": "^5.0.6",
+    "inputmask": "^5.0.10",
     "inquirer": "^14.2.5",
     "joi": "^18.3.1",
     "jquery": "^3.7.1",
@@ -64,7 +64,7 @@
     "globals": "^17.11.0",
     "mocha": "^11.7.6",
     "playwright": "~1.64.0",
-    "supertest": "^7.2.2"
+    "supertest": "^7.3.1"
   },
   "comments": {
     "scripts": "Every script must run in both POSIX sh and Windows cmd, because fog-node runs on any OS that runs Node. Do not use VAR=value prefixes, ./path executables, or quotes around echo text. start uses --prod, and Sails then sets NODE_ENV itself. lint calls eslint from node_modules/.bin. The test port and the grunt switch are in test/lifecycle.test.js.",

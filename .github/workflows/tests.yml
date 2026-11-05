@@ -157,9 +157,20 @@ jobs:
 
       # Redis has no official Windows build. Memurai is a Redis-compatible
       # Windows service, and its installer starts it on port 6379.
+      # The Chocolatey community feed sometimes answers 504, so retry. Then
+      # check the port, so a failed install fails here and not later as
+      # ECONNREFUSED in setup:dev.
       - name: Install Redis (Memurai)
         shell: pwsh
-        run: choco install memurai-developer -y --no-progress
+        run: |
+          for ($i = 1; $i -le 3; $i++) {
+            choco install memurai-developer -y --no-progress
+            if ($LASTEXITCODE -eq 0) { break }
+            Start-Sleep -Seconds 30
+          }
+          if (-not (Test-NetConnection 127.0.0.1 -Port 6379 -InformationLevel Quiet)) {
+            throw 'Memurai is not listening on port 6379.'
+          }
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
