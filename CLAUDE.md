@@ -58,6 +58,13 @@ request and the merge queue.
   `--force`.** The `overrides` in `package.json` and its `comments` block
   explain the pinned build chain. Some advisories have no fix short of
   replacing the grunt/Babel 6 asset toolchain.
+- **Hold a Dependabot update in `.github/dependabot.yml`, never with an
+  `@dependabot ignore` comment.** The comment hold is invisible in the repo
+  and can only be lifted on an open Dependabot PR. An `ignore` rule names its
+  issue and leaves with the PR that fixes it.
+- **CI never runs the installer (`tools/`).** A green Dependabot PR for a
+  package that only `tools/` uses (chalk, inquirer, figlet, clui) proves
+  nothing. Load it on Node 22 and 26 before you merge.
 - **`views/layouts/layout.ejs` changes by itself.** Grunt's sails-linker
   rewrites its `<script>`/`<link>` block from the globs in
   `tasks/pipeline.js` at each lift. Commit only the lines your change needs.

@@ -27,7 +27,8 @@
   }
 
   $input.on('input', () => {
-    let q = $.trim($input.val());
+    // Native trim: jQuery 4 removed $.trim.
+    let q = ($input.val() || '').trim();
     if (timer) {
       clearTimeout(timer);
     }
