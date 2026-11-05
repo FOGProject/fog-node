@@ -265,7 +265,8 @@ async.waterfall([
     header.printSection('Login Information');
     console.log('To login, you may use either the username or the email');
     console.log(`URL: ${payload.server.url}`);
-    console.log('Start fog-node with: npm start');
+    // Not npm start: the production asset build fails until #115 is fixed.
+    console.log('Start fog-node with: node app.js');
     console.log('Username: Administrator');
     // On a re-run against an existing database the Administrator already
     // exists and keeps its old email and password. Say so, instead of

@@ -80,8 +80,8 @@ that the current chart.js does not meet.
 
 | Question | Default | Notes |
 |---|---|---|
-| Database server address, port, name | `localhost`, `27017`, `fog` | It connects to check them |
-| Database username and password | none | Leave the username empty for a MongoDB with no authentication |
+| MongoDB address, port, and database name | `localhost`, `27017`, `fog` | It connects to check them |
+| MongoDB username and password | none | Leave the username empty for a MongoDB with no authentication |
 | Redis URL | `redis://127.0.0.1:6379/0` | It sends PING to check it. Put a password in the URL: `redis://:password@host:6379/0` |
 | URL that browsers use | `http://<this computer's name>:1337` | Production mode accepts socket connections from this origin only |
 | Image directory | `/images`, or `C:\fog\images` on Windows | It creates the directory and checks that it can write there |
