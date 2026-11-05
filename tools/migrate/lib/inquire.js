@@ -1,4 +1,6 @@
-const inquirer = require('inquirer');
+// inquirer 9+ is ESM-only. Node 22 loads it with require(), and the
+// inquirer object is the module's default export.
+const inquirer = require('inquirer').default;
 
 module.exports = {
   getBackupInfo: (next) => {

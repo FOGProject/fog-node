@@ -115,6 +115,6 @@
   "author": "FOG Project",
   "license": "GPL v3",
   "engines": {
-    "node": ">=18"
+    "node": "^22.13.0 || >=23.5.0"
   }
 }
