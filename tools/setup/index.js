@@ -284,7 +284,8 @@ async.waterfall([
 ], (err) => {
   if (err) console.log(chalk.bgRed(err));
   COMPLETED = true;
-  process.exit();
+  // A failed install exits 1, so a script or CI run can see the failure.
+  process.exit(err ? 1 : 0);
 });
 (function wait() {
   if (!COMPLETED) setTimeout(wait, 1000);

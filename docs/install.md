@@ -53,7 +53,8 @@ MongoDB and Redis can run on the same machine as fog-node, or on another one.
 
 - **Node.js:** use the installer from <https://nodejs.org>, or
   `brew install node@22`.
-- **MongoDB:** `brew tap mongodb/brew`, then
+- **MongoDB:** `brew tap mongodb/brew`, then `brew trust mongodb/brew` (newer
+  Homebrew refuses a formula from a tap you have not trusted), then
   `brew install mongodb-community@7.0`, then
   `brew services start mongodb-community@7.0`.
 - **Redis:** `brew install redis`, then `brew services start redis`.
@@ -108,6 +109,27 @@ You can run `npm run setup` again to change the answers. It keeps the data
 encryption key in `config/models.js`, because a new key makes encrypted data
 unreadable. It also keeps the existing Administrator account. A re-run does not
 change that account's email or password, and the installer says so.
+
+### Install without prompts
+
+To script an install, put the answers in a JSON file and run
+`npm run setup -- --answers answers.json`. Each key is the same question as
+above, with the same default and the same check. A wrong answer or a failed
+check ends the install with exit code 1. It does not ask again.
+
+```json
+{
+  "database": {"host": "localhost", "port": 27017, "database": "fog", "username": "", "password": ""},
+  "redis": {"url": "redis://127.0.0.1:6379/0"},
+  "server": {"urls": "http://fogserver:1337, http://10.0.0.5:1337", "imageStorePath": "/images"},
+  "admin": {"email": "admin@example.com", "password": "change-me-now"},
+  "seed": {"seed": false}
+}
+```
+
+Leave out a key to take its default. `admin.email` and `admin.password` have
+no default, so they are required. `seed.seed` must be `true` or `false`. The
+file holds the Administrator password, so delete it after the install.
 
 ## Start fog-node
 

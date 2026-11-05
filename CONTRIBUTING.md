@@ -42,6 +42,9 @@ The README has the Node versions and the full development quickstart.
   `npx playwright install chromium` once before the first run. If you changed
   the asset pipeline (`tasks/`), also run `npm run test:ui:prod`. It runs the
   same checks against the minified production bundles.
+- If you changed the installer (`tools/setup/`), also run
+  `npm run test:install`. It runs the installer from an answers file and
+  signs in to the result. It keeps your `config/local.js`.
 - Say what changed and why, and how you checked it.
 - A pull request merges through the merge queue after the required checks
   pass.

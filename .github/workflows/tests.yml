@@ -1,7 +1,8 @@
 name: Tests
 
-# Runs the whole `npm test` (eslint, then the mocha suite) and the browser UI
-# smoke test (`npm run test:ui`) on every pull request and on every
+# Runs the whole `npm test` (eslint, then the mocha suite), the browser UI
+# smoke test (`npm run test:ui`), and the installer smoke test
+# (`npm run test:install`) on every pull request and on every
 # merge-queue entry. The `master` ruleset requires the
 # job names below, so renaming a job means editing that ruleset in the same
 # change, or every pull request waits for a check that never reports.
@@ -82,6 +83,13 @@ jobs:
       # for months before anyone noticed (issue #115), because nothing ran it.
       - name: Production asset build
         run: npx grunt prod
+
+      # The real installer from an answers file, then a production lift, a
+      # sign-in, and the socket origin check (tools/smoke/install.js). CI
+      # never ran the installer before, and chalk 6 broke it with every
+      # check green (PR #141). It puts back the config that setup:dev wrote.
+      - name: Installer smoke test
+        run: npm run test:install
 
   # `npm test` never builds or loads the UI, so a UI dependency bump can break
   # every page and still pass it (Dependabot PR #110 did). This job lifts
@@ -211,3 +219,46 @@ jobs:
 
       - name: npm test
         run: npm test
+
+      # The installer and a production lift, on Windows paths and cmd.exe.
+      - name: Installer smoke test
+        run: npm run test:install
+
+  # The installer smoke test on macOS, the third OS that docs/install.md
+  # covers. MongoDB and Redis come from Homebrew, as docs/install.md tells a
+  # Mac administrator to install them. This job is not a required check
+  # until it has a record of passing; then add its name to the ruleset.
+  macos:
+    name: installer (macOS, Node 22)
+    runs-on: macos-latest
+    # Homebrew installs take most of the run.
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install and start MongoDB and Redis
+        run: |
+          brew tap mongodb/brew
+          # Homebrew refuses a formula from a tap that is not trusted.
+          brew trust mongodb/brew
+          brew install mongodb-community@7.0 redis
+          brew services start mongodb-community@7.0
+          brew services start redis
+          for i in $(seq 1 60); do
+            nc -z 127.0.0.1 27017 && nc -z 127.0.0.1 6379 && exit 0
+            sleep 2
+          done
+          echo 'MongoDB or Redis did not start listening.'
+          exit 1
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Installer smoke test
+        run: npm run test:install
