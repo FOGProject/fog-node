@@ -245,6 +245,8 @@ jobs:
       - name: Install and start MongoDB and Redis
         run: |
           brew tap mongodb/brew
+          # Homebrew refuses a formula from a tap that is not trusted.
+          brew trust mongodb/brew
           brew install mongodb-community@7.0 redis
           brew services start mongodb-community@7.0
           brew services start redis

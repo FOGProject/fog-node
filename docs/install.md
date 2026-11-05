@@ -53,7 +53,8 @@ MongoDB and Redis can run on the same machine as fog-node, or on another one.
 
 - **Node.js:** use the installer from <https://nodejs.org>, or
   `brew install node@22`.
-- **MongoDB:** `brew tap mongodb/brew`, then
+- **MongoDB:** `brew tap mongodb/brew`, then `brew trust mongodb/brew` (newer
+  Homebrew refuses a formula from a tap you have not trusted), then
   `brew install mongodb-community@7.0`, then
   `brew services start mongodb-community@7.0`.
 - **Redis:** `brew install redis`, then `brew services start redis`.
