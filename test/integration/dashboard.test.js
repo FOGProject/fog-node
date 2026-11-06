@@ -4,7 +4,11 @@ const path = require('path');
 const supertest = require('supertest');
 
 // The FOG 1.6 dashboard layout (issue #152).
-describe('Dashboard::', () => {
+describe('Dashboard::', function () {
+  // Each GET / runs the systeminformation probes in pages/dashboard.js. On
+  // Windows they shell out to PowerShell, and one render takes over mocha's
+  // 2000 ms default (CI tests (Windows, Node 22) timed out on all three).
+  this.timeout(20000);
   const app = () => sails.hooks.http.app;
   const HOST = 'zq152-pending';
 
