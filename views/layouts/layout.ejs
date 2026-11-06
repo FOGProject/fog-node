@@ -74,8 +74,6 @@
     <link rel="stylesheet" href="/styles/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="/styles/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="/styles/@fortawesome/fontawesome-free/css/v4-shims.min.css">
-    <link rel="stylesheet" href="/styles/@pnotify/core/dist/PNotify.css">
-    <link rel="stylesheet" href="/styles/@pnotify/mobile/dist/PNotifyMobile.css">
     <link rel="stylesheet" href="/styles/datatables.net-autofill-bs5/css/autoFill.bootstrap5.min.css">
     <link rel="stylesheet" href="/styles/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="/styles/datatables.net-colreorder-bs5/css/colReorder.bootstrap5.min.css">
@@ -285,8 +283,6 @@
     <script src="/js/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
     <script src="/js/datatables.net-select/js/dataTables.select.min.js"></script>
     <script src="/admin-lte/dist/js/adminlte.min.js"></script>
-    <script src="/js/@pnotify/core/dist/PNotify.js"></script>
-    <script src="/js/@pnotify/mobile/dist/PNotifyMobile.js"></script>
     <script src="/js/chart.umd.min.js"></script>
     <script src="/js/datatables.net-autofill-bs5/js/autoFill.bootstrap5.min.js"></script>
     <script src="/js/datatables.net-buttons-bs5/js/buttons.bootstrap5.min.js"></script>
@@ -313,6 +309,19 @@
     <script src="/fog/fog.taginput.js"></script>
     <script src="/fog/fog.theme.js"></script>
     <!--SCRIPTS END-->
+    <% } %>
+    <%# The server messages queued for this page (api/helpers/flash.js), one
+        toast each, as 1.6 shows them (index.php:660-675). The array is
+        cleared in this render, so a reload shows nothing. Each value is JSON,
+        with <, > and & escaped, so a message cannot end the script. %>
+    <% var _flash = (typeof req !== 'undefined' && req.session && Array.isArray(req.session.fogFlash)) ? req.session.fogFlash : []; %>
+    <% if (_flash.length) { req.session.fogFlash = []; %>
+    <% var _scriptJson = function(v) { return JSON.stringify(v === undefined ? null : v).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'); }; %>
+    <script>
+    <% _flash.forEach(function(f) { if (f && f.text) { %>
+    window.fogToast(<%- _scriptJson(f.type) %>, <%- _scriptJson(f.text) %>, <%- _scriptJson(f.title) %>);
+    <% } }); %>
+    </script>
     <% } %>
     <% if (typeof partialname !== 'undefined' && partialname) { %>
     <script type="text/javascript">

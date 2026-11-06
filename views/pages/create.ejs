@@ -16,17 +16,8 @@
     <%- _form %>
   </div>
 </div>
-<%/* The save result, as a toast (1.6 shows no page alert). fog.common.js
-      shows it, then removes ?saved / ?failed / ?msg from the URL, so a reload
-      does not show it again. The third value is the 1.6 toast title. */%>
-<% var _q = (typeof req !== 'undefined' && req.query) ? req.query : {}; %>
-<% var _names = sails.helpers.pageTitle.with({identity: model}); %>
-<% var _singular = _names ? _names.singular : model.charAt(0).toUpperCase() + model.slice(1); %>
-<% if (_q.saved) { %>
-<span id="fogSaveResult" hidden data-type="success" data-text="<%= _singular %> updated!" data-title="<%= _singular %> Update Success"></span>
-<% } else if (_q.failed) { %>
-<span id="fogSaveResult" hidden data-type="error" data-text="<%= _q.msg || 'Could not save. Please check your input.' %>" data-title="<%= _singular %> Update Fail"></span>
-<% } %>
+<%/* The save result is a toast from the session flash (api/helpers/flash.js,
+      rendered by views/layouts/layout.ejs). 1.6 shows no page alert. */%>
 
 <% if (typeof credentialPanel !== 'undefined' && credentialPanel) { %>
 <div class="app-content">

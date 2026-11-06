@@ -577,13 +577,6 @@ $.readableBytes = function(bytes) {
 // when createMode === 'modal'. Degrades to a full-page navigation if the modal
 // or Bootstrap isn't present.
 (function() {
-  function notify(type, text) {
-    try {
-      if (window.PNotify && typeof PNotify.alert === 'function') {
-        PNotify.alert({ type: type, text: text, delay: 2500 });
-      }
-    } catch (unusedErr) { /* toast is best-effort; the reloaded row is the real feedback */ }
-  }
   function clearError(container) {
     let e = container.querySelector('.fog-form-error');
     if (e) { e.parentNode.removeChild(e); }
@@ -657,7 +650,7 @@ $.readableBytes = function(bytes) {
             if (res.ok && res.body && res.body.ok) {
               safeHide();
               if (dt) { dt.ajax.reload(null, false); }
-              notify('success', 'Created successfully.');
+              window.fogToast('success', 'Created successfully.');
             } else {
               showError(body, (res.body && res.body.message) || 'Could not save. Please check your input.');
             }
@@ -669,27 +662,131 @@ $.readableBytes = function(bytes) {
 })();
 
 // Shared UI helpers used to replace native dialogs (alert/confirm/prompt) with
-// AdminLTE/Bootstrap toasts + modals across the lists. Each degrades gracefully
-// when its dependency (PNotify / Bootstrap) is missing.
+// Bootstrap toasts + modals across the lists. Each degrades gracefully when
+// Bootstrap is missing.
 (function() {
-  // Toast notification; falls back to alert() if PNotify isn't loaded.
-  function toast(type, text) {
-    try {
-      if (window.PNotify && typeof PNotify.alert === 'function') {
-        PNotify.alert({ type: type === 'error' ? 'error' : type, text: text, delay: 3000 });
-        return;
-      }
-    } catch (unusedErr) { /* fall through to native */ }
-    window.alert(text);
+  // The toasts, ported from FOG 1.6 $.notify (fog.common.js 98ac5bb732eb,
+  // 2806-2933). A toast lives 8 s, as in 1.6.
+  const TOAST_DELAY = 8000;
+  // type -> [Bootstrap variant, icon, header theme, default title]. The header
+  // is pinned to the theme of its own fixed background, so its text reads in
+  // both FOG themes (1.6 TOAST_TYPES).
+  const TOAST_TYPES = {
+    success: ['success', 'fas fa-circle-check', 'dark', 'Success'],
+    error: ['danger', 'fas fa-triangle-exclamation', 'dark', 'Error'],
+    warning: ['warning', 'fas fa-triangle-exclamation', 'light', 'Warning'],
+    info: ['info', 'fas fa-circle-info', 'light', 'Info'],
+    notice: ['secondary', 'fas fa-circle-exclamation', 'dark', 'Notice']
+  };
+  // The toasts still showing, by type, title and text, for the collapse.
+  const activeToasts = {};
+
+  // The container, made on first use at the top right. Bootstrap's toast
+  // z-index (1090) is above a modal (1055).
+  function toastContainer() {
+    let el = document.getElementById('fog-toast-container');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'fog-toast-container';
+      el.className = 'toast-container position-fixed top-0 end-0 p-3';
+      document.body.appendChild(el);
+    }
+    return el;
   }
+
+  // fogToast(type, text[, title]). The title defaults to the type word. An
+  // unknown type is success, as in 1.6. Falls back to alert() with no
+  // Bootstrap.
+  function toast(type, text, title) {
+    if (!window.bootstrap || !window.bootstrap.Toast) {
+      window.alert(text);
+      return null;
+    }
+    type = Object.prototype.hasOwnProperty.call(TOAST_TYPES, type) ? type : 'success';
+    let spec = TOAST_TYPES[type];
+    title = title || spec[3];
+    text = text == null ? '' : String(text);
+
+    // An identical toast that still shows collapses into one, with a count on
+    // the title, and its hide timer restarts. isConnected: a toast removed by
+    // anything but its own hidden handler must not swallow the next one.
+    let key = type + '\u0000' + title + '\u0000' + text;
+    let existing = activeToasts[key];
+    if (existing && existing.el.isConnected && existing.toast.isShown()) {
+      existing.count += 1;
+      existing.titleEl.textContent = title + ' (×' + existing.count + ')';
+      // show() clears the pending hide before it schedules a new one.
+      existing.toast.show();
+      return existing.toast;
+    }
+
+    // An error or a warning interrupts a screen reader; the rest wait.
+    let urgent = type === 'error' || type === 'warning';
+    let el = document.createElement('div');
+    el.className = 'toast fog-toast';
+    el.setAttribute('role', urgent ? 'alert' : 'status');
+    el.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+    el.setAttribute('aria-atomic', 'true');
+
+    let header = document.createElement('div');
+    header.className = 'toast-header text-bg-' + spec[0];
+    header.setAttribute('data-bs-theme', spec[2]);
+    let icon = document.createElement('i');
+    icon.className = spec[1] + ' me-2';
+    icon.setAttribute('aria-hidden', 'true');
+    let titleEl = document.createElement('strong');
+    titleEl.className = 'me-auto';
+    titleEl.textContent = title;
+    let closer = document.createElement('button');
+    closer.type = 'button';
+    closer.className = 'btn-close';
+    closer.setAttribute('data-bs-dismiss', 'toast');
+    closer.setAttribute('aria-label', 'Close');
+    // [data-bs-theme=dark] .btn-close turns the cross white under the dark
+    // FOG theme, and a nearer light scope does not undo it (1.6 2900-2908).
+    if (spec[2] === 'light') { closer.style.filter = 'none'; }
+    header.appendChild(icon);
+    header.appendChild(titleEl);
+    header.appendChild(closer);
+
+    // Text only, never HTML. pre-line shows the line breaks of a
+    // multi-line message.
+    let body = document.createElement('div');
+    body.className = 'toast-body';
+    body.textContent = text;
+    body.style.whiteSpace = 'pre-line';
+
+    el.appendChild(header);
+    el.appendChild(body);
+    toastContainer().appendChild(el);
+
+    let t = new bootstrap.Toast(el, {delay: TOAST_DELAY});
+    el.addEventListener('hidden.bs.toast', () => {
+      delete activeToasts[key];
+      t.dispose();
+      el.remove();
+    });
+    activeToasts[key] = {toast: t, el: el, titleEl: titleEl, count: 1};
+    t.show();
+    return t;
+  }
+
+  // The modal types of 1.6 makeModal (FOGPage.php:1863). The footer fill of
+  // each comes from assets/styles/zz-fog-ui.css (.modal-success,
+  // .modal-warning, .modal-danger; the rest take the base fill).
+  const MODAL_TYPES = ['default', 'primary', 'info', 'warning', 'success', 'danger'];
 
   // Build + show a Bootstrap modal. Returns {el, modal, body} or null (no
   // Bootstrap). `onConfirm(el, modal)` may return false (keep open) or a promise.
+  // `type` is one of MODAL_TYPES; `danger: true` means type 'danger'. As in
+  // 1.6, Cancel is first and opts out of the fill (.btn.float-start), and the
+  // primary action is last.
   function modal(opts) {
     opts = opts || {};
     if (!window.bootstrap) { return null; }
+    let type = opts.danger ? 'danger' : (MODAL_TYPES.indexOf(opts.type) === -1 ? 'default' : opts.type);
     let wrap = document.createElement('div');
-    wrap.className = 'modal fade';
+    wrap.className = 'modal modal-' + type + ' fade';
     wrap.tabIndex = -1;
     wrap.innerHTML =
       '<div class="modal-dialog modal-dialog-centered' + (opts.size ? ' ' + opts.size : '') + '">' +
@@ -698,10 +795,10 @@ $.readableBytes = function(bytes) {
             '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>' +
           '<div class="modal-body"></div>' +
           '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+            '<button type="button" class="btn btn-outline-secondary float-start" data-bs-dismiss="modal">' +
               (opts.cancelText || 'Cancel') + '</button>' +
-            '<button type="button" class="btn ' + (opts.danger ? 'btn-danger' : 'btn-primary') +
-              '" data-fog-confirm>' + (opts.confirmText || 'OK') + '</button>' +
+            '<button type="button" class="btn ' + (type === 'danger' ? 'btn-danger' : 'btn-primary') +
+              ' float-end" data-fog-confirm>' + (opts.confirmText || 'OK') + '</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -738,6 +835,7 @@ $.readableBytes = function(bytes) {
         confirmText: opts.confirmText || 'Confirm',
         cancelText: opts.cancelText || 'Cancel',
         danger: opts.danger,
+        type: opts.type,
         onConfirm: function() { answered = true; resolve(true); }
       });
       ctrl.el.addEventListener('hidden.bs.modal', () => { if (!answered) { resolve(false); } });
@@ -769,29 +867,14 @@ $.readableBytes = function(bytes) {
     queue.forEach((t) => { if (t && t.text) { window.fogToast(t.type, t.text, t.title); } });
   }
 
-  // The save result the server rendered for ?saved / ?failed
-  // (views/pages/create.ejs). After the toast, the query parameters go, so
-  // a reload does not show it again.
-  function showSaveResult() {
-    let el = document.getElementById('fogSaveResult');
-    if (!el) { return; }
-    window.fogToast(el.getAttribute('data-type'), el.getAttribute('data-text'), el.getAttribute('data-title'));
-    try {
-      let url = new URL(window.location.href);
-      ['saved', 'failed', 'msg'].forEach((k) => { url.searchParams.delete(k); });
-      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
-    } catch (unusedErr) { /* an old browser keeps the query; the toast still showed */ }
-  }
-
   window.fogToast = toast;
   window.fogToastLater = toastLater;
   window.fogModal = modal;
   window.fogConfirm = confirm;
 
-  document.addEventListener('DOMContentLoaded', () => {
-    drainToasts();
-    showSaveResult();
-  });
+  // A server message (api/helpers/flash.js) is a toast that views/layouts/
+  // layout.ejs renders inline, so it needs nothing here.
+  document.addEventListener('DOMContentLoaded', drainToasts);
 
   // The edit page's Delete (api/helpers/form-generator.js): the 1.6 delete
   // dialog text (FOGPage.php:3371-3388), then the same DELETE call the list

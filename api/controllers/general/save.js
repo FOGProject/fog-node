@@ -101,6 +101,9 @@ module.exports = {
     });
 
     let recordId = id;
+    // The 1.6 toast titles name the model: "Host Update Success".
+    let names = sails.helpers.pageTitle.with({identity: model});
+    let singular = names ? names.singular : model.charAt(0).toUpperCase() + model.slice(1);
     try {
       if (isUpdate) {
         await sails.models[model].updateOne({ id }).set(values);
@@ -118,19 +121,22 @@ module.exports = {
       }
     } catch (err) {
       let msg = (err && err.message) ? String(err.message).slice(0, 200) : 'Could not save. Please check your input.';
-      // Modal/AJAX submit -> JSON; full-page submit -> redirect back with the message.
+      // Modal/AJAX submit -> JSON, and the modal shows the message itself;
+      // full-page submit -> back to the form, with the message as a toast on
+      // the next page (api/helpers/flash.js).
       if (req.wantsJSON) {
         return res.status(400).json({ ok: false, message: msg });
       }
-      let back = isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`;
-      return res.redirect(`${back}?failed=1&msg=${encodeURIComponent(msg)}`);
+      sails.helpers.flash.with({req, type: 'error', text: msg, title: `${singular} Update Fail`});
+      return res.redirect(isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`);
     }
 
-    // Modal/AJAX submit -> JSON ({ok,id}); full-page submit -> stay on the
-    // record's edit page with a success flag.
+    // Modal/AJAX submit -> JSON ({ok,id}), and the modal toasts; full-page
+    // submit -> the record's edit page, with the result as a toast there.
     if (req.wantsJSON) {
       return res.json({ ok: true, id: recordId });
     }
-    return res.redirect(`/${plural}/edit/${recordId}?saved=1`);
+    sails.helpers.flash.with({req, type: 'success', text: `${singular} updated!`, title: `${singular} Update Success`});
+    return res.redirect(`/${plural}/edit/${recordId}`);
   }
 };
