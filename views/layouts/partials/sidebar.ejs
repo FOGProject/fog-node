@@ -1,16 +1,13 @@
 <!-- Sidebar Menu -->
 <% if (req.user) { %>
-<!-- Sidebar global search -->
-<div class="p-2 position-relative" id="globalSearchWrap">
+<%/* The FOG 1.6 universal search: one select2 box (assets/fog/fog.search.js
+     builds it). No submit button, as in 1.6: each result group ends with a
+     "See all results" entry that opens that type's filtered list page.
+     data-no-select2 keeps assets/fog/fog.select2.js from binding it again. */%>
+<div class="p-2" id="globalSearchWrap">
   <form action="/search" method="get" role="search">
-    <div class="input-group input-group-sm">
-      <input id="globalSearchInput" class="form-control" type="search" name="q" placeholder="Search..." aria-label="Search" autocomplete="off">
-      <button class="btn btn-primary" type="submit">
-        <i class="fa fa-search"></i>
-      </button>
-    </div>
+    <select id="universal-search-select" data-placeholder="Search..." aria-label="Search" data-no-select2></select>
   </form>
-  <div id="globalSearchResults" class="position-absolute bg-white border rounded shadow-sm" style="display:none; left:0.5rem; right:0.5rem; z-index:1050; max-height:320px; overflow:auto;"></div>
 </div>
 <%/* The FOG 1.6 menu (management/other/index.php:429-451). `menu` comes from
      api/helpers/build-menu.js, which decides the order, the links and the
