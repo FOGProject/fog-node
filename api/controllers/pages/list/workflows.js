@@ -17,7 +17,6 @@ module.exports = {
   },
   fn: async function () {
     let data = {
-      header: 'Workflow List',
       theads: [
         'Name',
         'Description'
@@ -25,10 +24,9 @@ module.exports = {
       model: 'workflow',
       partialname: false
     };
-    // The FOG 1.6 content header and tab title read the section, then "All <plural>".
-    let names = sails.helpers.pageTitle.with({identity: data.model});
-    data.section = names.section;
-    data.page = `All ${names.plural}`;
+    // The 1.6 title ("All <plural>"), the nouns, the table settings and the
+    // edit link base (api/helpers/list-locals.js).
+    Object.assign(data, await sails.helpers.listLocals.with({identity: data.model, base: '/workflows'}));
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
       data.partialname = partial;

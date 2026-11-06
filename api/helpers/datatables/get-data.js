@@ -79,6 +79,21 @@ module.exports = {
       data: []
     };
 
+    // _searchtypes: for each requested column, 'string' when its per-column
+    // search applies (a searchable column whose attribute type is 'string'),
+    // else false. The browser shows a search box only for a column the server
+    // can search (1.6 fog.common.js xhr handler reads _searchtypes).
+    _response._searchtypes = {};
+    if (_.isArray(_options.columns)) {
+      _options.columns.forEach((column) => {
+        // _.isNil is not in the lodash 3 that Sails ships.
+        if (_.isNull(column.data) || _.isUndefined(column.data) || column.data === '') return;
+        var attribute = model.attributes[column.data];
+        var searchable = !!column.searchable && !_.isBoolean(column.reverse);
+        _response._searchtypes[column.data] = (searchable && attribute && attribute.type === 'string') ? 'string' : false;
+      });
+    }
+
     var _reverse = {};
 
     // Build where Criteria
@@ -130,9 +145,12 @@ module.exports = {
             };
           }
         } else if (_.isString(column.search.value)) {
-          var regexp = new RegExp(column.search.value, 'i');
-          if (!_.isEqual(column.search.value, '')) {
-            whereQuery[col] = regexp;
+          // `contains`, as the global search below. A RegExp is not a usable
+          // Waterline constraint (E_CONSTRAINT_NOT_USABLE) and would run user
+          // input as a pattern. Only a 'string' attribute takes it: the other
+          // types ignore the value, matching _searchtypes above.
+          if (columnType === 'string' && !_.isEqual(column.search.value, '')) {
+            whereQuery[col] = {contains: column.search.value};
           }
         } else if (_.isNumber(column.search.value)) {
           whereQuery[col] = column.search.value;

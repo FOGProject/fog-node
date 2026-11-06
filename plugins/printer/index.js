@@ -70,14 +70,11 @@ module.exports = {
   routes: {
     'GET /printers': async function (req, res) {
       if (!can(req, 'read')) { return res.forbidden(); }
-      // The FOG 1.6 content header and tab title.
-      let names = sails.helpers.pageTitle.with({identity: 'printer'});
       return res.view('pages/list', {
-        header: 'Printer List',
         theads: ['Name', 'IP Address', 'Model'],
         model: 'printer',
-        section: names.section,
-        page: `All ${names.plural}`,
+        // The 1.6 title, the nouns, the table settings and the edit link base.
+        ...await sails.helpers.listLocals.with({identity: 'printer', base: '/printers'}),
         partialname: path.join(__dirname, 'list.partial.js')
       });
     },

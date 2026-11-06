@@ -1,25 +1,44 @@
+<%/* The FOG 1.6 list card (FOGPage.php:5605-5614, indexDivDisplay()) with the
+     action box under the table (FOGPage.php:1942-2129, process()).
+
+     Locals: page ("All {plural}"), theads, model, singular, plural,
+     scrollMode and pageLength (api/helpers/table-settings.js), and the
+     optional editBase (the first column links to <editBase>/edit/<id>) and
+     selectable (false: no row selection and no Delete selected, as 1.6
+     FOGPage::$selectable; registerTable reads data-selectable).
+     $.fn.registerTable (assets/fog/fog.common.js) reads all of them from the
+     markup below. */%>
+<input type="hidden" id="scrollMode" value="<%= scrollMode %>">
+<input type="hidden" id="pageLength" value="<%= pageLength %>">
 <div class="app-content">
   <div class="container-fluid">
     <div class="row">
       <div class="col-12">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title"><%= header %></h3>
+            <h4 class="card-title"><%= page %></h4>
             <%- partial('../layouts/partials/cardtools.ejs') %>
           </div>
           <div class="card-body">
-            <div class="container">
-              <table id="listtable" class="display table table-bordered table-striped listtable no-footer" role="grid">
-                <thead>
-                  <tr class="header" role="row">
-                    <% for (var i = 0;i < theads.length;i++) { %>
-                    <th><%= theads[i] %></th>
-                    <% } %>
-                  </tr>
-                </thead>
-                <tbody>
-                </tbody>
-              </table>
+            <table id="listtable" class="display table table-bordered table-striped listtable no-footer" role="grid"
+                   data-model="<%= model %>" data-singular="<%= singular %>" data-plural="<%= plural %>"<% if (typeof editBase === 'string' && editBase) { %>
+                   data-edit-base="<%= editBase %>"<% } %><% if (typeof selectable !== 'undefined' && selectable === false) { %>
+                   data-selectable="false"<% } %>>
+              <thead>
+                <tr class="header" role="row">
+                  <% for (var i = 0;i < theads.length;i++) { %>
+                  <th><%= theads[i] %></th>
+                  <% } %>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+            <div class="btn-actionbox">
+              <% if (typeof selectable === 'undefined' || selectable !== false) { %>
+              <button type="button" id="deleteSelected" class="btn btn-danger float-start" disabled>Delete selected</button>
+              <% } %>
+              <div class="btn-group float-end"></div>
             </div>
           </div>
           <div class="card-footer">
