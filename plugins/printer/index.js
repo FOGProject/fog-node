@@ -83,6 +83,8 @@ module.exports = {
     },
     'GET /printers/create': async function (req, res) {
       if (!can(req, 'create')) { return res.forbidden(); }
+      // ?modal=1 (fogCreateModal): the form alone, with no layout.
+      let modal = req.query.modal === '1';
       let formItems = {
         name: { textarea: false, text: 'Name', type: 'text', id: 'prname', classes: [], placeholder: 'FrontDesk' },
         description: { textarea: true, text: 'Description', type: 'text', id: 'prdescription', classes: [] },
@@ -91,20 +93,18 @@ module.exports = {
         ip: { textarea: false, text: 'IP Address', type: 'text', id: 'prip', classes: [], placeholder: '10.0.0.20' }
       };
       let form = await sails.helpers.formGenerator.with({
-        model: 'printer', method: 'post', action: '/printers/create',
+        model: 'printer', mode: modal ? 'create-modal' : 'create', method: 'post', action: '/printers/create',
         id: 'printer-create', classes: ['printer-create-form'],
-        formItems,
-        formButtons: {
-          Cancel: { classes: ['btn-warning', 'float-start'], type: 'submit' },
-          Create: { classes: ['btn-success', 'float-end'], type: 'submit' }
-        }
+        formItems
       });
       // The FOG 1.6 content header and tab title.
       let names = sails.helpers.pageTitle.with({identity: 'printer'});
       return res.view('pages/create', {
-        model: 'printer', header: 'Create New Printer',
+        model: 'printer',
         section: names.section, page: `Create New ${names.singular}`,
-        form, partialname: false
+        form, partialname: false,
+        // layout true is the default layout; false renders the form alone.
+        modal, layout: !modal
       });
     },
     'POST /printers/create': { action: 'general/save' },
@@ -142,24 +142,29 @@ module.exports = {
           }
         };
       },
+      // Each host edit tab is its own form, so a save from another tab carries
+      // none of this tab's keys: then the links and the config stay as they
+      // are. The Printers checktable always sends `printers` (a hidden ''
+      // entry), so a present key with no id means "none selected".
       save: async function (hostId, params) {
-        let ids = params && params.printers
-          ? (Array.isArray(params.printers) ? params.printers : [params.printers]).map(String).filter(Boolean)
-          : [];
-        let lc = linkColl();
-        await lc.deleteMany({ host: String(hostId) });
-        if (ids.length) {
-          await lc.insertMany(ids.map((p) => ({ host: String(hostId), printer: p })));
+        let has = (key) => !!params && Object.prototype.hasOwnProperty.call(params, key);
+        if (has('printers')) {
+          let given = params.printers === null || params.printers === undefined ? [] : params.printers;
+          let ids = (Array.isArray(given) ? given : [given]).map(String).filter(Boolean);
+          let lc = linkColl();
+          await lc.deleteMany({ host: String(hostId) });
+          if (ids.length) {
+            await lc.insertMany(ids.map((p) => ({ host: String(hostId), printer: p })));
+          }
         }
-        await cfgColl().updateOne(
-          { host: String(hostId) },
-          { $set: {
-            host: String(hostId),
-            level: params && params.printerLevel ? String(params.printerLevel) : '0',
-            defaultPrinter: (params && params.defaultPrinter) ? String(params.defaultPrinter) : ''
-          } },
-          { upsert: true }
-        );
+        // Set only the config keys the form sent.
+        let set = {};
+        if (has('printerLevel')) { set.level = params.printerLevel ? String(params.printerLevel) : '0'; }
+        if (has('defaultPrinter')) { set.defaultPrinter = params.defaultPrinter ? String(params.defaultPrinter) : ''; }
+        if (Object.keys(set).length) {
+          set.host = String(hostId);
+          await cfgColl().updateOne({ host: String(hostId) }, { $set: set }, { upsert: true });
+        }
       },
       destroy: async function (hostId) {
         await linkColl().deleteMany({ host: String(hostId) });

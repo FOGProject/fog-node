@@ -10,9 +10,11 @@ module.exports = {
     }
   },
   fn: async function () {
+    // ?modal=1 (fogCreateModal in assets/fog/fog.common.js): the form alone,
+    // with no layout. No other signal sets the modal mode.
+    let modal = this.req.query.modal === '1';
     let data = {
       model: 'host',
-      header: 'Create New Host',
       formItems: {
         name: {
           textarea: false,
@@ -47,16 +49,6 @@ module.exports = {
           value: []
         }
       },
-      formButtons: {
-        Cancel: {
-          classes: ['btn-warning','float-left'],
-          type: 'submit'
-        },
-        Create: {
-          classes: ['btn-success','float-right'],
-          type: 'submit'
-        }
-      },
       partialname: false
     };
     let partial = path.join(partialPath, `${data.model}.js`);
@@ -79,10 +71,14 @@ module.exports = {
       classes: [`${data.model}-create-form`],
       formItems: data.formItems,
       tabOrder,
-      formButtons: data.formButtons
+      mode: modal ? 'create-modal' : 'create'
     });
     if (fs.existsSync(partial)) {
       data.partialname = partial;
+    }
+    if (modal) {
+      data.modal = true;
+      data.layout = false;
     }
     return data;
   }

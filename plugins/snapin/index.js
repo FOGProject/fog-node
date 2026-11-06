@@ -93,6 +93,8 @@ module.exports = {
     // Create page (form -> POST /snapins/create -> general/save).
     'GET /snapins/create': async function (req, res) {
       if (!can(req, 'create')) { return res.forbidden(); }
+      // ?modal=1 (fogCreateModal): the form alone, with no layout.
+      let modal = req.query.modal === '1';
       let formItems = {
         name: { textarea: false, text: 'Name', type: 'text', id: 'spname', classes: [], placeholder: '7-Zip' },
         description: { textarea: true, text: 'Description', type: 'text', id: 'spdescription', classes: [] },
@@ -104,20 +106,18 @@ module.exports = {
         isEnabled: { textarea: false, text: 'Enabled', type: 'checkbox', id: 'spenabled', classes: [], checked: true }
       };
       let form = await sails.helpers.formGenerator.with({
-        model: 'snapin', method: 'post', action: '/snapins/create',
+        model: 'snapin', mode: modal ? 'create-modal' : 'create', method: 'post', action: '/snapins/create',
         id: 'snapin-create', classes: ['snapin-create-form'],
-        formItems,
-        formButtons: {
-          Cancel: { classes: ['btn-warning', 'float-start'], type: 'submit' },
-          Create: { classes: ['btn-success', 'float-end'], type: 'submit' }
-        }
+        formItems
       });
       // The FOG 1.6 content header and tab title.
       let names = sails.helpers.pageTitle.with({identity: 'snapin'});
       return res.view('pages/create', {
-        model: 'snapin', header: 'Create New Snapin',
+        model: 'snapin',
         section: names.section, page: `Create New ${names.singular}`,
-        form, partialname: false
+        form, partialname: false,
+        // layout true is the default layout; false renders the form alone.
+        modal, layout: !modal
       });
     },
     'POST /snapins/create': { action: 'general/save' },
@@ -143,12 +143,14 @@ module.exports = {
           }
         };
       },
-      // The host form always carries the Snapins tab, so "no snapins[] submitted"
-      // means "none selected" -> clear this host's links.
+      // Each host edit tab is its own form, so a save from another tab carries
+      // no `snapins` key: then the links stay as they are. The Snapins tab's
+      // checktable always sends the key (a hidden '' entry), so a present key
+      // with no id means "none selected" -> clear this host's links.
       save: async function (hostId, params) {
-        let ids = params && params.snapins
-          ? (Array.isArray(params.snapins) ? params.snapins : [params.snapins]).map(String).filter(Boolean)
-          : [];
+        if (!params || !Object.prototype.hasOwnProperty.call(params, 'snapins')) { return; }
+        let given = params.snapins === null || params.snapins === undefined ? [] : params.snapins;
+        let ids = (Array.isArray(given) ? given : [given]).map(String).filter(Boolean);
         let coll = linkColl();
         await coll.deleteMany({ host: String(hostId) });
         if (ids.length) {

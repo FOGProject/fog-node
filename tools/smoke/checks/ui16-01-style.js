@@ -100,9 +100,9 @@ async function checkFonts({page}) {
 
 async function checkSelect2({page, checkPage}) {
   await checkPage(page, {path: '/hosts/create'});
-  // The Image select is on the Associations tab, hidden until a user opens it.
-  await page.getByRole('tab', {name: 'Associations'}).click();
-  await page.locator('#tab-associations .select2-selection--single').first().waitFor({state: 'visible', timeout: 5000});
+  // The create page has no tabs (issue #149): the Image select is in the
+  // visible Associations section card.
+  await page.locator('.app-main .select2-selection--single').first().waitFor({state: 'visible', timeout: 5000});
   const height = await page.evaluate(() => {
     const box = [...document.querySelectorAll('.app-main .select2-container--default .select2-selection--single')]
       .find((el) => el.offsetParent !== null);

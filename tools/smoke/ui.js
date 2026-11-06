@@ -135,7 +135,7 @@ async function checkPage(page, spec) {
 async function checkRoundTrip(page, {list, form, name, fill, onEdit}) {
   await page.goto(`${base}${list}/create`, {waitUntil: 'networkidle'});
   await fill();
-  await Promise.all([page.waitForNavigation({waitUntil: 'networkidle'}), page.click(`#${form} button.btn-success`)]);
+  await Promise.all([page.waitForNavigation({waitUntil: 'networkidle'}), page.click(`#${form} button[type="submit"]`)]);
   await page.goto(base + list, {waitUntil: 'networkidle'});
   await page.locator('table tbody', {hasText: name}).waitFor({timeout: 10000});
   // The list's Edit button opens <list>/edit/<row id> (assets/fog/fog.common.js).
@@ -169,8 +169,7 @@ const checkHost = async (page) => {
     list: '/hosts', form: 'host-create', name,
     fill: async () => {
       await page.fill('#hostname', name);
-      // The MAC field is on its own tab, hidden until a user opens it.
-      await page.getByRole('tab', {name: 'MAC Addresses'}).click();
+      // The create page has no tabs: the MAC field is in its own section card.
       await page.fill('input[name="macs[]"]', mac);
     },
     onEdit: async () => {
