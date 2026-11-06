@@ -105,5 +105,13 @@ module.exports = {
       values.password = hash;
       next();
     });
+  },
+  // Delete the destroyed users' preferences (UserPref). Not afterDestroy: that
+  // fires only with fetch: true, and tools/setup/seed-dev.js destroys without
+  // it. The criteria can match many users, so resolve them to ids first.
+  beforeDestroy: function(criteria, next) {
+    User.find({where: criteria.where, select: ['id']})
+      .then((users) => users.length ? UserPref.destroy({user: {in: users.map((u) => u.id)}}) : null)
+      .then(() => next(), next);
   }
 };

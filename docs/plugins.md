@@ -23,7 +23,9 @@ module.exports = {
   name: 'wol',
   // Routes bound after the app routes. Handlers are (req, res) functions.
   // NOTE: plugin routes are not covered by the core action policies — guard
-  // auth yourself (e.g. `if (!req.user) return res.forbidden();`).
+  // auth yourself (e.g. `if (!req.user) return res.forbidden();`). The loader
+  // runs only the read-only loadPreferences policy first, so a page that
+  // renders the layout gets the user's theme.
   routes: {
     'POST /api/v1/host/:id/wol': async function (req, res) { /* … */ }
   },
