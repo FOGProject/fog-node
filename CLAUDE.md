@@ -80,6 +80,11 @@ request and the merge queue.
   must carry the `apiCsrfGuard` policy in `config/policies.js`. Page forms get
   `_csrf` from `views/pages/create.ejs`; `assets/fog/fog.csrf.js` adds the
   header to jQuery and `fetch` calls.
+- **Action blueprints are off** (`config/blueprints.js` `actions: false`). A new
+  action is reachable only through an explicit route with a verb, in
+  `config/routes.js` or a plugin's `routes`. With them on, Sails binds every action
+  for every verb. CSRF does not check a GET. `test/route/no-action-blueprints.test.js`
+  fails if an action answers at its blueprint path.
 - **`migrate: 'safe'`.** The ORM never auto-migrates. Schema revisions go in
   `tools/migrate/`.
 - **`User.create` requires `email`.**
