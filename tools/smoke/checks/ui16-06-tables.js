@@ -354,9 +354,12 @@ async function deleteSelected({page, checkPage}, name) {
   expect('the delete dialog confirm', (await dialog.locator('[data-fog-confirm]').innerText()).trim(), 'Delete 1 Host');
   await dialog.locator('[data-fog-confirm]').click();
   await page.waitForFunction(() => jQuery('#listtable').DataTable().rows().count() === 0, null, {timeout: 10000});
-  await page.locator('.pnotify-text', {hasText: 'Successfully deleted'}).first().waitFor({state: 'visible', timeout: 5000});
+  await page.locator('#fog-toast-container .toast-body', {hasText: 'Successfully deleted'}).first().waitFor({state: 'visible', timeout: 5000});
+  // One toast, shown in place: the next page load shows none (issue #151).
+  expect('the toasts after Delete selected', await page.locator('#fog-toast-container .toast').count(), 1);
   await openList(page, checkPage, `/hosts?search=${name}`);
   expect('the rows after Delete selected', await rowNames(page), []);
+  expect('the toasts on the next page load', await page.locator('#fog-toast-container .toast').count(), 0);
 }
 
 module.exports = {

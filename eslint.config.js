@@ -156,7 +156,6 @@ module.exports = [
         $: 'writable',
         jQuery: 'writable',
         Chart: 'writable',
-        PNotify: 'writable',
         bootstrap: 'writable',
         // Backend globals are marked read-only rather than removed, matching
         // the old config's `false` (in eslintrc, `false` meant "readonly", not

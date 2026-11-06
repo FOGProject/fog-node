@@ -87,7 +87,7 @@ async function createAndDelete({page, checkPage}) {
   if (!(await dialog.locator('.modal-body', {hasText: 'Confirm you would like to delete this storagegroup'}).count())) {
     throw new Error('the Delete dialog does not show the 1.6 text');
   }
-  await dialog.locator('[data-bs-dismiss="modal"].btn-secondary').click();
+  await dialog.locator('.modal-footer [data-bs-dismiss="modal"]').click();
   await dialog.waitFor({state: 'detached', timeout: 5000});
   if (!(await listNames(page, checkPage, '/storagegroups')).includes(name)) throw new Error('a cancelled Delete removed the record');
 
@@ -101,7 +101,7 @@ async function createAndDelete({page, checkPage}) {
   if (listUrl.searchParams.has('deleted')) throw new Error('the list URL carries a deleted parameter');
   const deleted = await toasts(page);
   expect('the toasts after Delete', JSON.stringify(deleted.map((t) => [t.type, t.text])), '[["success","Successfully deleted"]]');
-  await page.locator('.pnotify-text', {hasText: 'Successfully deleted'}).first().waitFor({state: 'visible', timeout: 5000});
+  await page.locator('#fog-toast-container .toast-body', {hasText: 'Successfully deleted'}).first().waitFor({state: 'visible', timeout: 5000});
   expect('sessionStorage.fogToastQueue', await page.evaluate(() => sessionStorage.getItem('fogToastQueue')), null);
   if ((await listNames(page, checkPage, '/storagegroups')).includes(name)) throw new Error('the deleted record is still listed');
 

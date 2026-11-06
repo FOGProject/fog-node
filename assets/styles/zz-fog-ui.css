@@ -883,7 +883,8 @@ body:not(.login-page) .select2-container--default .select2-dropdown .select2-res
    both Bootstrap's components and this FOG chrome.
 
    NOT yet themed (intentionally — first pass; tune/extend after live review):
-   pNotify toasts, Chart.js/Flot canvases, and per-plugin CSS.
+   Chart.js/Flot canvases, and per-plugin CSS. The toasts (fogToast,
+   fog.common.js) pin each header to the theme of its own background.
    =========================================================================== */
 /* -- DataTables toolbar -------------------------------------------------
    Length menu, buttons and search share one flex row (the `dom` string in

@@ -29,8 +29,6 @@ module.exports = function(grunt) {
             'jquery/dist/jquery.min.js',
             'inputmask/dist/jquery.inputmask.min.js',
             'pace-js/pace.min.js',
-            '@pnotify/core/dist/PNotify.js',
-            '@pnotify/mobile/dist/PNotifyMobile.js',
             'select2/dist/js/select2.full.min.js',
           ],
           dest: '.tmp/public/js'
@@ -118,9 +116,7 @@ module.exports = function(grunt) {
             '@fortawesome/fontawesome-free/css/v4-shims.min.css',
             'icheck-bootstrap/icheck-bootstrap.min.css',
             'select2/dist/css/select2.min.css',
-            'pace-js/themes/blue/pace-theme-minimal.css',
-            '@pnotify/core/dist/PNotify.css',
-            '@pnotify/mobile/dist/PNotifyMobile.css'
+            'pace-js/themes/blue/pace-theme-minimal.css'
           ],
           dest: '.tmp/public/styles'
         },
