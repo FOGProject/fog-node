@@ -103,7 +103,7 @@ async function signIn() {
     body: new URLSearchParams({username: 'Administrator', password, _csrf: token})
   });
   keepCookies(res);
-  // Success redirects to /. A wrong password redirects to /login?failed=1.
+  // Success redirects to /. A wrong password redirects to /login.
   const to = res.headers.get('location') || '';
   if (res.status !== 302 || new URL(to, base).pathname === '/login') {
     throw new Error(`the sign-in failed: HTTP ${res.status}, location "${to}"`);

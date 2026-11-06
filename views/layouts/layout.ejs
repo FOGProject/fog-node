@@ -96,10 +96,11 @@
   </head>
 
   <%/* bg-body-tertiary paints the signed-in canvas, as in 1.6 (index.php:111).
-       Its !important beats the dark body background in zz-fog-ui.css. */%>
+       Its !important beats the dark body background in zz-fog-ui.css. The
+       login page has the class login-page only, as in 1.6. */%>
   <%/* data-user-id keys the localStorage copy of a saved table layout to the
        signed-in user (assets/fog/fog.common.js, fogList localKey). */%>
-  <body class="<%= req.user ? 'layout-fixed sidebar-expand-lg bg-body-tertiary' : 'login-page bg-body-secondary' %>"<% if (req.user) { %> data-user-id="<%= req.user.id %>"<% } %>>
+  <body class="<%= req.user ? 'layout-fixed sidebar-expand-lg bg-body-tertiary' : 'login-page' %>"<% if (req.user) { %> data-user-id="<%= req.user.id %>"<% } %>>
     <!-- FOG Management only works when JavaScript is enabled. -->
     <noscript>
       <div id="noscriptMessage">

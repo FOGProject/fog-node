@@ -22,7 +22,11 @@ module.exports = {
           res.status(401);
           return res.json({message});
         }
-        return res.redirect('/login?failed=1');
+        // A browser gets the FOG 1.6 failure toast (ProcessLogin.php:102,
+        // 118-124) on the login page, through the session flash, not a
+        // query parameter.
+        sails.helpers.flash.with({req, type: 'error', text: 'Invalid Login', title: 'Login Failed'});
+        return res.redirect('/login');
       }
       await req.login(user, async (err) => {
         if (err) return exits.error(err);
