@@ -99,10 +99,17 @@ module.exports = {
     }
 
     let title = model.charAt(0).toUpperCase() + model.slice(1);
+    let names = sails.helpers.pageTitle.with({identity: model});
     let data = {
       model,
       header: `Edit ${title}`,
-      title: `Edit ${title}`,
+      // The FOG 1.6 content header and tab title (FOGPage.php:481): the
+      // section, then "Edit: <name> ID: <id>". A user has a username, not a name.
+      // The guard is live: this action takes its model from the URL, and a
+      // plugin can route an edit page for a model the map does not name. Then
+      // section is undefined, and the layout renders no content header.
+      section: names && names.section,
+      page: `Edit: ${record.name || record.username || ''} ID: ${record.id}`,
       partialname: false
     };
     let tabOrder = await sails.helpers.formTabs.with({ model, formItems });

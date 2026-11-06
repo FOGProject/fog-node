@@ -2,7 +2,9 @@
 <%/* The signed-in user's stored theme (api/policies/loadPreferences.js): 'light'
      or 'dark'. '' means System: no stored choice, or no user. */%>
 <% var fogThemePref = (typeof fogTheme !== 'undefined' && (fogTheme === 'light' || fogTheme === 'dark')) ? fogTheme : ''; %>
-<html<% if (fogThemePref) { %> data-bs-theme="<%= fogThemePref %>"<% } %>>
+<%/* lang: 1.6 renders the session language here (index.php:70). fog-node has
+     one language. */%>
+<html lang="en"<% if (fogThemePref) { %> data-bs-theme="<%= fogThemePref %>"<% } %>>
   <head>
     <%/* The FOG 1.6 pre-paint script. A stored light/dark choice is stamped on
          <html> above. With none, resolve prefers-color-scheme here, before the
@@ -19,16 +21,15 @@
       }
     }());
     </script>
-      <title>
-        <% if (typeof title === 'undefined') { %>
-        FOG Project
-        <% } else { %>
-        <%= title %> | FOG Project
-        <% } %>
-      </title>
+    <%/* "{page} | FOG Project", as in 1.6 (index.php:101). An empty page falls
+         back to the section; with neither, "FOG Project". A `title` local is
+         ignored on purpose, so no controller can override the 1.6 text. */%>
+    <% var fogTabTitle = (typeof page !== 'undefined' && page) ? page : ((typeof section !== 'undefined' && section) ? section : ''); %>
+    <title><%= fogTabTitle ? fogTabTitle + ' | FOG Project' : 'FOG Project' %></title>
 
     <!-- Viewport mobile tag for sensible mobile support -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="theme-color" content="#367fa9">
 
     <%/* CSRF token, available synchronously to fog.csrf.js (which wires the token
          into jQuery AJAX + fetch) before any on-load request fires. Rendered on
@@ -96,8 +97,26 @@
     <% } %>
   </head>
 
+  <%/* bg-body-tertiary paints the signed-in canvas, as in 1.6 (index.php:111).
+       Its !important beats the dark body background in zz-fog-ui.css. */%>
+  <body class="<%= req.user ? 'layout-fixed sidebar-expand-lg bg-body-tertiary' : 'login-page bg-body-secondary' %>">
+    <!-- FOG Management only works when JavaScript is enabled. -->
+    <noscript>
+      <div id="noscriptMessage">
+        <p>You must enable JavaScript to use FOG Management.</p>
+      </div>
+      <style>
+        body > *:not(noscript) { display: none; }
+        #noscriptMessage {
+          position:fixed;
+          top:50%;
+          left:50%;
+          transform:translate(-50%,-50%);
+          font-size:24px;
+        }
+      </style>
+    </noscript>
   <% if (req.user) { %>
-  <body class="layout-fixed sidebar-expand-lg">
     <div class="app-wrapper">
       <!-- Header -->
       <%- partial('./partials/navbar.ejs') %>
@@ -105,23 +124,49 @@
       <%- partial('./partials/mainsidebar.ejs', {menuItems: sails.config.globals.menuItems}) %>
       <!-- Main Content -->
       <main class="app-main">
+        <%/* The FOG 1.6 no-role banner (index.php:596-598): this account's
+             roles grant nothing, so every management page refuses it. A
+             dismiss lasts for the browser session (sessionStorage). */%>
+        <% if (!sails.helpers.hasAnyPermission.with({permissions: req.user.permissions})) { %>
+        <div class="container-fluid pt-3" id="no-role-banner">
+          <div class="alert alert-warning alert-dismissible fade show mb-0" role="alert">
+            <strong>No role assigned:</strong>
+            this account has no role, so it has no access to any management page. Ask an administrator to assign it a role.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        </div>
+        <script>
+        (function () {
+          var banner = document.getElementById('no-role-banner');
+          if (window.sessionStorage.getItem('fogNoRoleBannerDismissed')) {
+            banner.parentNode.removeChild(banner);
+            return;
+          }
+          banner.querySelector('.btn-close').addEventListener('click', function () {
+            window.sessionStorage.setItem('fogNoRoleBannerDismissed', '1');
+          });
+        }());
+        </script>
+        <% } %>
+        <%/* The signed-in 404 and 500 pages set no section, so they render no
+             content header. */%>
+        <% if (typeof section !== 'undefined') { %>
+        <%- partial('./partials/content-header.ejs') %>
+        <% } %>
         <%- body %>
       </main>
-      <!-- Main Footer -->
+      <!-- Main Footer: FOG 1.6 index.php:637-645. The version links to
+           /hwinfo, because fog-node has no About page. -->
       <footer class="app-footer">
         <div class="float-end d-none d-sm-inline">
-          <b>Channel</b> Alpha |&nbsp;
-          <b>Version</b> <a href="/"><%= typeof version !== 'undefined' ? version : '' %></a>
+          <b>Channel</b>&nbsp;Alpha | <a id="footerVersion" href="/hwinfo" style="text-decoration: none"><b>Version</b>&nbsp;<%= typeof version !== 'undefined' ? version : '' %></a>
         </div>
-        <strong>Copyright &copy; 2007-2026&nbsp;
-          <a href="https://fogproject.org">FOG Project</a>.</strong>&nbsp;
-        All rights reserved.
+        <strong>Copyright &copy; 2012-<%= new Date().getFullYear() %> <a href="https://fogproject.org">FOG Project</a>.</strong> All rights reserved.
       </footer>
     </div>
-  <% } else  { %>
-  <body class="login-page bg-body-secondary">
+  <% } else { %>
     <%- body %>
-  <% }%>
+  <% } %>
 
 
 

@@ -24,9 +24,12 @@ module.exports = {
         'Is Admin?'
       ],
       model: 'role',
-      title: 'Role List',
       partialname: false
     };
+    // The FOG 1.6 content header and tab title read the section, then "All <plural>".
+    let names = sails.helpers.pageTitle.with({identity: data.model});
+    data.section = names.section;
+    data.page = `All ${names.plural}`;
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
       data.partialname = partial;

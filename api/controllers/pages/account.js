@@ -7,8 +7,9 @@ module.exports = {
   fn: async function () {
     let req = this.req;
     return {
-      header: 'My Account',
-      title: 'My Account',
+      // The content header and tab title, in the FOG 1.6 shape (fog-node only).
+      section: 'Account',
+      page: 'My Account',
       username: req.user.username,
       displayName: req.user.displayName || req.user.username,
       partialname: false

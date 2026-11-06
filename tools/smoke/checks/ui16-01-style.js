@@ -12,11 +12,13 @@
 // .app-sidebar .sidebar-menu .nav-link { font-size: 0.875rem } (1.6 compact
 // sidebar density).
 const SIDEBAR_FONT_SIZE = '14px';
-// body { background-color: var(--fog-canvas) }, --fog-canvas: #eef1f5.
-const CANVAS_LIGHT = 'rgb(238, 241, 245)';
-// [data-bs-theme="dark"] body { background-color: var(--fog-bg) }, which is
-// var(--bs-body-bg) under the dark theme: #212529.
-const CANVAS_DARK = 'rgb(33, 37, 41)';
+// The signed-in <body> carries bg-body-tertiary, as in 1.6 (issue #147).
+// Bootstrap 5.3 sets it to rgba(var(--bs-tertiary-bg-rgb), 1) !important:
+// #f8f9fa in light mode.
+const CANVAS_LIGHT = 'rgb(248, 249, 250)';
+// The same !important utility beats [data-bs-theme="dark"] body
+// { background-color: var(--fog-bg) }: #2b3035 in dark mode.
+const CANVAS_DARK = 'rgb(43, 48, 53)';
 // The sidebar link color in light mode. The <aside> carries
 // data-bs-theme="dark" in both themes, and the 1.6 sidebar rules set no link
 // color of their own, so this is the dark-sidebar color that 1.6 shows.
