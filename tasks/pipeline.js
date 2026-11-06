@@ -36,6 +36,17 @@ var cssFilesToInject = [
   // Bring in `.css` files for themes and style guides (e.g. Bootstrap, Foundation)
   'dependencies/**/*.css',
 
+  // The glob below sorts by path, so a stylesheet that must load after
+  // another is named here. AdminLTE 4 overrides Bootstrap, so Bootstrap loads
+  // first (as in FOG 1.6); by path, admin-lte sorted before bootstrap. The
+  // DataTables core integration loads before its extensions (autofill-bs5
+  // sorts first). The Font Awesome v4 shims load after Font Awesome itself.
+  'styles/bootstrap/dist/css/bootstrap.min.css',
+  'styles/admin-lte/dist/css/adminlte.min.css',
+  'styles/datatables.net-bs5/css/dataTables.bootstrap5.min.css',
+  'styles/@fortawesome/fontawesome-free/css/all.min.css',
+  'styles/@fortawesome/fontawesome-free/css/v4-shims.min.css',
+
   // All of the rest of your custom `.css` files will be injected here,
   // in no particular order.  To customize the ordering, add additional
   // items here, _above_ this one.
@@ -78,7 +89,7 @@ var jsFilesToInject = [
   // in no particular order.  To customize the ordering, add additional items
   // here, _above_ this one.
   'js/datatables.net/js/dataTables.min.js',
-  'js/datatables.net-bs4/js/dataTables.bootstrap4.min.js',
+  'js/datatables.net-bs5/js/dataTables.bootstrap5.min.js',
   'js/datatables.net-autofill/js/dataTables.autoFill.min.js',
   'js/datatables.net-buttons/js/dataTables.buttons.min.js',
   'js/datatables.net-buttons/js/buttons.colVis.min.js',

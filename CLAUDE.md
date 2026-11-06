@@ -46,6 +46,10 @@ request and the merge queue.
 - `npm test` never loads the UI. A change to a view, a client script, or a UI
   dependency needs `npm run test:ui` (`tools/smoke/ui.js`). A new page goes in
   its `PAGES` list.
+- A new UI check goes in its own file in `tools/smoke/checks/`, not in `ui.js`.
+  `ui.js` runs each file there in file-name order, after its round trips. A
+  file exports `{name, run}`; `run(ctx)` is async and throws on a failure. The
+  comment at the top of `ui.js` lists what `ctx` holds.
 - A fixed bug gets the test that would have caught it.
 
 ## Rules that are easy to break

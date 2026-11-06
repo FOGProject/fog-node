@@ -27,6 +27,13 @@
   border-radius: 0.375rem;
   background-color: var(--bs-body-bg, #fff);
 }
+/* Inside .app-main, the FOG 1.6 port (zz-fog-ui.css) sets the compact height
+   and centers the text with line-height alone, as 1.6 does with no padding.
+   The vertical padding above would push the text below the box there. */
+.app-main .select2-container--default .select2-selection--single {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
   line-height: 1.5;
