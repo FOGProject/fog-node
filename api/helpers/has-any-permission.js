@@ -2,8 +2,9 @@
  * Whether a user's permissions grant anything at all.
  *
  * `permissions` is req.user.permissions, which the User model's customToJSON
- * builds from the user's roles (concatRoles). It is {} for a user with no
- * role. A role whose flags are all false grants nothing either, because
+ * builds from the user's roles (api/helpers/permissions/resolve.js). It is
+ * {} when the roles are not populated. For a user with no role, every leaf
+ * is false. A role whose flags are all false grants nothing either, because
  * access is deny-by-default (api/policies/read.js). So the answer is true
  * only when some leaf of the tree is exactly true.
  *
