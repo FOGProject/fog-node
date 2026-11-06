@@ -12,6 +12,7 @@ module.exports = {
       defaultsTo: {}
     },
     limit: {
+      description: 'The most results per type. 0 or less means no limit, as in FOG 1.6.',
       type: 'number',
       defaultsTo: 10
     }
@@ -85,11 +86,30 @@ module.exports = {
           }
         }
         if (!or.length) { continue; }
-        let docs = await collection.find({ $or: or }).limit(inputs.limit).toArray();
+        // The FOG 1.6 order (Route.php:5657): names that start with the term
+        // first, then by name. Every searchable type names a record by
+        // `name`, except users, which have `username` (as the items below).
+        let nameField = _.isUndefined(Model.attributes.name) ? 'username' : 'name';
+        let pipeline = [
+          { $match: { $or: or } },
+          { $addFields: { _searchPrefix: { $regexMatch: { input: '$' + nameField, regex: '^' + escaped, options: 'i' } } } },
+          // true sorts after false, so -1 puts the prefix matches first.
+          { $sort: { _searchPrefix: -1, [nameField]: 1 } }
+        ];
+        // 0 or less is no limit (1.6 Route.php:5658-5660), so a negative
+        // value never reaches $limit.
+        if (inputs.limit > 0) { pipeline.push({ $limit: inputs.limit }); }
+        // A case-insensitive collation sorts the names as the 1.6 MySQL
+        // collation does ("b-lab" before "X-lab"); byte order would not.
+        let docs = await collection.aggregate(pipeline, { collation: { locale: 'en', strength: 2 } }).toArray();
         if (docs.length) {
+          // The 1.6 group label (the singular type name). A plugin type that
+          // page-title.js does not know uses its own label.
+          let title = sails.helpers.pageTitle.with({ identity: cfg.model });
           groups.push({
             model: cfg.model,
             label: cfg.label,
+            singular: title ? title.singular : cfg.label,
             plural: cfg.model + 's',
             items: docs.map((d) => ({
               id: String(d._id),
