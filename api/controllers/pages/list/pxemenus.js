@@ -17,7 +17,6 @@ module.exports = {
   },
   fn: async function () {
     let data = {
-      header: 'iPXE Menu List',
       theads: [
         'Name',
         'Description',
@@ -26,9 +25,10 @@ module.exports = {
       model: 'pxemenu',
       partialname: false
     };
-    // The FOG 1.6 content header and tab title. 1.6 names this list "All Boot
-    // Menu Items", not "All iPXE Menus".
-    data.section = sails.helpers.pageTitle.with({identity: data.model}).section;
+    // The 1.6 title, the nouns, the table settings and the edit link base
+    // (api/helpers/list-locals.js).
+    Object.assign(data, await sails.helpers.listLocals.with({identity: data.model, base: '/pxemenus'}));
+    // 1.6 names this list "All Boot Menu Items", not "All iPXE Menus".
     data.page = 'All Boot Menu Items';
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {

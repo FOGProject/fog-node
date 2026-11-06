@@ -115,7 +115,8 @@ async function createAndDelete({page, checkPage}) {
 async function createModal({page, base, checkPage}, list, model, title) {
   const before = await countOf(page, base, model);
   await checkPage(page, {path: list, table: true});
-  await page.locator('.dt-buttons button', {hasText: 'Create New'}).click();
+  // "Add" sits in the action box under the table (issue #150).
+  await page.locator('.btn-actionbox #createnew').click();
   const modal = page.locator('#entityModal.show');
   await modal.locator('form').waitFor({state: 'visible', timeout: 10000});
   expect(`${list}: the create modal title`, (await modal.locator('.modal-title').innerText()).trim(), title);

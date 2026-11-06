@@ -138,7 +138,7 @@ async function checkRoundTrip(page, {list, form, name, fill, onEdit}) {
   await Promise.all([page.waitForNavigation({waitUntil: 'networkidle'}), page.click(`#${form} button[type="submit"]`)]);
   await page.goto(base + list, {waitUntil: 'networkidle'});
   await page.locator('table tbody', {hasText: name}).waitFor({timeout: 10000});
-  // The list's Edit button opens <list>/edit/<row id> (assets/fog/fog.common.js).
+  // The list's row link opens <list>/edit/<row id> (assets/fog/fog.common.js).
   const id = await page.evaluate((n) => {
     const row = jQuery.fn.dataTable.tables({api: true}).rows().data().toArray().find((r) => r.name === n);
     return row && row.id;

@@ -122,7 +122,8 @@
   }
 
   $('#listtable').registerTable(undefined, {
-    createMode: 'page',
+    // "Add" opens the create modal on every list, as in FOG 1.6.
+    createMode: 'modal',
     order: [
       [0, 'asc']
     ],

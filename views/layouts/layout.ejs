@@ -99,7 +99,9 @@
 
   <%/* bg-body-tertiary paints the signed-in canvas, as in 1.6 (index.php:111).
        Its !important beats the dark body background in zz-fog-ui.css. */%>
-  <body class="<%= req.user ? 'layout-fixed sidebar-expand-lg bg-body-tertiary' : 'login-page bg-body-secondary' %>">
+  <%/* data-user-id keys the localStorage copy of a saved table layout to the
+       signed-in user (assets/fog/fog.common.js, fogList localKey). */%>
+  <body class="<%= req.user ? 'layout-fixed sidebar-expand-lg bg-body-tertiary' : 'login-page bg-body-secondary' %>"<% if (req.user) { %> data-user-id="<%= req.user.id %>"<% } %>>
     <!-- FOG Management only works when JavaScript is enabled. -->
     <noscript>
       <div id="noscriptMessage">
@@ -307,6 +309,7 @@
     <script src="/fog/fog.search.js"></script>
     <script src="/fog/fog.select2.js"></script>
     <script src="/fog/fog.sidebar.js"></script>
+    <script src="/fog/fog.table.js"></script>
     <script src="/fog/fog.taginput.js"></script>
     <script src="/fog/fog.theme.js"></script>
     <!--SCRIPTS END-->

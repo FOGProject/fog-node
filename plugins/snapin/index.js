@@ -79,14 +79,11 @@ module.exports = {
     // List page (renders the core list view + this plugin's datatable partial).
     'GET /snapins': async function (req, res) {
       if (!can(req, 'read')) { return res.forbidden(); }
-      // The FOG 1.6 content header and tab title.
-      let names = sails.helpers.pageTitle.with({identity: 'snapin'});
       return res.view('pages/list', {
-        header: 'Snapin List',
         theads: ['Name', 'File', 'Enabled'],
         model: 'snapin',
-        section: names.section,
-        page: `All ${names.plural}`,
+        // The 1.6 title, the nouns, the table settings and the edit link base.
+        ...await sails.helpers.listLocals.with({identity: 'snapin', base: '/snapins'}),
         partialname: path.join(__dirname, 'list.partial.js')
       });
     },
