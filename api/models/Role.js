@@ -4,40 +4,10 @@
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
-const flatten = require('flat');
-const filterPermissions = function(permissions) {
-  if (!permissions) permissions = {};
-  let toValidate = flatten(permissions);
-
-  // Filter out unknown permissions
-  for (var i = 0; i < toValidate.length; i++) {
-    if (!_.get(sails.config.permissions, toValidate[i])) _.set(permissions, toValidate[i], undefined);
-  }
-
-  // Merge in the default permissions, ensuring all values are set
-  // Note that the 'right' object being merged overrides any values set
-  // by the 'left' object.
-  return _.extend(sails.config.permissions, permissions);
-};
-// `mapFn` is a value transform, not a continuation -- its result is assigned,
-// never used for control flow. It was named `cb`, which callback-return reads
-// as a Node-style callback and then (wrongly) demands be returned.
-const deepMap = function(obj, mapFn) {
-  let out = {};
-
-  Object.keys(obj).forEach((k) => {
-    let val;
-    if (obj[k] !== null && typeof obj[k] === 'object') {
-      val = deepMap(obj[k], mapFn);
-    } else {
-      val = mapFn(obj[k], k);
-    }
-
-    out[k] = val;
-  });
-
-  return out;
-};
+// A role's permissions come from api/helpers/permissions/resolve.js. They
+// have the shape of sails.config.permissions. A leaf is true only where the
+// role grants it. An admin role gets every leaf true. The helper never
+// writes to the shared defaults (issue #168).
 module.exports = {
   attributes: {
     name: {
@@ -63,35 +33,23 @@ module.exports = {
     }
   },
   customToJSON: function() {
-    if (this.isAdmin) {
-      this.permissions = deepMap(sails.config.permissions, () => {
-        return true;
-      });
-    } else {
-      this.permissions = filterPermissions(this.permissions);
-    }
+    this.permissions = sails.helpers.permissions.resolve.with({roles: [this]});
     return this;
   },
   beforeCreate: function(values, next) {
-    if (values.isAdmin) {
-      values.permissions = deepMap(sails.config.permissions, () => {
-        return true;
-      });
-    } else {
-      values.permissions = filterPermissions(values.permissions);
-    }
-
+    values.permissions = sails.helpers.permissions.resolve.with({roles: [values]});
     next();
   },
   beforeUpdate: function(values, next) {
-    if (values.hasOwnProperty('permissions') && !values.isAdmin) {
-      values.permissions = filterPermissions(values.permissions);
-    } else if (values.isAdmin) {
-      values.permissions = deepMap(sails.config.permissions, () => {
-        return true;
-      });
+    // Only an update that carries permissions, or that makes the role an
+    // admin role, rewrites them. A partial update such as {description: 'x'}
+    // leaves the stored permissions alone. The edit page posts isAdmin on
+    // every save, so a check for the key would reset them on each edit.
+    // Known gap: {isAdmin: false} alone keeps the stored tree. For a former
+    // admin role, that tree is all true.
+    if (values.hasOwnProperty('permissions') || values.isAdmin) {
+      values.permissions = sails.helpers.permissions.resolve.with({roles: [values]});
     }
-
     next();
   }
 };

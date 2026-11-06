@@ -5,34 +5,6 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 const bcrypt = require('bcryptjs');
-const flatten = require('flat');
-const filterPermissions = function(permissions) {
-  if (!permissions) permissions = {};
-  let toValidate = flatten(permissions);
-  // Filter out unknown permissions
-  for (var i = 0; i < toValidate.length; i++) {
-    if (!_.get(sails.config.permissions, toValidate[i])) _.set(permissions, toValidate[i], undefined);
-  }
-  // Merge in the default permissions, ensuring all values are set
-  // Note that the 'right' object being merged overrides any values set
-  // by the 'left' object.
-  return _.extend(sails.config.permissions, permissions);
-};
-// See the matching note in api/models/Role.js: `mapFn` is a value transform,
-// not a continuation, and was named `cb` only by convention.
-const deepMap = function(obj, mapFn) {
-  let out = {};
-  Object.keys(obj).forEach((k) => {
-    let val;
-    if (obj[k] !== null && typeof obj[k] === 'object') {
-      val = deepMap(obj[k], mapFn);
-    } else {
-      val = mapFn(obj[k], k);
-    }
-    out[k] = val;
-  });
-  return out;
-};
 module.exports = {
   attributes: {
     username: {
@@ -68,27 +40,10 @@ module.exports = {
     }
   },
   customToJSON: function() {
-    concatRoles = function(roles, models) {
-      let permissions = {};
-      if (roles === undefined) return {};
-      if (models === undefined) models = Object.keys(sails.models);
-      for (let i = 0; i < models.length; i++) {
-        for (let j = 0; j < roles.length; j++) {
-          if (roles[j].isAdmin) {
-            roles[j].permissions = deepMap(sails.config.permissions, () => {
-              return true;
-            });
-          } else {
-            roles[j].permissions = filterPermissions(roles[j].permissions);
-          }
-        }
-      }
-      for (let i = 0; i < roles.length; i++) {
-        permissions = _.extend(permissions, roles[i].permissions);
-      }
-      return permissions;
-    };
-    this.permissions = concatRoles(this.roles);
+    // req.user.permissions, which every policy reads: the union of the user's
+    // roles (api/helpers/permissions/resolve.js). It is {} when the roles
+    // are not populated.
+    this.permissions = this.roles === undefined ? {} : sails.helpers.permissions.resolve.with({roles: this.roles});
     return _.omit(this, ['password','roles','apiTokenHash']);
   },
   beforeCreate: function(values, next) {
