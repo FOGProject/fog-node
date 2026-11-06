@@ -1,123 +1,81 @@
 <div class="app-content">
   <div class="container-fluid">
-    <% // Alerts %>
-    <div class="row">
-      <div class="col-12">
-        <div class="card card-outline card-<%= pendingHosts ? 'warning' : 'success' %>">
+    <% // The FOG 1.6 dashboard (DashboardPage.php:186-556). %>
+    <% if (pendingHosts > 0) { %>
+    <% // 1.6 displayAlert($title, $hostPend, 'warning', true, true): a dismissible callout (FOGPage.php:1676-1707). %>
+    <% // The link goes to /hosts until a pending-hosts page exists. %>
+    <div class="callout callout-warning alert-dismissible" id="pendingCallout">
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <h4><%= pendingHosts %> <%= pendingHosts !== 1 ? 'Pending hosts' : 'Pending host' %></h4>
+      Click <a href="/hosts"><b>here</b></a> to review.
+    </div>
+    <% } %>
+    <% // gy-3: every card is a column of this one row, as in 1.6, so the stacked cards get a vertical gutter. %>
+    <div class="row gy-3">
+      <% // System Overview %>
+      <div class="col-md-4">
+        <div class="card card-primary card-outline">
           <div class="card-header">
-            <h3 class="card-title">Alerts</h3>
-            <%- partial('../layouts/partials/cardtools.ejs') %>
+            <h4 class="card-title">System Overview</h4>
           </div>
           <div class="card-body">
-            <% if (pendingHosts) { %>
-            <a href="/hosts" class="d-inline-flex align-items-center text-decoration-none">
-              <span class="badge bg-warning text-dark me-2"><%= pendingHosts %></span>
-              <%= pendingHosts === 1 ? 'host is' : 'hosts are' %> pending approval
+            <div class="dl-horizontal">
+              <dt>Web Server</dt><dd><%= webserver %></dd>
+              <dt>Load Average</dt><dd><%= loadaverage %></dd>
+              <dt>System Uptime</dt><dd><%= uptime %></dd>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% // Storage Group Activity %>
+      <div class="col-md-4">
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h4 class="card-title">Storage Group Activity</h4>
+          </div>
+          <div class="card-body">
+            <div class="chart-responsive">
+              <input type="hidden" id="avail" value="<%= avail %>">
+              <input type="hidden" id="staged" value="<%= staged %>">
+              <input type="hidden" id="active" value="<%= active %>">
+              <canvas id="activityUsage" class="chartjs-render-monitor"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% // Storage Node Disk Usage %>
+      <div class="col-md-4">
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h4 class="card-title">Storage Node Disk Usage</h4>
+          </div>
+          <div class="card-body">
+            <a href="/hwinfo" id="hwinfolink">
+              <div class="chart-responsive">
+                <input type="hidden" id="free" value="<%= free %>">
+                <input type="hidden" id="used" value="<%= used %>">
+                <canvas id="diskUsage" class="chartjs-render-monitor"></canvas>
+              </div>
             </a>
-            <% } else { %>
-            <span class="text-success"><i class="fa fa-check-circle"></i> No pending hosts.</span>
-            <% } %>
           </div>
         </div>
       </div>
-    </div>
-    <% // End Alerts %>
-    <% // Overview boxes %>
-    <div class="row">
+      <% // Imaging history %>
       <div class="col-12">
-        <div class="card card-outline card-info">
+        <div class="card card-primary card-outline">
           <div class="card-header">
-            <h3 class="card-title">System Overview</h3>
-            <%- partial('../layouts/partials/cardtools.ejs') %>
-          </div>
-          <div class="card-body row">
-            <div class="col-md-4">
-              <div class="card card-outline card-info">
-                <div class="card-header">
-                  <h3 class="card-title">Server Information</h3>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <strong>Server IP</strong>
-                    </div>
-                    <div class="col-md-6">
-                      <%= webserver %>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <strong>CPU Load</strong>
-                    </div>
-                    <div class="col-md-6">
-                      <%= loadaverage %>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <strong>Uptime</strong>
-                    </div>
-                    <div class="col-md-6">
-                      <%= uptime %>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card card-outline card-info">
-                <div class="card-header">
-                  <h3 class="card-title">Activity</h3>
-                </div>
-                <div class="card-body">
-                  <div class="chart-responsive">
-                    <input type="hidden" id="avail" value="<%= avail %>">
-                    <input type="hidden" id="staged" value="<%= staged %>">
-                    <input type="hidden" id="active" value="<%= active %>">
-                    <canvas id="activityUsage" class="chartjs-render-monitor"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card card-outline card-info">
-                <div class="card-header">
-                  <h3 class="card-title">Disk Usage</h3>
-                </div>
-                <a href="/hwinfo">
-                  <div class="card-body">
-                    <div class="chart-responsive">
-                      <input type="hidden" id="free" value="<%= free %>">
-                      <input type="hidden" id="used" value="<%= used %>">
-                      <canvas id="diskUsage" class="chartjs-render-monitor"></canvas>
-                    </div>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <% // End System Overview %>
-    <% // Task History %>
-    <div class="row">
-      <div class="col-12">
-        <div class="card card-outline card-info">
-          <div class="card-header">
-            <h3 class="card-title">Task History</h3>
-            <%- partial('../layouts/partials/cardtools.ejs') %>
+            <h4 class="card-title">Imaging Over the last</h4>
             <div class="row">
-              <div class="col-12">
-                <a href="#" class="taskDayFilters active" length="1">30 Days</a>
+              <div class="col-md-3">
+                <a href="#" id="graph-day-filters-30" class="type-days graph-days active" rel="30">30 Days</a>
                 &nbsp;&nbsp;
-                <a href="#" class="taskDayFilters" length="2">60 Days</a>
+                <a href="#" id="graph-day-filters-60" class="type-days graph-days" rel="60">60 Days</a>
                 &nbsp;&nbsp;
-                <a href="#" class="taskDayFilters" length="3">90 Days</a>
+                <a href="#" id="graph-day-filters-90" class="type-days graph-days" rel="90">90 Days</a>
                 &nbsp;&nbsp;
-                <a href="#" class="taskDayFilters" length="6">6 Months</a>
+                <a href="#" id="graph-day-filters-183" class="type-days graph-days" rel="183">6 Months</a>
                 &nbsp;&nbsp;
-                <a href="#" class="taskDayFilters" length="-1">1 Year</a>
+                <a href="#" id="graph-day-filters-365" class="type-days graph-days" rel="365">1 Year</a>
               </div>
             </div>
           </div>
@@ -128,26 +86,42 @@
           </div>
         </div>
       </div>
-    </div>
-    <% // End Task History %>
-    <% // Bandwidth %>
-    <div class="row">
+      <% // Bandwidth %>
       <div class="col-12">
-        <div class="card card-outline card-info">
+        <div class="card card-primary card-outline">
           <div class="card-header">
-            <h3 class="card-title">Bandwidth</h3>
-            <%- partial('../layouts/partials/cardtools.ejs') %>
+            <h4 class="card-title">Bandwidth</h4>
+            <div class="card-tools float-end">
+              Real Time
+              <div class="btn-group" id="realtime">
+                <button type="button" id="btn-on" class="btn btn-secondary btn-sm active" data-toggle="on">On</button>
+                <button type="button" id="btn-off" class="btn btn-secondary btn-sm" data-toggle="off">Off</button>
+              </div>
+            </div>
             <div class="row">
-              <div class="col-12">
-                <a href="#" class="bwTimeFilters active" seconds="120">2 Minutes</a>
+              <div class="col-md-2">
+                <div id="graph-bandwidth-title">Bandwidth - <span>Transmit</span></div>
+              </div>
+              <div class="offset-md-4 col-md-6">
+                <div class="category" id="graph-bandwidth-time-title">Time - <span>2 Minutes</span></div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2">
+                <a href="#" id="graph-bandwidth-filters-transmit" class="type-filters graph-filters active">Transmit</a>
                 &nbsp;&nbsp;
-                <a href="#" class="bwTimeFilters" seconds="300">5 Minutes</a>
+                <a href="#" id="graph-bandwidth-filters-receive" class="type-filters graph-filters">Receive</a>
+              </div>
+              <div class="offset-md-4 col-md-6">
+                <a href="#" id="graph-bandwidth-time-filters-2min" class="time-filters graph-filters active" rel="120">2 Minutes</a>
                 &nbsp;&nbsp;
-                <a href="#" class="bwTimeFilters" seconds="600">10 Minutes</a>
+                <a href="#" id="graph-bandwidth-time-filters-5min" class="time-filters graph-filters" rel="300">5 Minutes</a>
                 &nbsp;&nbsp;
-                <a href="#" class="bwTimeFilters" seconds="1800">30 Minutes</a>
+                <a href="#" id="graph-bandwidth-time-filters-10min" class="time-filters graph-filters" rel="600">10 Minutes</a>
                 &nbsp;&nbsp;
-                <a href="#" class="bwTimeFilters" seconds="3600">1 Hour</a>
+                <a href="#" id="graph-bandwidth-time-filters-30min" class="time-filters graph-filters" rel="1800">30 Minutes</a>
+                &nbsp;&nbsp;
+                <a href="#" id="graph-bandwidth-time-filters-1hr" class="time-filters graph-filters" rel="3600">1 Hour</a>
               </div>
             </div>
           </div>
@@ -159,7 +133,6 @@
         </div>
       </div>
     </div>
-    <% // End Bandwidth %>
   </div>
 </div>
 <%- /* Expose server-rendered data as window.SAILS_LOCALS :: */ exposeLocalsToBrowser() %>

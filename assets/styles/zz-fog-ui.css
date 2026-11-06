@@ -1647,3 +1647,34 @@ body.fog-col-resizing {
 #accountMenu.show::after {
   transform: rotate(180deg);
 }
+
+/* ---------------------------------------------------------------------------
+   Charts (issue #152)
+
+   The dashboard charts (views/pages/partials/dashboard.js) read these tokens
+   with getComputedStyle(document.documentElement), so the script holds no
+   color. The values are the 1.6 values (fog.dashboard.js:30-40 for the
+   chrome; 231, 320 and 471 for the dataset blues). The dark chrome sits on
+   [data-bs-theme="dark"] itself, not on its body, so the <html> element
+   that the script reads carries it. On fog:themechange the script reads
+   them again and recolors each chart in place.
+   --------------------------------------------------------------------------- */
+:root {
+  --fog-chart-text:   #666666;          /* axis tick labels */
+  --fog-chart-legend: #444444;          /* legend labels */
+  --fog-chart-grid:   rgba(0,0,0,0.1);  /* grid lines */
+  --fog-chart-free:   #00c0ef;          /* Free */
+  --fog-chart-queued: #3c8dbc;          /* Queued, Used, the line charts */
+  --fog-chart-active: #0073b7;          /* Active */
+  /* The empty "No activity" ring: the text-muted token. --fog-text-muted
+     turns dark only under [data-bs-theme="dark"] body, which <html> cannot
+     see, so the dark value names its Bootstrap source here. */
+  --fog-chart-empty:  var(--fog-text-muted);
+}
+
+[data-bs-theme="dark"] {
+  --fog-chart-text:   #c8ccd0;
+  --fog-chart-legend: #c8ccd0;
+  --fog-chart-grid:   rgba(255,255,255,0.12);
+  --fog-chart-empty:  var(--bs-secondary-color);
+}

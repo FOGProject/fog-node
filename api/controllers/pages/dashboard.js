@@ -72,7 +72,7 @@ module.exports = {
     let capacity = storageNodes.reduce((sum, n) => sum + (Number(n.maxClients) || 0), 0);
     let avail = Math.max(0, capacity - active - staged);
 
-    // Alerts panel (parity with 1.x dashboard): hosts awaiting approval.
+    // The 1.6 pending-hosts callout: hosts awaiting approval.
     let pendingHosts = await Host.count({ pending: true });
 
     let data = {
