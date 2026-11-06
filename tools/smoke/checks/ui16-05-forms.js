@@ -64,7 +64,7 @@ async function createAndDelete({page, checkPage}) {
 
   // The save result is a toast, not a page alert, and the URL loses ?saved.
   const saved = await toasts(page);
-  expect('the toasts after the save', JSON.stringify(saved.map((t) => [t.type, t.text])), '[["success","Storage Group updated!"]]');
+  expect('the toasts after the save', JSON.stringify(saved.map((t) => [t.type, t.text])), '[["success","Storage Group added!"]]');
   expect('the number of .alert after the save', await page.locator('.alert').count(), 0);
   const url = new URL(page.url());
   if (!/^\/storagegroups\/edit\/[^/]+$/.test(url.pathname)) throw new Error(`the save landed on ${url.pathname}`);

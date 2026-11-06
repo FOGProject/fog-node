@@ -23,7 +23,7 @@ const AJAX = {'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json'};
 const SELECT = ['Select All', 'Deselect All'];
 const SHARED = ['Column search', 'Column Visibility', 'Refresh'];
 const TOOLBARS = {
-  '/hosts': [...SELECT, ...SHARED, 'Manage Tags', 'Set Image'],
+  '/hosts': [...SELECT, ...SHARED, 'Edit groups', 'Set Image'],
   '/images': [...SELECT, ...SHARED, 'Scan store'],
   '/tasks': SHARED
 };

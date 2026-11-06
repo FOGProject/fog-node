@@ -6,6 +6,14 @@ module.exports.permissions = {
       read: false,
       update: false
     },
+    // A host's group membership is a group edit (group.update), and a new
+    // group name needs group.create too (api/helpers/group/authorize.js).
+    group: {
+      create: false,
+      destroy: false,
+      read: false,
+      update: false
+    },
     image: {
       capture: false,
       create: false,

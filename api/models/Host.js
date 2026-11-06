@@ -44,29 +44,49 @@ function normalizeMacs(values, proceed) {
   return proceed();
 }
 
-// Normalise the `tags` json array: accept a comma/newline-separated string or an
-// array, trim, drop blanks, and de-dupe (case-insensitively, keeping first form).
-function normalizeTags(values) {
-  if (!Object.prototype.hasOwnProperty.call(values, 'tags')) {
-    return;
-  }
-  let raw = values.tags;
+// The group names in a `groups` value: split a string on commas, carriage
+// returns and line feeds; split each string element of an array the same way,
+// and drop each element that is not a string; trim; drop blanks; de-dupe
+// without case, keeping the first spelling. An element "a,b" gives "a" and
+// "b", so no name ever holds a comma. Exposed as Host.normalizeGroups for the
+// group permission check (api/helpers/group/authorize.js) and host/bulk.
+function normalizeGroups(raw) {
+  let parts = [];
   if (typeof raw === 'string') {
-    raw = raw.split(/[\n,]+/);
-  }
-  if (!Array.isArray(raw)) {
-    raw = (raw === null || typeof raw === 'undefined') ? [] : [raw];
+    parts = raw.split(/[\r\n,]+/);
+  } else if (Array.isArray(raw)) {
+    for (let entry of raw) {
+      if (typeof entry === 'string') { parts = parts.concat(entry.split(/[\r\n,]+/)); }
+    }
   }
   let out = [];
   let seen = {};
-  for (let entry of raw) {
-    if (entry === null || typeof entry === 'undefined') { continue; }
-    let tag = String(entry).trim();
-    if (tag === '') { continue; }
-    let key = tag.toLowerCase();
-    if (!seen[key]) { seen[key] = true; out.push(tag); }
+  for (let part of parts) {
+    let name = part.trim();
+    if (name === '') { continue; }
+    let key = name.toLowerCase();
+    if (!seen[key]) { seen[key] = true; out.push(name); }
   }
-  values.tags = out;
+  return out;
+}
+
+// Store the `groups` value as Group names: normalize it, then replace each
+// name with its Group's stored spelling, creating the Group when none exists
+// (api/helpers/group/ensure.js).
+async function applyGroups(values) {
+  if (!Object.prototype.hasOwnProperty.call(values, 'groups')) {
+    return;
+  }
+  values.groups = await sails.helpers.group.ensure.with({names: normalizeGroups(values.groups)});
+}
+
+// The MACs first: a host save that fails on a bad MAC creates no Group.
+function beforeSave(values, proceed) {
+  normalizeIdentity(values);
+  return normalizeMacs(values, (err) => {
+    if (err) { return proceed(err); }
+    applyGroups(values).then(() => proceed(), proceed);
+  });
 }
 
 // Canonicalise the fingerprint fields so identity matching is stable: trim, and
@@ -101,10 +121,11 @@ module.exports = {
     macs: {
       type: 'json'
     },
-    // Free-form labels for organising/filtering hosts. These replace 1.x groups
-    // for the "named set + group-by" use case (see docs/adr/0001). Stored as a
-    // de-duped string array.
-    tags: {
+    // The host's group membership: the names of its Groups (api/models/Group.js),
+    // as a de-duped string array, the FOG 1.6 groups (issue #169; ui16-11c
+    // records the decision as an ADR). Schema revision 2 (migrations/2.js)
+    // renamed it from `tags`.
+    groups: {
       type: 'json'
     },
     // --- Hardware fingerprint (issue #198): a host is identified by the scored
@@ -200,14 +221,8 @@ module.exports = {
     obj.macVendors = MacVendor.lookupAll(Array.isArray(this.macs) ? this.macs : []);
     return obj;
   },
-  beforeCreate: function(values, proceed) {
-    normalizeIdentity(values);
-    normalizeTags(values);
-    return normalizeMacs(values, proceed);
-  },
-  beforeUpdate: function(values, proceed) {
-    normalizeIdentity(values);
-    normalizeTags(values);
-    return normalizeMacs(values, proceed);
-  }
+  beforeCreate: beforeSave,
+  beforeUpdate: beforeSave,
+  // A custom model method (sails.models.host.normalizeGroups).
+  normalizeGroups
 };

@@ -57,11 +57,11 @@ module.exports.routes = {
   'GET /api/v1/user/me':                     {action: 'user/listme', csrf: false},
 
   // Host API (explicit host routes must precede the generic :model routes below,
-  // or e.g. GET /api/v1/host/tags is read as :model=host/:id=tags). Exempt from
-  // Sails CSRF like the rest of /api/v1; the host/bulk mutation is guarded by
-  // apiCsrfGuard instead (see config/policies.js).
+  // or e.g. GET /api/v1/host/groups is read as :model=host/:id=groups). Exempt
+  // from Sails CSRF like the rest of /api/v1; the host/bulk mutation is guarded
+  // by apiCsrfGuard instead (see config/policies.js).
   'POST /api/v1/host/bulk':                  {action: 'host/bulk', csrf: false},
-  'GET /api/v1/host/tags':                   {action: 'host/tags', csrf: false},
+  'GET /api/v1/host/groups':                 {action: 'host/groups', csrf: false},
 
   // Global search (must precede the :model routes).
   'GET /api/v1/search':                      {action: 'search', csrf: false},
@@ -99,6 +99,11 @@ module.exports.routes = {
   'GET /hosts/create':                       {action: 'pages/create/hosts'},
   'POST /hosts/create':                      {action: 'general/save'},
 
+  // Group Views
+  'GET /groups':                             {action: 'pages/list/groups'},
+  'GET /groups/create':                      {action: 'pages/create/groups'},
+  'POST /groups/create':                     {action: 'general/save'},
+
   // Image Views
   'GET /images':                             {action: 'pages/list/images'},
   'GET /images/create':                      {action: 'pages/create/images'},
@@ -126,6 +131,8 @@ module.exports.routes = {
   // Edit Views (generic edit page + save)
   'GET /hosts/edit/:id':                      {action: 'pages/edit'},
   'POST /hosts/edit/:id':                     {action: 'general/save'},
+  'GET /groups/edit/:id':                     {action: 'pages/edit'},
+  'POST /groups/edit/:id':                    {action: 'general/save'},
   'GET /images/edit/:id':                     {action: 'pages/edit'},
   'POST /images/edit/:id':                    {action: 'general/save'},
   'GET /storagegroups/edit/:id':             {action: 'pages/edit'},

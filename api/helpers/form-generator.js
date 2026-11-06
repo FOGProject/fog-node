@@ -53,6 +53,13 @@ module.exports = {
     listUrl: {
       description: 'Edit mode: the list page that Delete returns to, for example /hosts.',
       type: 'string'
+    },
+    panes: {
+      description: 'Edit mode: more tabs with no form fields, [{tab, html}]. Each renders one more tab pane, after ' +
+        'the General tab, holding its html as given, with no <form> and no footer. The caller escapes every record ' +
+        'value in the html.',
+      type: 'json',
+      defaultsTo: []
     }
   },
   exits: {
@@ -80,7 +87,7 @@ module.exports = {
 
     // One field row on the FOG 1.6 grid (FOGPage.php:5654-5667): the label in
     // col-sm-3, the control in col-sm-9.
-    function row(label, control) {
+    function rowHtml(label, control) {
       return `
             <div class="row mb-3">
               ${label}
@@ -91,6 +98,11 @@ module.exports = {
 
     // Render a single form item to its HTML string.
     function renderField(item, input, obj) {
+      // The item's optional `help` text, escaped, under its control, as the
+      // maclist hint below. Every row of this item carries it.
+      let help = input.help ? `
+                <small class="form-text text-muted">${esc(input.help)}</small>` : '';
+      let row = (rowLabel, control) => rowHtml(rowLabel, control + help);
       let iId = input.id ? ` id="${esc(input.id)}"` : '';
       let label = `<label class="col-sm-3 col-form-label"${input.id ? ` for="${esc(input.id)}"` : ''}>${esc(input.text)}</label>`;
       // maclist and checktable hold several controls, so no `for`.
@@ -171,7 +183,7 @@ module.exports = {
           let csv = vals.map((t) => String(t).trim()).filter(Boolean).join(',');
           return row(label, `
                 <div data-taginput data-name="${esc(item)}" data-tags="${esc(csv)}"></div>
-                <small class="form-text text-muted">Type a tag and press Enter or comma.</small>`);
+                <small class="form-text text-muted">Type a group name and press Enter or comma.</small>`);
         }
         case 'checktable': {
           // Multi (collection) association picker: a filterable, select-all
@@ -273,13 +285,19 @@ module.exports = {
       let del = `
           <button type="button" class="btn btn-danger float-start" data-fog-delete data-model="${esc(model)}"` +
         ` data-id="${esc(record.id)}" data-name="${esc(record.name)}" data-list="${esc(inputs.listUrl)}">Delete</button>`;
+      // The panes (`panes` input) go after the General tab, or last when
+      // there is none. A pane has its own html in place of a form.
+      let panes = inputs.panes || [];
+      let at = tabs.indexOf('General') + 1 || tabs.length;
+      let entries = tabs.map((t) => ({tab: t}));
+      entries.splice(at, 0, ...panes.map((p) => ({tab: p.tab, html: p.html})));
       // The tabs card (FOGPage.php:5748-5845), with one form per tab
       // (FOGPageRender.php:894-942), so each tab saves only its own fields.
       let html = `
     <div class="card card-primary card-outline">
       <div class="card-header p-0 border-bottom-0">
         <ul class="nav nav-tabs" role="tablist">`;
-      tabs.forEach((t, idx) => {
+      entries.forEach(({tab: t}, idx) => {
         html += `
           <li class="nav-item"><a class="nav-link${idx === 0 ? ' active' : ''}" data-bs-toggle="tab" href="#tab-${slug(t)}" role="tab" aria-selected="${idx === 0}">${esc(t)}</a></li>`;
       });
@@ -288,9 +306,8 @@ module.exports = {
       </div>
       <div class="card-body">
         <div class="tab-content">`;
-      tabs.forEach((t, idx) => {
-        html += `
-          <div class="tab-pane fade${idx === 0 ? ' show active' : ''}" id="tab-${slug(t)}" role="tabpanel">
+      entries.forEach(({tab: t, html: paneHtml}, idx) => {
+        let body = paneHtml !== undefined ? paneHtml : `
             ${formTag(inputs.id ? `${inputs.id}-${slug(t)}` : '')}
               <div class="card">
                 <div class="card-body">${buckets[t]}
@@ -298,7 +315,9 @@ module.exports = {
                 <div class="card-footer clearfix">${update}${t === 'General' ? del : ''}
                 </div>
               </div>
-            </form>
+            </form>`;
+        html += `
+          <div class="tab-pane fade${idx === 0 ? ' show active' : ''}" id="tab-${slug(t)}" role="tabpanel">${body}
           </div>`;
       });
       html += `

@@ -21,7 +21,9 @@ module.exports = {
 
     for (let i = 0; i < toLoad.length; i++) {
       try {
-        revisions[i] = require(path.join(migrationsFolder, toLoad[i]));
+        // path.join takes strings only: a number threw here, and every
+        // revision read as missing.
+        revisions[i] = require(path.join(migrationsFolder, String(toLoad[i])));
         revisions[i]._meta.schema = toLoad[i];
       } catch (unusedErr) {
         throw `Missing migration file for schema ${toLoad[i]}`;
@@ -45,46 +47,62 @@ module.exports = {
     let cfg = config.getMergedSettings();
     if (target < 0) return next('Cannot migrate to schema lower than 0');
     if (target > cfg.schema) return next(`Cannot migrate to a schema greater than ${cfg.schema}`);
-    database.connect(conn.host, conn.port, conn.database, conn.user, conn.password, (err, db) => {
+    // The mongodb 3.x connect callback gives a MongoClient; each revision
+    // gets its database. The client closes once, at the end.
+    database.connect(conn, (err, client) => {
       if (err) return next(err);
+      let done = (err) => {
+        client.close();
+        next(err);
+      };
+      let db = client.db();
       module.exports.getCurrentRevision(db, (err, current) => {
-        if (err) return next(err);
-        let upgrade = target > current;
-        let revisions;
-        try {
-          revisions = module.exports.getMigrations(current, target);
-        } catch (e) {
-          return next(e);
-        }
-        for (var i = 0; i < revisions.length; i++) {
-          if (!revisions[i]) return next(`Missing migration file for schema ${i+1}`);
-          if (!revisions[i]._meta ||
-            !revisions[i]._meta.schema ||
-            !revisions[i]._meta.description
-          ) return next(`Missing meta data in migration file for schema ${i+1}`);
-          if (!revisions[i].up ||
-            typeof revisions[i].up !== 'function' ||
-            !revisions[i].down ||
-            typeof revisions[i].down !== 'function'
-          ) return next(`Malformed migration file for schema ${i+1}`);
-        }
-        revisions.forEach((rev, next) => {
-          let toRev = rev._meta.schema;
-          if (!upgrade) toRev--;
-          step(upgrade, current, toRev, rev._meta.description);
-          let action = (upgrade ? rev.up : rev.down);
-          action(db, console, (err) => {
-            if (err) {
-              db.close();
-              return next(err);
-            }
-            current = toRev;
-            setting.set(db, 'schema', {revision: toRev}, next);
-          });
-        });
-        db.close();
-        next();
+        if (err) return done(err);
+        module.exports.run(db, current, target, step, done);
       });
     });
+  },
+  // Run the revisions from `current` to `target`, in order, one at a time.
+  // After each one, the `schema` Setting holds the new revision, then the next
+  // one starts. `next(err)` is called once: on the first error, or after the
+  // last revision. `step(upgrade, fromRev, toRev, description)` is called as
+  // each revision starts.
+  run: (db, current, target, step, next) => {
+    let upgrade = target > current;
+    let revisions;
+    try {
+      revisions = module.exports.getMigrations(current, target);
+    } catch (e) {
+      return next(e);
+    }
+    for (var i = 0; i < revisions.length; i++) {
+      if (!revisions[i]) return next(`Missing migration file for schema ${i+1}`);
+      if (!revisions[i]._meta ||
+        !revisions[i]._meta.schema ||
+        !revisions[i]._meta.description
+      ) return next(`Missing meta data in migration file for schema ${i+1}`);
+      if (!revisions[i].up ||
+        typeof revisions[i].up !== 'function' ||
+        !revisions[i].down ||
+        typeof revisions[i].down !== 'function'
+      ) return next(`Malformed migration file for schema ${i+1}`);
+    }
+    let runFrom = (index) => {
+      if (index >= revisions.length) return next();
+      let rev = revisions[index];
+      let toRev = rev._meta.schema;
+      if (!upgrade) toRev--;
+      step(upgrade, current, toRev, rev._meta.description);
+      let action = (upgrade ? rev.up : rev.down);
+      action(db, console, (err) => {
+        if (err) return next(err);
+        setting.set(db, 'schema', {revision: toRev}, (err) => {
+          if (err) return next(err);
+          current = toRev;
+          runFrom(index + 1);
+        });
+      });
+    };
+    runFrom(0);
   }
 };

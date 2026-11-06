@@ -40,11 +40,11 @@ module.exports = {
           classes: [],
           placeholder: 'Some general description'
         },
-        tags: {
+        groups: {
           textarea: false,
-          text: 'Tags',
+          text: 'Groups',
           type: 'taginput',
-          id: 'hosttags',
+          id: 'hostgroups',
           classes: [],
           value: []
         }

@@ -21,6 +21,7 @@ const expect = (what, actual, expected) => {
 const TOP = [
   ['Dashboard', 'fas fa-gauge-high'],
   ['Hosts', 'fas fa-desktop'],
+  ['Groups', 'fas fa-sitemap'],
   ['Images', 'far fa-hard-drive'],
   ['Snapins', 'fas fa-cube'],
   ['Storage Groups', 'far fa-object-group'],

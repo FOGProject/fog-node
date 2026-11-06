@@ -6,6 +6,36 @@
  * password and permissions are skipped). Submits to POST /<plural>/edit/:id,
  * which is handled by general/save.
  */
+const path = require('path');
+
+// The 1.6 group field labels (GroupManagement.php _addFields).
+const GROUP_LABELS = {name: 'Group Name', description: 'Group Description', order: 'Group Order'};
+const GROUP_PARTIAL = path.join(__dirname, '..', '..', '..', 'views', 'pages', 'partials', 'edit', 'group.js');
+
+// The 1.6 "Associations > Host Associations" tab of a group (GroupManagement.php
+// ~1793-1798, renderAssocTab in FOGPageRender.php ~90-165). fog-node has no tab
+// dropdowns, so it is a top-level tab. The table lists every host, and
+// views/pages/partials/edit/group.js fills it and wires the buttons. The
+// group name is the one record value here, and it is escaped.
+function groupHostPane(name) {
+  return `
+            <div class="card card-primary card-outline">
+              <div class="card-header">
+                <h4 class="card-title">Group Host Associations</h4>
+              </div>
+              <div class="card-body">
+                <table id="group-host-table" class="table table-striped table-hover w-100" data-group-name="${_.escape(name)}">
+                  <thead><tr><th>Host Name</th><th>Associated</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+                <div class="clearfix mt-2">
+                  <button type="button" id="group-host-send" class="btn btn-primary float-end">Add selected</button>
+                  <button type="button" id="group-host-remove" class="btn btn-danger float-start">Remove selected</button>
+                </div>
+              </div>
+            </div>`;
+}
+
 module.exports = {
   friendlyName: 'Edit',
   description: 'Display a generic edit form for a record.',
@@ -60,17 +90,20 @@ module.exports = {
         return;
       }
 
-      // Tags: a chip/token input over the json array (see fog.taginput.js).
-      if (model === 'host' && key === 'tags') {
+      // Groups: a chip/token input over the json array (see fog.taginput.js).
+      // A name with no Group creates one on save (api/helpers/group/ensure.js).
+      if (model === 'host' && key === 'groups') {
         let stored = Array.isArray(record[key]) ? record[key] : [];
         formItems[key] = {
-          text: 'Tags', id: `${model}-tags`, classes: [], textarea: false,
+          text: 'Groups', id: 'hostgroups', classes: [], textarea: false,
           type: 'taginput', value: stored
         };
         return;
       }
 
       let label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
+      // The 1.6 group field labels (GroupManagement.php _addFields).
+      if (model === 'group' && GROUP_LABELS[key]) { label = GROUP_LABELS[key]; }
       let val = record[key];
       let item = { text: label, id: `${model}-${key}`, classes: [], textarea: false };
 
@@ -85,6 +118,12 @@ module.exports = {
         if (key === 'description') { item.textarea = true; }
         if (val !== null && typeof val === 'object') { val = JSON.stringify(val); }
         item.value = (val === undefined || val === null) ? '' : val;
+      }
+      // The 1.6 Group Order placeholder and help text (GroupManagement.php
+      // ~119-140). The text is the attribute description (api/models/Group.js).
+      if (model === 'group' && key === 'order') {
+        item.placeholder = '0';
+        item.help = attr.description;
       }
       formItems[key] = item;
     });
@@ -127,8 +166,11 @@ module.exports = {
       formItems,
       tabOrder,
       record: { id: String(record.id), name },
-      listUrl: `/${plural}`
+      listUrl: `/${plural}`,
+      panes: model === 'group' ? [{tab: 'Host Associations', html: groupHostPane(name)}] : []
     });
+    // The Host Associations table and buttons.
+    if (model === 'group') { data.partialname = GROUP_PARTIAL; }
     // The user edit page gets an admin credential panel (reset password /
     // regenerate API token) rendered by pages/create.ejs.
     if (model === 'user') { data.credentialPanel = { userId: String(id) }; }

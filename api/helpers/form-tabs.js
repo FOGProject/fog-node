@@ -1,7 +1,7 @@
 // Field -> tab mapping for the Host form (mirrors FOG 1.x's grouped tabs).
 const HOST_MAP = {
   name: 'General', description: 'General', ip: 'General', building: 'General',
-  deployed: 'General', createdBy: 'General', image: 'General', tags: 'General',
+  deployed: 'General', createdBy: 'General', image: 'General', groups: 'General',
   guid: 'Identity', serial: 'Identity', asset: 'Identity',
   macs: 'MAC Addresses',
   kernel: 'Boot', kernelArgs: 'Boot', kernelDevice: 'Boot', init: 'Boot',

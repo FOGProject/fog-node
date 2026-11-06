@@ -239,6 +239,23 @@ module.exports = {
         return exits.error(_response);
       }
       _response.data = items;
+      // The group list's computed columns (1.6 GroupManagement.php ~62-70):
+      // the member count of each row, from one aggregate for the page, and
+      // the grants, which ui16-11b fills from the plugins.
+      if (model.identity === 'group') {
+        try {
+          let counts = await sails.helpers.group.countMembers.with({names: items.map((g) => g.name)});
+          items.forEach((g, i) => {
+            g.members = counts[i];
+            g.grants_list = [];
+            g.grants = '';
+          });
+        } catch (countErr) {
+          _response.error = countErr;
+          delete _response.data;
+          return exits.error(_response);
+        }
+      }
       await model.count({where: whereQuery}).exec(async (err, cnt) => {
         if (err) {
           _response.error = err;

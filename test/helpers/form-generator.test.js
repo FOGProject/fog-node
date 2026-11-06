@@ -24,7 +24,7 @@ describe('Form generator::', () => {
       options: [{value: 'i1', label: 'Image One', selected: true}]
     },
     macs: {text: 'Host MACs', type: 'maclist', value: ['aabbccddee01']},
-    tags: {text: 'Host Tags', type: 'taginput', value: ['a', 'b']},
+    groups: {text: 'Host Groups', type: 'taginput', value: ['a', 'b']},
     zzchecks: {
       text: 'Host Checks', type: 'checktable',
       options: [{value: 'c1', label: 'Check One', checked: true}, {value: 'c2', label: 'Check Two'}]
@@ -85,7 +85,7 @@ describe('Form generator::', () => {
     });
 
     it('renders a taginput with its tags', () => {
-      assert.ok(html.includes('<div data-taginput data-name="tags" data-tags="a,b"></div>'));
+      assert.ok(html.includes('<div data-taginput data-name="groups" data-tags="a,b"></div>'));
     });
 
     it('renders a checktable with a checked and an unchecked row', () => {
@@ -190,6 +190,39 @@ describe('Form generator::', () => {
       assert.ok(html.includes('<div class="card card-primary card-outline">'));
       assert.ok(html.includes('<div class="card-header p-0 border-bottom-0">'));
     });
+
+    // Issue #169: the group page's Host Associations tab holds no fields.
+    it('renders each pane after the General tab, with its html and no form or footer', async () => {
+      const html = await edit(items(), {
+        tabOrder: ['General', 'MAC Addresses'],
+        panes: [{tab: 'Host Associations', html: '<div id="mocha-pane"></div>'}]
+      });
+      const tabs = (html.match(/data-bs-toggle="tab" href="#[^"]+"/g) || []).map((t) => t.split('#')[1].slice(0, -1));
+      assert.deepStrictEqual(tabs, ['tab-general', 'tab-host-associations', 'tab-mac-addresses']);
+      const panes = html.split('class="tab-pane').slice(1);
+      assert.ok(panes[1].includes('id="tab-host-associations"'));
+      assert.ok(panes[1].includes('<div id="mocha-pane"></div>'));
+      assert.strictEqual(count(panes[1], /<form/g), 0);
+      assert.strictEqual(count(panes[1], /card-footer/g), 0);
+      assert.strictEqual(count(html, /<form/g), 2);
+    });
+  });
+
+  // Issue #169: an item's `help`, as the maclist hint.
+  describe('help text', () => {
+    it('renders it escaped, as small.form-text under the control, in the control column', async () => {
+      const html = await gen({mode: 'create', formItems: {
+        order: {text: 'Order', type: 'number', id: 'f-order', classes: [], help: 'Lowest <b>first</b> -- "a"'}
+      }});
+      assert.ok(!html.includes('<b>first</b>'));
+      assert.ok(/<div class="col-sm-9">\s*<input type="number" id="f-order"[^>]*\/>\s*<small class="form-text text-muted">Lowest &lt;b&gt;first&lt;\/b&gt; -- &quot;a&quot;<\/small>\s*<\/div>/.test(html),
+        'the help text is not under the control in its col-sm-9');
+    });
+
+    it('renders none for an item without it', async () => {
+      const html = await gen({mode: 'create', formItems: {name: {text: 'Name', type: 'text', id: 'f-name', classes: []}}});
+      assert.ok(!html.includes('form-text'));
+    });
   });
 
   describe('escaping', () => {
@@ -200,7 +233,7 @@ describe('Form generator::', () => {
         formItems: {
           name: {text: 'Name', type: 'text', id: 'f-name', classes: [], value: bad},
           description: {text: 'Description', type: 'text', textarea: true, classes: [], value: bad},
-          tags: {text: 'Tags', type: 'taginput', value: [bad]}
+          groups: {text: 'Groups', type: 'taginput', value: [bad]}
         }
       });
       assert.ok(!html.includes('<b>x</b>'));

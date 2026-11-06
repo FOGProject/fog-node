@@ -67,6 +67,13 @@ module.exports.globals = {
         {link: '/hosts/import', text: 'Import Hosts'}
       ]
     },
+    // 1.6 FOGPage.php ~574-577.
+    {
+      order: 30, text: 'Groups', link: '/groups', icon: 'fas fa-sitemap',
+      subLinks: [
+        {link: '/groups/create', text: 'Create New Group'}
+      ]
+    },
     {
       order: 40, text: 'Images', link: '/images', icon: 'far fa-hard-drive',
       subLinks: [

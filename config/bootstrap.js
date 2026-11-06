@@ -16,6 +16,10 @@ module.exports.bootstrap = async function() {
   // browsers fetch the new bundle despite production's one-year cache.
   sails.config.custom.assetStamp = Date.now().toString(36);
 
+  // The unique, case-insensitive Group name index. `migrate: 'safe'` creates
+  // no index, and createIndex does nothing when it exists.
+  await sails.helpers.group.ensureIndex();
+
   // By convention, this is a good place to set up fake data during development.
   //
   // For example:

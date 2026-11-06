@@ -5,7 +5,7 @@
  * instance has something to click around on first load:
  *   - Administrator user + Administrator role + schema setting
  *   - a Default storage group with one storage node
- *   - a couple of images and a handful of sample hosts (with MACs, tags, and an
+ *   - a couple of images and a handful of sample hosts (with MACs, groups, and an
  *     image assignment) and a PXE menu
  *
  * SAFE on the schema (lifts Sails with migrate:'safe' — never auto-migrates),
@@ -43,7 +43,7 @@ if (adminPassword.length < 8) {
     try {
       // Clean slate for the seeded collections (dev only).
       await Promise.all([
-        Host.destroy({}), Image.destroy({}), StorageNode.destroy({}),
+        Host.destroy({}), Group.destroy({}), Image.destroy({}), StorageNode.destroy({}),
         StorageGroup.destroy({}), PxeMenu.destroy({}), User.destroy({}),
         Role.destroy({}), Setting.destroy({})
       ]);
@@ -71,10 +71,10 @@ if (adminPassword.length < 8) {
 
       // --- Sample hosts ---
       let hosts = [
-        { name: 'lab-pc-01', description: 'Lab A workstation', macs: ['00:11:22:33:44:01'], tags: ['lab-a', 'win11'], image: win.id },
-        { name: 'lab-pc-02', description: 'Lab A workstation', macs: ['00:11:22:33:44:02'], tags: ['lab-a', 'win11'], image: win.id },
-        { name: 'lab-pc-03', description: 'Lab B workstation', macs: ['00:11:22:33:44:03'], tags: ['lab-b'] },
-        { name: 'reception-01', description: 'Front desk', macs: ['00:11:22:33:44:04'], tags: ['front-desk'] },
+        { name: 'lab-pc-01', description: 'Lab A workstation', macs: ['00:11:22:33:44:01'], groups: ['lab-a', 'win11'], image: win.id },
+        { name: 'lab-pc-02', description: 'Lab A workstation', macs: ['00:11:22:33:44:02'], groups: ['lab-a', 'win11'], image: win.id },
+        { name: 'lab-pc-03', description: 'Lab B workstation', macs: ['00:11:22:33:44:03'], groups: ['lab-b'] },
+        { name: 'reception-01', description: 'Front desk', macs: ['00:11:22:33:44:04'], groups: ['front-desk'] },
         { name: 'unprovisioned-01', description: 'Newly registered, no image', macs: ['00:11:22:33:44:05'], pending: true }
       ];
       for (let h of hosts) { await Host.create(h); }

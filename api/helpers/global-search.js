@@ -44,11 +44,13 @@ module.exports = {
 
     // The user-facing entities and which string fields to search. Hosts also
     // match on their hardware identifiers (macs/serial/asset/guid) and their
-    // `tags` array, so a tech can paste a MAC/serial or type a (partial) tag and
-    // land on the host. `tags` is a string array; a case-insensitive substring
-    // regex matches any element, giving partial-tag matches for free.
+    // `groups` array, so a tech can paste a MAC/serial or type a (partial)
+    // group name and land on the host. `groups` is a string array; a
+    // case-insensitive substring regex matches any element, giving
+    // partial-name matches for free.
     let searchConfig = [
-      { model: 'host', label: 'Hosts', fields: ['name', 'description', 'ip', 'macs', 'serial', 'asset', 'guid', 'tags'] },
+      { model: 'host', label: 'Hosts', fields: ['name', 'description', 'ip', 'macs', 'serial', 'asset', 'guid', 'groups'] },
+      { model: 'group', label: 'Groups', fields: ['name', 'description'] },
       { model: 'image', label: 'Images', fields: ['name', 'description'] },
       { model: 'storagegroup', label: 'Storage Groups', fields: ['name', 'description'] },
       { model: 'storagenode', label: 'Storage Nodes', fields: ['name', 'description', 'ip'] },

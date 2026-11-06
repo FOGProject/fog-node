@@ -23,12 +23,13 @@ module.exports.policies = {
   'general/save':          ['isLoggedIn','isAuthenticated'],
 
 
-  // Host bulk actions (checks host update permission itself). apiCsrfGuard: a
-  // cookie-authed mutation on /api/v1 (CSRF-exempt at the Sails level), so it
-  // needs the same same-origin guard as general/create|update|destroy.
+  // Host bulk actions (checks the host and group permissions itself).
+  // apiCsrfGuard: a cookie-authed mutation on /api/v1 (CSRF-exempt at the
+  // Sails level), so it needs the same same-origin guard as
+  // general/create|update|destroy.
   'host/bulk':             ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
-  // Host tag list (checks host read permission itself -- no :model param here)
-  'host/tags':             ['isLoggedIn','isAuthenticated'],
+  // Group name list (checks host read permission itself -- no :model param here)
+  'host/groups':           ['isLoggedIn','isAuthenticated'],
 
   // Image Policies
   'image/capture':         ['isLoggedIn','isAuthenticated', 'image/capture'],

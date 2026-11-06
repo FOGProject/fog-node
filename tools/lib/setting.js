@@ -8,7 +8,8 @@ module.exports = {
   get: (db, name, next) => {
     db.collection('setting').findOne({name}, (err, setting) => {
       if (err) return next(err);
-      next(null, setting.value);
+      // No such setting: undefined, which the caller reports, not a TypeError.
+      next(null, setting ? setting.value : undefined);
     });
   },
   set: (db, name, value, next) => {

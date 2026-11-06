@@ -61,7 +61,16 @@ const prompt = (section, questions) => {
 const verifyDB = (answers, next) => {
   let status = new Spinner('Verifying database information, please wait...');
   status.start();
-  database.connect(answers.host, answers.port, answers.database, answers.username, answers.password, (err) => {
+  // The datastore object as tools/setup/index.js writes it to config/local.js:
+  // each value URL-encoded (tools/lib/database.js connect).
+  let datastore = {
+    host: encodeURIComponent(answers.host),
+    port: answers.port,
+    database: encodeURIComponent(answers.database),
+    user: answers.username ? encodeURIComponent(answers.username) : '',
+    password: encodeURIComponent(answers.password || '')
+  };
+  database.connect(datastore, (err, client) => {
     status.stop();
     let prefix = 'MongoError: ';
     if (err) {
@@ -69,6 +78,8 @@ const verifyDB = (answers, next) => {
       console.log(chalk.bgRed(`--> Incorrect database information: ${err}`));
       return next(err);
     }
+    // The check only needs the connection to open.
+    client.close();
     console.log(chalk.green('Database information verified'));
     next();
   });
