@@ -157,6 +157,9 @@ module.exports.routes = {
   'GET /account':                            {action: 'pages/account'},
   'POST /account/password':                  {action: 'account/change-password'},
   'POST /account/api-token':                 {action: 'account/reset-api-token'},
+  // The logged-in user's own preferences (theme, timezone, table layouts)
+  'GET /account/preferences':                {action: 'account/get-preferences'},
+  'POST /account/preferences':               {action: 'account/save-preferences'},
 
   // Workflow Views
   'GET /workflows':                          {action: 'pages/list/workflows'},

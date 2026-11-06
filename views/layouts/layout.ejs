@@ -1,6 +1,24 @@
 <!DOCTYPE html>
-<html>
+<%/* The signed-in user's stored theme (api/policies/loadPreferences.js): 'light'
+     or 'dark'. '' means System: no stored choice, or no user. */%>
+<% var fogThemePref = (typeof fogTheme !== 'undefined' && (fogTheme === 'light' || fogTheme === 'dark')) ? fogTheme : ''; %>
+<html<% if (fogThemePref) { %> data-bs-theme="<%= fogThemePref %>"<% } %>>
   <head>
+    <%/* The FOG 1.6 pre-paint script. A stored light/dark choice is stamped on
+         <html> above. With none, resolve prefers-color-scheme here, before the
+         first paint, so no page flashes the wrong theme. It is first in <head>,
+         inline and not deferred: anything after a stylesheet runs after the
+         browser has painted once. assets/fog/fog.theme.js keeps it in step
+         afterwards and never decides the first paint. */%>
+    <script>
+    (function () {
+      var e = document.documentElement;
+      if (!e.hasAttribute('data-bs-theme')) {
+        e.setAttribute('data-bs-theme',
+          (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
+      }
+    }());
+    </script>
       <title>
         <% if (typeof title === 'undefined') { %>
         FOG Project
@@ -132,6 +150,12 @@
     <!--TEMPLATES END-->
 
     <% if (req.user) { %>
+    <%/* The STORED theme choice, which is not always the value on <html>: ''
+         means System, even when System resolves to dark. fog.theme.js reads
+         it to tick the right row. Its absence tells fog.theme.js that nobody
+         is signed in, so there is no preference to read or write. */%>
+    <span id="themePref" class="d-none" data-theme-pref="<%= fogThemePref %>"></span>
+    <%- partial('./partials/prefs-modal.ejs') %>
     <!-- Shared "create new <thing>" modal, populated by fogCreateModal() in fog.common.js -->
     <div class="modal fade" id="entityModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -232,9 +256,11 @@
     <script src="/fog/fog.assoc.js"></script>
     <script src="/fog/fog.csrf.js"></script>
     <script src="/fog/fog.maclist.js"></script>
+    <script src="/fog/fog.prefs.js"></script>
     <script src="/fog/fog.search.js"></script>
     <script src="/fog/fog.select2.js"></script>
     <script src="/fog/fog.taginput.js"></script>
+    <script src="/fog/fog.theme.js"></script>
     <!--SCRIPTS END-->
     <% } %>
     <% if (typeof partialname !== 'undefined' && partialname) { %>

@@ -35,7 +35,7 @@ module.exports.policies = {
   'image/deploy':          ['isLoggedIn','isAuthenticated', 'image/deploy'],
   // Scan creates Image records from POST /api/v1/image/scan (CSRF-exempt), so a
   // cookie-authed call needs the same-origin guard. The other three policies copy
-  // the '*' default.
+  // the '*' default. loadPreferences is left out: scan renders no page.
   'image/scan':            ['isLoggedIn','isAuthenticated','apiCsrfGuard','stripApiTokenCredentials'],
 
   // Role Policies
@@ -47,8 +47,13 @@ module.exports.policies = {
   // Credential management (each action self-checks permission + refuses API-token auth)
   'user/reset-password':     ['isLoggedIn','isAuthenticated'],
   'user/reset-api-token':    ['isLoggedIn','isAuthenticated'],
-  'account/change-password': ['isLoggedIn','isAuthenticated'],
-  'account/reset-api-token': ['isLoggedIn','isAuthenticated'],
+  // loadPreferences (read-only, never denies) puts the user's theme in
+  // res.locals for the layout. It is on '*' below for the same reason.
+  'account/change-password': ['isLoggedIn','isAuthenticated','loadPreferences'],
+  'account/reset-api-token': ['isLoggedIn','isAuthenticated','loadPreferences'],
+  // Preferences: each action acts on req.user.id only and refuses API-token auth
+  'account/get-preferences':  ['isLoggedIn','isAuthenticated'],
+  'account/save-preferences': ['isLoggedIn','isAuthenticated'],
 
   // Auth Policies
   'auth/login':            'isNotLoggedIn',
@@ -57,7 +62,7 @@ module.exports.policies = {
 
   'pages/login':           'isNotLoggedIn',
 
-  '*':                     ['isLoggedIn','isAuthenticated','stripApiTokenCredentials'],
+  '*':                     ['isLoggedIn','isAuthenticated','stripApiTokenCredentials','loadPreferences'],
 
   // Allow API Backend to work
   'api':                   true,

@@ -20,6 +20,17 @@
  */
 const path = require('path');
 const fs = require('fs');
+const loadPreferences = require('../../policies/loadPreferences');
+
+// A plugin route whose value is a function binds as plain middleware, so no
+// policy runs on it. Run loadPreferences (read-only, never denies) first, so
+// the layout gets the user's theme on /snapins, /printers and the rest. A
+// route whose value is an {action: ...} target already gets the policies.
+// The wrapper is async on purpose: Sails sends a rejected promise to next()
+// (a 500) only when the bound handler is an AsyncFunction
+// (sails/lib/router/bind.js). A plain wrapper would leave the rejection of an
+// async route unhandled, and that stops the server.
+const withPreferences = (fn) => async (req, res, next) => loadPreferences(req, res, () => fn(req, res, next));
 
 module.exports = function definePluginsHook(sails) {
   let appRoot = path.join(__dirname, '..', '..', '..');
@@ -38,7 +49,12 @@ module.exports = function definePluginsHook(sails) {
       let dir = path.join(appRoot, 'plugins', name);
       if (!fs.existsSync(dir)) { return; }
       let plugin = require(dir);
-      if (plugin.routes) { Object.assign(routes, plugin.routes); }
+      if (plugin.routes) {
+        Object.keys(plugin.routes).forEach((route) => {
+          let target = plugin.routes[route];
+          routes[route] = typeof target === 'function' ? withPreferences(target) : target;
+        });
+      }
       if (plugin.menuItems) { menuItems = menuItems.concat(plugin.menuItems); }
       if (plugin.models) { Object.assign(models, plugin.models); }
       if (plugin.permissions) { Object.assign(permissions, plugin.permissions); }
