@@ -34,7 +34,8 @@ module.exports.policies = {
   'image/capture':         ['isLoggedIn','isAuthenticated', 'image/capture'],
   'image/deploy':          ['isLoggedIn','isAuthenticated', 'image/deploy'],
   // Scan creates Image records from POST /api/v1/image/scan (CSRF-exempt), so a
-  // cookie-authed call needs the same-origin guard. The rest is the '*' default.
+  // cookie-authed call needs the same-origin guard. The other three policies copy
+  // the '*' default.
   'image/scan':            ['isLoggedIn','isAuthenticated','apiCsrfGuard','stripApiTokenCredentials'],
 
   // Role Policies
