@@ -1,0 +1,37 @@
+<%/* One sidebar menu node from api/helpers/build-menu.js: a leaf link, a
+     section with its sub-links, or a group label holding nodes of its own.
+     The markup is 1.6's (FOGPage.php _renderMenuNode, _renderMenuGroup). */%>
+<% if (node.type === 'leaf') { %>
+<li class="nav-item">
+  <a href="<%= node.link %>" class="nav-link<%= node.active ? ' active' : '' %>">
+    <i class="nav-icon <%= node.icon %>"></i>
+    <p><%= node.text %></p>
+  </a>
+</li>
+<% } else { %>
+<li class="nav-item<%= node.open ? ' menu-open' : '' %>">
+  <a href="#" class="nav-link<%= node.active ? ' active' : '' %>">
+    <i class="nav-icon <%= node.icon %>"></i>
+    <p>
+      <%= node.text %>
+      <i class="nav-arrow fas fa-angle-left"></i>
+    </p>
+  </a>
+  <ul class="nav nav-treeview">
+    <% if (node.type === 'group') { %>
+    <% node.children.forEach(function (child) { %>
+    <%- partial('./sidebar-node.ejs', {node: child}) %>
+    <% }) %>
+    <% } else { %>
+    <% node.subLinks.forEach(function (sub) { %>
+    <li class="nav-item">
+      <a href="<%= sub.link %>" class="nav-link<%= sub.active ? ' active' : '' %>">
+        <i class="nav-icon far fa-circle"></i>
+        <p><%= sub.text %></p>
+      </a>
+    </li>
+    <% }) %>
+    <% } %>
+  </ul>
+</li>
+<% } %>

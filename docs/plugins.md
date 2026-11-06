@@ -29,8 +29,12 @@ module.exports = {
   routes: {
     'POST /api/v1/host/:id/wol': async function (req, res) { /* … */ }
   },
-  // Optional: appended to the sidebar menu (config/globals.js menuItems shape).
-  menuItems: [],
+  // Optional: added to the sidebar menu (config/globals.js menuItems shape).
+  // See "Sidebar menu items" below for `order` and PLUGIN OPTIONS.
+  menuItems: [
+    { order: 50, text: 'Snapins', link: '/snapins', icon: 'fas fa-cube',
+      subLinks: [{ link: '/snapins/create', text: 'Create New Snapin' }] }
+  ],
 
   // Optional: contribute full Waterline MODELS. Merged into the ORM
   // (sails.config.orm.moduleDefinitions.models) before Waterline initializes, so
@@ -62,6 +66,25 @@ module.exports = {
   }
 };
 ```
+
+## Sidebar menu items
+
+`api/helpers/build-menu.js` builds the sidebar from the core items in
+`config/globals.js` and the `menuItems` of each enabled plugin. It places a
+plugin item by its `order` field, as FOG 1.6 does:
+
+- **With `order`:** the item sits in MAIN NAVIGATION, sorted among the core
+  items by `order`. Snapins (`order: 50`) and Printers (`order: 90`) use this,
+  because they are core pages in 1.6. The core orders are in
+  `config/globals.js`.
+- **With no `order`:** the item sits under a second header, PLUGIN OPTIONS,
+  sorted by label without case. A minus link on that header collapses the
+  plugin list. With no such item, the header does not render.
+
+A sub-link renders only while a GET route answers its path
+(`api/helpers/is-known-get-path.js`). So list a sub-link only for a page your
+plugin routes, or one that is planned: it appears when its route lands. A
+section left with only its "List All" link renders as a single link.
 
 The shipped **`wol`** plugin (`plugins/wol/`) is the route-only reference; **`ad`**
 (`plugins/ad/`) is the `extends.host` reference (its own `plugin_ad` collection +

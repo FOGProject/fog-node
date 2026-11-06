@@ -61,12 +61,14 @@ module.exports = {
     { model: 'snapin', label: 'Snapins', fields: ['name', 'description', 'file'] }
   ],
 
+  // Snapins is a core page in FOG 1.6, so `order` puts it inline in MAIN
+  // NAVIGATION, at its 1.6 slot (after Images), not under PLUGIN OPTIONS.
   menuItems: [
     {
-      text: 'Snapin',
-      plural: 'Snapins',
+      order: 50,
+      text: 'Snapins',
       link: '/snapins',
-      icon: 'fa-archive',
+      icon: 'fas fa-cube',
       subLinks: [
         { link: '/snapins/create', text: 'Create New Snapin' }
       ]
