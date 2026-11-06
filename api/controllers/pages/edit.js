@@ -98,33 +98,36 @@ module.exports = {
       Object.assign(formItems, await sails.plugins.hostForm(record));
     }
 
-    let title = model.charAt(0).toUpperCase() + model.slice(1);
     let names = sails.helpers.pageTitle.with({identity: model});
+    // A user has a username, not a name.
+    let name = record.name || record.username || '';
     let data = {
       model,
-      header: `Edit ${title}`,
       // The FOG 1.6 content header and tab title (FOGPage.php:481): the
-      // section, then "Edit: <name> ID: <id>". A user has a username, not a name.
+      // section, then "Edit: <name> ID: <id>".
       // The guard is live: this action takes its model from the URL, and a
       // plugin can route an edit page for a model the map does not name. Then
       // section is undefined, and the layout renders no content header.
       section: names && names.section,
-      page: `Edit: ${record.name || record.username || ''} ID: ${record.id}`,
+      page: `Edit: ${name} ID: ${record.id}`,
       partialname: false
     };
+    // The sticky FOG 1.6 info card above the tabs.
+    data.infoCard = await sails.helpers.infoCard.with({ model, record });
     let tabOrder = await sails.helpers.formTabs.with({ model, formItems });
+    // One form per tab, each posting only its own fields to the same save
+    // endpoint (general/save changes only the fields it receives).
     data.form = await sails.helpers.formGenerator.with({
       model,
+      mode: 'edit',
       method: 'post',
       action: `/${plural}/edit/${id}`,
       id: `${model}-edit`,
       classes: [`${model}-edit-form`],
       formItems,
       tabOrder,
-      formButtons: {
-        Cancel: { classes: ['btn-warning', 'float-start'], type: 'submit' },
-        Save: { classes: ['btn-success', 'float-end'], type: 'submit' }
-      }
+      record: { id: String(record.id), name },
+      listUrl: `/${plural}`
     });
     // The user edit page gets an admin credential panel (reset password /
     // regenerate API token) rendered by pages/create.ejs.

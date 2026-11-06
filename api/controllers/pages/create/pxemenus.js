@@ -10,9 +10,11 @@ module.exports = {
     }
   },
   fn: async function () {
+    // ?modal=1 (fogCreateModal in assets/fog/fog.common.js): the form alone,
+    // with no layout. No other signal sets the modal mode.
+    let modal = this.req.query.modal === '1';
     let data = {
       model: 'pxemenu',
-      header: 'Create New iPXE Menu',
       formItems: {
         name: {
           textarea: false, text: 'Name', type: 'text', id: 'pxname', classes: [], placeholder: 'fog.local'
@@ -27,10 +29,6 @@ module.exports = {
           textarea: false, text: 'Default Entry', type: 'checkbox', id: 'pxdefault', classes: [], checked: false
         }
       },
-      formButtons: {
-        Cancel: { classes: ['btn-warning','float-start'], type: 'submit' },
-        Create: { classes: ['btn-success','float-end'], type: 'submit' }
-      },
       partialname: false
     };
     // The FOG 1.6 content header and tab title read the section, then "Create New <singular>".
@@ -44,11 +42,15 @@ module.exports = {
       id: `${data.model}-create`,
       classes: [`${data.model}-create-form`],
       formItems: data.formItems,
-      formButtons: data.formButtons
+      mode: modal ? 'create-modal' : 'create'
     });
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
       data.partialname = partial;
+    }
+    if (modal) {
+      data.modal = true;
+      data.layout = false;
     }
     return data;
   }

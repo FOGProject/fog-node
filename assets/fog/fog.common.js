@@ -182,24 +182,24 @@ $.readableBytes = function(bytes) {
       else { modalEl.addEventListener('shown.bs.modal', () => { modal.hide(); }, { once: true }); }
     }
 
-    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+    // ?modal=1 makes the create page render the form alone, in a
+    // [data-fog-create-modal] root that carries the 1.6 modal title.
+    fetch(url + '?modal=1', { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
       .then((r) => { return r.text(); })
       .then((html) => {
         let doc = new DOMParser().parseFromString(html, 'text/html');
-        // Scope to the page content so we never grab a navbar/search <form>.
-        let form = doc.querySelector('.app-content form') || doc.querySelector('form');
-        // The card title holds the page's `header` local ("Create New Host").
-        let hdr = doc.querySelector('.card-title');
-        if (titleEl) { titleEl.textContent = hdr ? hdr.textContent.trim() : 'Create'; }
+        let root = doc.querySelector('[data-fog-create-modal]');
+        let form = root && root.querySelector('form');
+        if (titleEl) { titleEl.textContent = (root && root.getAttribute('data-title')) || 'Create'; }
         if (!form) { showError(body, 'Could not load the form.'); return; }
         body.innerHTML = '';
         body.appendChild(form);
 
-        // The generated Cancel button is a submit; in the modal it just closes.
-        let cancel = form.querySelector('.btn-warning');
+        // Cancel is type="button" with data-bs-dismiss, so it never submits;
+        // the explicit hide also covers a fast click during the show transition.
+        let cancel = form.querySelector('[data-fog-cancel]');
         if (cancel) {
-          cancel.setAttribute('type', 'button');
-          cancel.addEventListener('click', () => { modal.hide(); });
+          cancel.addEventListener('click', safeHide);
         }
 
         form.addEventListener('submit', (ev) => {
@@ -310,7 +310,97 @@ $.readableBytes = function(bytes) {
     });
   }
 
+  // Toast queue: a toast that must show on the NEXT page, after a client-side
+  // redirect (the edit page's Delete). It lives in sessionStorage; a blocked
+  // store drops the toast and nothing else.
+  const QUEUE_KEY = 'fogToastQueue';
+  function toastLater(type, text, title) {
+    try {
+      let queue = JSON.parse(window.sessionStorage.getItem(QUEUE_KEY) || '[]');
+      if (!Array.isArray(queue)) { queue = []; }
+      queue.push({type: type, text: text, title: title});
+      window.sessionStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+    } catch (unusedErr) { /* no store: the toast is dropped */ }
+  }
+  // Show the queued toasts once. The key goes before the first toast, so a
+  // reload shows nothing.
+  function drainToasts() {
+    let queue = [];
+    try {
+      let raw = window.sessionStorage.getItem(QUEUE_KEY);
+      window.sessionStorage.removeItem(QUEUE_KEY);
+      queue = JSON.parse(raw || '[]');
+    } catch (unusedErr) { /* no store, or a bad value: nothing to show */ }
+    if (!Array.isArray(queue)) { return; }
+    queue.forEach((t) => { if (t && t.text) { window.fogToast(t.type, t.text, t.title); } });
+  }
+
+  // The save result the server rendered for ?saved / ?failed
+  // (views/pages/create.ejs). After the toast, the query parameters go, so
+  // a reload does not show it again.
+  function showSaveResult() {
+    let el = document.getElementById('fogSaveResult');
+    if (!el) { return; }
+    window.fogToast(el.getAttribute('data-type'), el.getAttribute('data-text'), el.getAttribute('data-title'));
+    try {
+      let url = new URL(window.location.href);
+      ['saved', 'failed', 'msg'].forEach((k) => { url.searchParams.delete(k); });
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+    } catch (unusedErr) { /* an old browser keeps the query; the toast still showed */ }
+  }
+
   window.fogToast = toast;
+  window.fogToastLater = toastLater;
   window.fogModal = modal;
   window.fogConfirm = confirm;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    drainToasts();
+    showSaveResult();
+  });
+
+  // The edit page's Delete (api/helpers/form-generator.js): the 1.6 delete
+  // dialog text (FOGPage.php:3371-3388), then the same DELETE call the list
+  // page sends. Success goes back to the list, with the toast queued for it.
+  document.addEventListener('click', (ev) => {
+    let btn = ev.target.closest && ev.target.closest('[data-fog-delete]');
+    if (!btn) { return; }
+    ev.preventDefault();
+    let model = btn.getAttribute('data-model');
+    confirm({
+      danger: true,
+      title: 'Delete: ' + btn.getAttribute('data-name'),
+      body: 'Confirm you would like to delete this ' + model,
+      confirmText: 'Delete'
+    }).then((ok) => {
+      if (!ok) { return; }
+      $.ajax({
+        url: '/api/v1/' + encodeURIComponent(model),
+        type: 'DELETE',
+        contentType: 'application/json',
+        data: JSON.stringify({id: [btn.getAttribute('data-id')]}),
+        success: function() {
+          toastLater('success', 'Successfully deleted', 'Delete Success');
+          window.location = btn.getAttribute('data-list');
+        },
+        error: function(xhr) {
+          let msg = (xhr.responseJSON && xhr.responseJSON.message) || ('Could not delete (HTTP ' + xhr.status + ').');
+          window.fogToast('error', msg);
+        }
+      });
+    });
+  });
+
+  // The 1.6 password reveal (fog.common.js:5799). The generator renders the
+  // eye only while the FOG_ENABLE_SHOW_PASSWORDS setting is on.
+  document.addEventListener('click', (ev) => {
+    let eye = ev.target.closest && ev.target.closest('.fogpasswordeye');
+    if (!eye) { return; }
+    let input = eye.closest('.input-group') && eye.closest('.input-group').querySelector('input');
+    if (!input) { return; }
+    let show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    eye.classList.toggle('fa-eye-slash', !show);
+    eye.classList.toggle('fa-eye', show);
+  });
 })();
