@@ -17,10 +17,10 @@ module.exports.blueprints = {
   *                                                                          *
   ***************************************************************************/
 
-  // Off. With `true`, Sails binds every action at `/<identity>` for EVERY verb,
+  // Off. With `true`, Sails binds every action at `/<identity>` for every verb,
   // beside its explicit route. CSRF skips GET, so a crafted link ran a mutation
   // with the visitor's session (for example GET /user/reset-password?id=…).
-  // Every action is reachable only through config/routes.js or a plugin route;
+  // Every action is reachable only through config/routes.js or a plugin route.
   // test/route/no-action-blueprints.test.js fails if one is bound here again.
   actions: false,
 
