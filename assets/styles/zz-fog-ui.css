@@ -1,0 +1,1648 @@
+/*
+ * zz-fog-ui.css
+ *
+ * This file is a hand port of FOG 1.6 fog-default-ui.scss. It is pinned at
+ * fogproject commit 98ac5bb732eb (packages/web/management/css/).
+ *
+ * The file is plain CSS because the grunt pipeline has no Sass step. Nested
+ * rules are written out as flat selectors, as Sass would expand them. The
+ * $fog-* variables are the --fog-* custom properties on :root. The
+ * fog-dark-theme mixin is expanded in place under [data-bs-theme="dark"] body.
+ *
+ * The zz- prefix keeps this file last in the styles glob (every .css file
+ * under assets/styles). It loads after every vendor stylesheet, as 1.6 loads
+ * its own file last.
+ *
+ * Two blocks of the source are dropped, because fog-node has no
+ * bootstrap-slider:
+ *   - scss lines 245-262: the .slider .tooltip rules.
+ *   - scss lines 1223-1240: the .slider-track, .slider-selection and
+ *     .slider-handle rules in the dark theme.
+ *
+ * One rule moves. 1.6 paints the canvas on .content-wrapper (scss line 143,
+ * and the dark rule at line 1092). fog-node has no .content-wrapper, so the
+ * canvas rules apply to body instead.
+ */
+
+/* ===========================================================================
+   THEMING: the palette below is authored as custom properties on :root
+   (runtime). Rules reference the var(--fog-*) form, so the dark theme can
+   redefine the properties live (under the [data-bs-theme="dark"] scope)
+   without recompiling. Light values are unchanged.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Runtime palette (CSS custom properties)
+   --------------------------------------------------------------------------- */
+:root {
+  --fog-primary:             #3c8dbc;
+  --fog-success:             #008d4c;
+  --fog-warning:             #db8b0b;
+  --fog-danger:              #d33724;
+  --fog-modal-btn:           #3c8dbc;
+  --fog-text-muted:          #646464;
+  --fog-text-strong:         #444;
+  --fog-sidebar-bg:          #222d32;
+  --fog-toggle-hover-bg:     #367fa9;
+  --fog-modal-footer-bg:     #dfdfdf;
+  --fog-modal-footer-border: #bfbfbf;
+  --fog-modal-btn-plain-bg:  #fff;
+  --fog-modal-btn-plain-fg:  #646464;
+  --fog-badge-bg:            #d2d6de;
+  --fog-border-light:        #f4f4f4;
+  --fog-canvas:              #eef1f5;
+  --fog-hairline:            #e7ebf0;
+  --fog-stripe:              #f7f9fb;
+  --fog-row-hover:           #eef4f9;
+
+  /* Design scale (restrained modernization): one coherent radius + a soft
+     elevation. --fog-ink is the shadow color as an rgb triplet so dark mode can
+     flip it to black; --fog-primary-rgb backs the input focus ring. --fog-elev-1
+     is composed from --fog-ink, so re-pointing the ink alone re-tints the shadow. */
+  --fog-radius:              6px;          /* boxes / cards / tab shells */
+  --fog-radius-sm:           4px;          /* buttons / inputs / labels */
+  --fog-ink:                 27, 42, 56;   /* slate shadow ink (light) */
+  --fog-primary-rgb:         60, 141, 188; /* = --fog-primary, for rgba() rings */
+  --fog-elev-1:              0 1px 2px rgba(var(--fog-ink), .06), 0 1px 3px rgba(var(--fog-ink), .10);
+}
+
+/* ---------------------------------------------------------------------------
+   Action boxes / box chrome
+   --------------------------------------------------------------------------- */
+.btn-actionbox {
+  margin: 10px 0;
+  overflow: visible;
+}
+
+.box-footer {
+  overflow: visible;
+  border-bottom-left-radius: var(--fog-radius);
+  border-bottom-right-radius: var(--fog-radius);
+}
+
+/* Compact box body (folded from an inline style on the group AD-state box). */
+.box-body-compact {
+  padding: 8px 12px;
+}
+
+.fog-user {
+  display: block;
+  text-align: center;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------------------
+   Modernization pass — restrained polish on top of AdminLTE 4 / BS 5.3.3.
+
+   CSS-only (no framework change): one coherent radius scale, a soft elevation
+   in place of the flat hard-frame look, flat inputs with a primary focus ring,
+   slightly stronger box titles, and a lighter table rhythm. Everything is
+   token-driven, so dark mode inherits it via the dark theme (which re-points
+   --fog-ink/--fog-canvas/--fog-hairline). Light mode changes here; that is
+   intended (unlike the palette tokens above, which kept light byte-for-byte).
+   --------------------------------------------------------------------------- */
+
+/* Cooler, lower-glare content canvas (dark re-points --fog-canvas to --fog-bg).
+   Ported onto body: fog-node has no .content-wrapper. */
+body {
+  background-color: var(--fog-canvas);
+}
+
+/* ---------------------------------------------------------------------------
+   Edit-page info card
+
+   The card names the record you are editing and carries the few facts you
+   cannot see from whichever tab you are on -- which is exactly the context you
+   lose first when a tab body is a full-height DataTables grid and you scroll
+   past it. So it sticks to the top of the scroll instead of leaving with the
+   rest of the page.
+
+   Sticky rather than fixed: fixed leaves a hole where the card used to be and
+   has to be measured against the header by hand, whereas sticky keeps the card
+   in flow and only pins it once it reaches the top. top:0 because the header is
+   only sticky itself below 768px (see the mobile chrome block further down),
+   where this card is also the widest thing on screen and worth the pin most.
+
+   The z-index clears Bootstrap's own in-flow content but stays well below the
+   modal/backdrop layer (1050+) and Select2's dropdown (1056 in the BS5 theme),
+   so an open dropdown from a tab still paints over the card rather than
+   disappearing behind it.
+   --------------------------------------------------------------------------- */
+#edit-info-card {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+/* AdminLTE 4 gives <main class="app-main"> `overflow: auto` for its
+   layout-fixed mode. On this install main never actually scrolls (nothing
+   constrains its height, so the WINDOW is the scroller) -- but an ancestor with
+   overflow:auto is still a scroll container, and position:sticky resolves
+   against the nearest one. So the rule above pins the card to a box that never
+   moves, which looks exactly like sticky being ignored: measured on the host
+   edit page, the card's top went to -579px at scrollY 892.
+
+   Neutralising that container only where the card exists is enough, and :has()
+   keeps it off every other page. Checked on the storage node and host edit
+   pages: document.scrollWidth is unchanged at 1280 either way, so main's
+   overflow-x was not holding anything in. Where :has() is unsupported the card
+   simply scrolls away as it did before -- no layout damage. */
+.app-main:has(#edit-info-card) {
+  overflow: visible;
+}
+
+/* Boxes: coherent radius + soft elevation instead of AdminLTE's flat 1px frame. */
+.box {
+  border-radius: var(--fog-radius);
+  box-shadow: var(--fog-elev-1);
+}
+.box-header {
+  border-top-left-radius: var(--fog-radius);
+  border-top-right-radius: var(--fog-radius);
+}
+.box-header.with-border {
+  border-bottom-color: var(--fog-hairline);
+}
+.box-header > .box-title {
+  font-weight: 600;
+}
+
+/* Tab shells (nav-tabs-custom) share the box language. */
+.nav-tabs-custom {
+  border-radius: var(--fog-radius);
+  box-shadow: var(--fog-elev-1);
+}
+.nav-tabs-custom > .nav-tabs {
+  border-top-left-radius: var(--fog-radius);
+  border-top-right-radius: var(--fog-radius);
+}
+
+/* Buttons: crisper radius + a tactile press; primary gets a faint lift. */
+.btn {
+  border-radius: var(--fog-radius-sm);
+  transition: background-color .12s ease, border-color .12s ease,
+              box-shadow .12s ease, transform .04s ease;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-primary {
+  box-shadow: 0 1px 2px rgba(var(--fog-ink), .15);
+}
+
+/* Inputs: flat field (drop BS3's inner glow) + a modern primary focus ring. */
+.form-control {
+  border-radius: var(--fog-radius-sm);
+  box-shadow: none;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.form-control:focus {
+  border-color: var(--fog-primary);
+  box-shadow: 0 0 0 3px rgba(var(--fog-primary-rgb), .15);
+}
+
+/* Labels align to the control radius. */
+.label {
+  border-radius: var(--fog-radius-sm);
+}
+
+/* Tables: clearer head divider + lighter striping/hover. --fog-stripe and
+   --fog-row-hover are light-only; dark tables are themed in the dark theme. */
+.table > thead > tr > th {
+  border-bottom: 2px solid var(--fog-hairline);
+  font-weight: 600;
+}
+.table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: var(--fog-stripe);
+}
+.table-hover > tbody > tr:hover {
+  background-color: var(--fog-row-hover);
+}
+
+/* Accessibility floor: honor reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .form-control {
+    transition: none;
+  }
+  .btn:active {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Content-header subtitle
+
+   page.class.php renders the heading as
+     <h1 id="sectionTitle">Section<small id="pageTitle">Page</small></h1>
+   AdminLTE 3 styled `.content-header h1 small` as a spaced, muted subtitle, so
+   equal section/page titles (e.g. the Dashboard) read as one. AdminLTE 4 wraps
+   this in `.app-content-header` and ships no such rule, so the <small> rendered
+   flush against the title ("DashboardDashboard"). Restore the subtitle look,
+   mode-independent via the Bootstrap 5 muted-text token (adapts to dark).
+   --------------------------------------------------------------------------- */
+#pageTitle {
+  margin-left: 8px;
+  font-size: 65%;
+  font-weight: 400;
+  color: var(--bs-secondary-color);
+}
+
+/* ---------------------------------------------------------------------------
+   Header / sidebar — sticky mobile chrome
+   --------------------------------------------------------------------------- */
+header.main-header .mobile-logo {
+  display: none;
+}
+
+@media(max-width: 767px){
+  body > .wrapper {
+    height: auto;
+    min-height: 100%;
+    overflow: initial;
+  }
+
+  body > .wrapper > .content-wrapper {
+    overflow-x: hidden;
+  }
+
+  body:not(.login-page) header.main-header {
+    position: sticky;
+    top: 0;
+    background-color: var(--fog-sidebar-bg);
+  }
+
+  header.main-header .logo {
+    display: none;
+  }
+
+  aside.main-sidebar {
+    padding-top: 50px;
+  }
+
+  header.main-header .mobile-logo {
+    display: inline-block;
+    margin: 0;
+    height: 50px;
+    padding: 0 20px;
+  }
+
+  header.main-header .mobile-logo a {
+    color: white;
+    line-height: 50px;
+    font-size: 20pt;
+  }
+
+  .skin-blue .main-header .navbar .sidebar-toggle {
+    background-color: var(--fog-toggle-hover-bg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Forms
+   --------------------------------------------------------------------------- */
+/* Help-block utilities (folded from inline styles on group help text). */
+.help-block-tight {
+  margin: 2px 0 0;
+}
+
+.help-block-spaced {
+  margin: 2px 0 6px;
+}
+
+/* ---------------------------------------------------------------------------
+   Modals
+   --------------------------------------------------------------------------- */
+.modal .modal-dialog .modal-body {
+  background-color: #fff !important;
+  color: var(--fog-text-muted) !important;
+}
+
+.modal .modal-dialog .modal-footer {
+  background-color: var(--fog-modal-footer-bg) !important;
+  border-top-color: var(--fog-modal-footer-border);
+}
+
+/* These override the (outline) footer buttons to a solid brand fill, so they
+   also need an explicit, high-contrast text color — otherwise the button keeps
+   its faint outline-button text, which washes out on the fill (most visibly on
+   the light orange warning fill, and especially in dark mode where the inherited
+   text is already light-grey). White reads on the darker fills; the bright
+   warning fill needs dark ink, matching Bootstrap's own .btn-warning. */
+.modal .modal-dialog .modal-footer .btn {
+  border-color: var(--fog-modal-btn) !important;
+  background-color: var(--fog-modal-btn) !important;
+  color: #fff !important;
+}
+
+.modal-success .modal-dialog .modal-footer .btn {
+  border-color: var(--fog-success) !important;
+  background-color: var(--fog-success) !important;
+  color: #fff !important;
+}
+
+.modal-warning .modal-dialog .modal-footer .btn {
+  border-color: var(--fog-warning) !important;
+  background-color: var(--fog-warning) !important;
+  color: #1f2d3d !important;
+}
+
+.modal-danger .modal-dialog .modal-footer .btn {
+  border-color: var(--fog-danger) !important;
+  background-color: var(--fog-danger) !important;
+  color: #fff !important;
+}
+
+/* The dismiss button opts out of the type-coloured fill above. This targeted
+   .pull-left until the Bootstrap 5 migration renamed it .float-start, at which
+   point the selector stopped matching anything -- so every modal rendered both
+   footer buttons in the type colour, and a modal's commit button could not be
+   told apart from its cancel. Bootstrap 3 float helpers are gone; use BS5's. */
+.modal .modal-dialog .modal-footer .btn.float-start {
+  border: none;
+  background-color: var(--fog-modal-btn-plain-bg) !important;
+  color: var(--fog-modal-btn-plain-fg) !important;
+  /* .modal-footer is display:flex with justify-content:flex-end, so the float
+     helpers are inert here and the buttons sit in DOM emission order -- which
+     left the create-tasking modal rendering Create on the left and Cancel on
+     the right.
+
+     Both declarations are needed and they do different jobs. order:-1 is what
+     actually moves the dismiss button to the front of the flex line; an auto
+     margin cannot reorder anything, it only absorbs free space. margin-right:
+     auto then takes the slack to the dismiss button's right, pushing the
+     commit button over to the far edge. #919 shipped the margin alone, which
+     left-packed the pair without reordering it and did not fix the modal it
+     was written for.
+
+     Modals whose dismiss is already emitted first are unaffected: order:-1
+     keeps a first child first. */
+  order: -1;
+  margin-right: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Deploy / create-tasking forms
+   --------------------------------------------------------------------------- */
+/* The schedule-type groups (Schedule Later / Crontab Style / Start Time / Cron
+   Entry) and the "Shutdown when complete" checkbox are each wrapped in a
+   grouping <div> so the JS can show/hide them as a unit by toggling .d-none.
+   That wrapper sat *between* the Bootstrap .row and its .col-sm-3 label /
+   .col-sm-9 input, which broke the grid and stacked the label above the
+   control (while the ungrouped Wake Up / Schedule Immediately rows stayed
+   inline). display:contents removes the wrapper's own box so the label + input
+   rejoin the parent .row and render with the same [Label] : [Input] two-column
+   layout as every other row. Toggling is unaffected: .d-none resolves to
+   display:none !important, which still wins over contents. */
+.deploy-field-group {
+  display: contents;
+}
+
+/* ---------------------------------------------------------------------------
+   Loading overlay / spinner
+   --------------------------------------------------------------------------- */
+.overlay, #loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.3) !important;
+  z-index: 999999;
+}
+
+#ajaxPageWrapper .overlay>.fa {
+  display: none !important;
+}
+
+.box .overlay>.fa, .overlay-wrapper .overlay>.fa {
+  margin-left: -20px;
+  margin-top: -20px;
+  color: var(--fog-text-muted);
+  font-size: 40px;
+}
+
+.box .overlay>.fa.fa-spin, .overlay-wrapper .overlay>.fa.fa-spin {
+  -webkit-animation: fa-spin 1.5s infinite linear;
+  animation: fa-spin 1.5s infinite linear;
+}
+
+/* ---------------------------------------------------------------------------
+   Misc utilities
+   --------------------------------------------------------------------------- */
+.task-name:not(:empty)::before {
+  content: ": ";
+}
+
+/* Bounded scrollable modals: cap the modal CONTENT (not the dialog height) at
+   the viewport, so the header and footer stay pinned and the body scrolls
+   internally when a form is taller than the screen. Capping content rather than
+   forcing a full-height dialog keeps short modals compact. Replaces a flat
+   `.modal-body` max-height that buried tall-form controls (e.g. the
+   create-snapin "Browse" button) below the fold, under the footer, where clicks
+   were swallowed by Bootstrap's focus-trap. The 3.5rem matches the
+   .modal-dialog vertical margin (1.75rem top + bottom) at >=576px. */
+.modal-content {
+    max-height: calc(100vh - 3.5rem);
+    overflow: hidden;
+}
+
+.modal-content > .modal-body {
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.active > a, a.active {
+    font-weight: bold;
+}
+
+.scroll-lock {
+  overflow: hidden !important;
+}
+
+td div.input-group {
+    width: auto !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Definition lists rendered as a compact key/value grid
+   --------------------------------------------------------------------------- */
+dl {
+  display: grid;
+  grid-template-columns: max-content auto;
+  font-family: monospace, fixed;
+}
+
+dt {
+  grid-column-start: 1;
+  padding-right: 10px;
+}
+
+dd {
+  grid-column-start: 2;
+  margin-left: 10px;
+}
+
+/* Extra top spacing for a standalone dl (folded from an inline style). */
+.dl-spaced {
+  margin-top: 15px;
+}
+
+/* The FOG Settings cache-stats dl carries very long values — most notably
+   the full comma-separated list of cached setting keys. Grid items default
+   to min-width:auto, so without this those values can't shrink and force the
+   whole card to scroll sideways. Let them shrink and wrap, and stack the
+   key/value pairs into a single column on narrow (mobile) screens. */
+.dl-spaced dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* The cached-keys list is collapsed behind a <details> summary showing the
+   count; the names only render (and wrap) once expanded. */
+.cached-keys > summary {
+  cursor: pointer;
+}
+.cached-keys[open] > summary {
+  margin-bottom: 4px;
+}
+@media (max-width: 767px) {
+  .dl-spaced {
+    grid-template-columns: 1fr;
+  }
+  .dl-spaced dt {
+    padding-right: 0;
+  }
+  .dl-spaced dd {
+    grid-column-start: 1;
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   FOG Settings — left category nav + form panels
+   --------------------------------------------------------------------------- */
+.settings-search-box {
+  width: 220px;
+  max-width: 100%;
+}
+.settings-nav-col .nav-pills > li > a {
+  padding: 6px 10px;
+  border-radius: 0;
+}
+.settings-nav-col .nav-pills > li > a .badge {
+  background-color: var(--fog-badge-bg);
+  color: var(--fog-text-strong);
+  float: right;
+}
+.settings-nav-col .nav-pills > li.active > a .badge {
+  background-color: #fff;
+  color: var(--fog-primary);
+}
+.settings-panel-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--fog-border-light);
+  /* Compact density: an unstyled <h4> reads oversized against the 0.875rem
+     pane (see the main-pane compact block below). Mobile re-pins 16px later. */
+  font-size: 1.15rem;
+}
+/* The accordion caret is mobile-only; the title is a plain heading on desktop. */
+.settings-panel-caret {
+  display: none;
+}
+.settings-row .settings-label {
+  font-weight: 600;
+  word-break: break-all;
+}
+.settings-noresults {
+  padding: 15px;
+}
+
+/* Desktop: left side-nav + a single visible panel. A search shows every
+   matching category at once, so only suppress non-active panels when NOT
+   searching. */
+@media (min-width: 768px) {
+  .settings-nav-col {
+    border-right: 1px solid var(--fog-border-light);
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .settings-layout:not(.searching) .settings-panel:not(.active) {
+    display: none;
+  }
+}
+
+/* Mobile: drop the side-nav and turn each category into a tappable accordion
+   section. Only the active section's body is expanded; a search expands every
+   matching section (empty ones get .d-none from the JS, which wins via
+   !important). */
+@media (max-width: 767px) {
+  .settings-nav-col {
+    display: none;
+  }
+  .settings-panel-col {
+    width: 100%;
+    float: none;
+  }
+  .settings-panel {
+    border: 1px solid var(--fog-border-light);
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .settings-panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 12px 15px;
+    border-bottom: 0;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .settings-panel-caret {
+    display: inline-block;
+    margin-left: 8px;
+    transition: transform 0.15s ease;
+  }
+  .settings-panel.active .settings-panel-caret {
+    transform: rotate(180deg);
+  }
+  .settings-panel-body {
+    padding: 0 15px 12px;
+  }
+  /* Collapse every section that isn't the active one (nav mode). During a
+     search the .searching flag lifts this so all matched sections stay open. */
+  .settings-layout:not(.searching) .settings-panel:not(.active)
+    .settings-panel-body {
+    display: none;
+  }
+  .settings-layout:not(.searching) .settings-panel.active
+    .settings-panel-title {
+    border-bottom: 1px solid var(--fog-border-light);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Sidebar nav-link arrow gutter
+
+   The vendored AL4 sidebar pins the treeview arrow (.nav-arrow) absolutely at
+   right:1rem but reserves no matching right padding on the label, and the label
+   is white-space:nowrap. A wide, active (bold) group label — e.g. the "User
+   Administration" accordion — therefore runs its text straight under the arrow,
+   making the arrow nearly invisible. Lay the link out as a flex row and reserve
+   a right gutter so the label always stops short of the arrow column. The arrow
+   is a child of the <p> but is absolutely positioned against the .nav-link, so
+   the <p> overflow clips only the text, never the arrow. Labels that fit show in
+   full; only an over-long label ellipsizes.
+   --------------------------------------------------------------------------- */
+.app-sidebar .sidebar-menu .nav-link {
+  display: flex;
+  align-items: center;
+  /* Compact density (was BS5 default 1rem / .5rem 1rem / line-height 1.5): a
+     smaller, tighter menu so more items fit without scrolling. Padding-x stays
+     generous enough that the flex label + arrow-gutter rule below is unaffected. */
+  font-size: 0.875rem;   /* 14px */
+  padding: 0.3rem 0.8rem;
+  line-height: 1.35;
+}
+/* Item-to-item gap (vendored AL4 default is .2rem). */
+.app-sidebar .sidebar-menu .nav-item > .nav-link {
+  margin-bottom: 0.05rem;
+}
+/* Treeview (submenu) labels a touch smaller still, to read as nested. */
+.app-sidebar .sidebar-menu .nav-treeview .nav-link {
+  font-size: 0.85rem;
+}
+.app-sidebar .sidebar-menu .nav-link > p {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 1.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------------------
+   Sidebar universal search (select2)
+
+   The <aside> carries data-bs-theme="dark" — the sidebar is dark chrome in BOTH
+   themes — which also puts color-scheme:dark on everything inside it. select2's
+   inline search input declares no color of its own (the --default theme gives it
+   only `background:transparent; border:none`), so its text falls back to the UA
+   dark-scheme field color, i.e. white. That same theme hardcodes the multi-select
+   box to `background-color:white`, so in light mode you type white on white and
+   the query is invisible. (Dark mode only escaped it by accident: the fog-dark
+   mixin repaints the box dark, so the white text happens to land on a dark box.)
+
+   Paint both ends from the aside's OWN Bootstrap tokens — which resolve dark in
+   either theme because of the data-bs-theme on the element — so the control reads
+   as an inset field in the dark sidebar and its legibility no longer depends on
+   what color-scheme the UA picks.
+   --------------------------------------------------------------------------- */
+.app-sidebar .select2-container--default .select2-selection--multiple {
+  background-color: var(--bs-body-bg);
+  border-color: var(--bs-border-color);
+}
+.app-sidebar .select2-container--default .select2-search--inline .select2-search__field {
+  color: var(--bs-body-color);
+}
+
+/* ===========================================================================
+   Main-pane compact density
+
+   Companion to the sidebar compact block above: the same ~0.875rem type scale
+   and tighter spacing applied to the content pane — page chrome, cards, forms,
+   buttons, tables/DataTables chrome and select2 — so pane and sidebar read as
+   one system. Size-only (no colors), so the dark theme inherits every rule
+   here untouched. fog-default-ui.css loads after bootstrap5/adminlte4
+   (page.class.php addCSS order), so plain selectors win ties — no !important.
+   =========================================================================== */
+.app-main {
+  /* Pane type scale: BS5 body default is 1rem. Everything that inherits
+     (table text, DT chrome labels, nav-tabs, modals, dashboard boxes)
+     follows automatically; rem-pinned vendor sizes are retuned below. */
+  font-size: 0.875rem;
+}
+
+/* Content header: an unstyled BS5 <h1> is 2.5rem on desktop — outsized
+   against 14px body text. #pageTitle keeps its existing 65% relative size. */
+.app-main .app-content-header {
+  padding-top: 0.5rem;
+  padding-bottom: 0.25rem;
+}
+.app-main .app-content-header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Cards: tighter body/footer padding via the BS5 card tokens. The edit-tab
+   strip header (card-header p-0) is unaffected — that utility is !important.
+   .card-title stays at AL4's 1.1rem for hierarchy. */
+.app-main .card {
+  --bs-card-spacer-y: 0.75rem;
+  --bs-card-cap-padding-y: 0.4rem; /* reaches .card-footer only — see below */
+}
+/* A standalone BS5 .card carries no bottom margin (the only rule that sets
+   one is scoped to .card-group), so pages that echo cards one after another
+   -- the host Associations/Tasks tabs, printer default + config, most edit
+   panes -- stacked them flush, border touching border. The dashboard had
+   already worked around it locally with .row.gy-3.
+
+   Adjacent-sibling rather than a blanket .card{margin-bottom} so it cannot
+   double up with that gutter: dashboard cards each sit in their own .col-*,
+   so they are not siblings and this never matches them. It also means a card
+   is never given trailing margin it does not need, only separation from the
+   card that actually follows it. 1rem matches gy-3 so both routes agree. */
+.app-main .card + .card {
+  margin-top: 1rem;
+}
+/* The cap token can't reach .card-header: adminlte4 re-declares a bare
+   .card-header{padding:1rem 1rem} AFTER its bundled Bootstrap copy, so the
+   var-consuming rule loses on source order. Override the header directly. */
+.app-main .card-header {
+  padding: 0.4rem 1rem;
+}
+/* AL4's card tools (collapse/close) use margin:-1rem 0, calibrated to the
+   1rem header padding it assumes; re-pair with the compact padding. */
+.app-main .btn-tool {
+  margin: -0.4rem 0;
+}
+
+/* AL4 floats .card-title so a header can carry .card-tools beside it. A
+   header that also carries a description paragraph then wraps that
+   paragraph AROUND the float, so it renders on the title's own line with
+   no separator at all: "Import ReportsThis section allows you to upload
+   user defined reports...". Twelve headers emit that shape today, two of
+   them from shared helpers (FOGPage::renderAssocCreate and
+   FOGPageRender), so every page they serve reads the same way.
+
+   The paragraph clears rather than .card-title losing its float, because
+   the float is what the button rows in .card-tools are positioned against
+   -- unfloating the title would move buttons on every card in FOG to fix
+   text on twelve of them.
+
+   Direct child so it only reaches a header's own description; a
+   .form-text inside a control group that happens to sit in a header
+   (none today, but the edit-tab strips put arbitrary markup there) keeps
+   flowing normally. */
+.app-main .card-header > .form-text {
+  clear: both;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* displayAlert() emits an un-classed <h4> title inside alerts — and inside
+   callouts when called with $isCallout=true (the dashboard notices use
+   this); unpinned it renders at raw-h4 scale (~1.4rem) against 14px body. */
+.app-main .alert h4,
+.app-main .callout h4 {
+  font-size: 1.1rem;
+}
+
+/* Edit-page tab strips: match the sidebar's tighter link padding (the text
+   size inherits from the pane). Sidebar nav-links live outside .app-main. */
+.app-main .nav-tabs .nav-link {
+  padding: 0.4rem 0.85rem;
+}
+
+/* Tables (DataTables and hand-built share one class string): text inherits
+   0.875rem; tighten BS5's .5rem cell padding. The role permissions matrix
+   is .table-sm — leave its own, tighter, vendor padding alone. */
+.app-main .table:not(.table-sm) > :not(caption) > * > * {
+  padding: 0.375rem 0.5rem;
+}
+
+/* Form controls: sized between the BS5 default (1rem / .375rem .75rem) and
+   the -sm variant, so they sit right with 0.875rem labels. Textareas and
+   the DataTables search/length controls are .form-control too. */
+.app-main .form-control,
+.app-main .form-select,
+.app-main .input-group-text {
+  font-size: 0.875rem;
+  padding: 0.3rem 0.625rem;
+}
+/* Labels stay vertically centered against the shorter controls. */
+.app-main .col-form-label {
+  padding-top: calc(0.3rem + var(--bs-border-width));
+  padding-bottom: calc(0.3rem + var(--bs-border-width));
+}
+/* BS5 .form-text is .875em — under a 14px pane that compounds to ~12px.
+   Pin it just below body scale so form help stays legible. */
+.app-main .form-text {
+  font-size: 0.8125rem;
+}
+
+/* Buttons: compact default. .btn-sm keeps its own (slightly smaller) vendor
+   metrics so in-table buttons still sit below the default scale, and
+   .btn-tool keeps AL4's tighter card-tool metrics (which this rule would
+   otherwise out-specify). */
+.app-main .btn:not(.btn-sm):not(.btn-tool) {
+  --bs-btn-font-size: 0.875rem;
+  --bs-btn-padding-y: 0.3rem;
+  --bs-btn-padding-x: 0.625rem;
+}
+
+/* Vendor rem-pins that escape pane inheritance: split-button action menus
+   and nav-tab overflow dropdowns pin --bs-dropdown-font-size:1rem; accordion
+   headers (FOG settings, kernel update, log viewer) pin a literal 1rem; and
+   the DataTables pager is Bootstrap pagination markup whose
+   --bs-pagination-* tokens still sit at the 1rem scale. Retune all three. */
+.app-main .dropdown-menu {
+  --bs-dropdown-font-size: 0.875rem;
+}
+.app-main .accordion-button {
+  font-size: 0.875rem;
+}
+.app-main .pagination {
+  --bs-pagination-font-size: 0.875rem;
+  --bs-pagination-padding-y: 0.3rem;
+  --bs-pagination-padding-x: 0.625rem;
+}
+
+/* select2 renders as the --default theme (no theme option is ever passed;
+   the vendored BS5-theme CSS never activates). Its single-select box is a
+   fixed 28px; rescale it to match the compact .form-control height
+   (1.5em text + 2 × .3rem padding + 2 × 1px border). */
+.app-main .select2-container--default .select2-selection--single {
+  height: calc(1.5em + 0.6rem + 2px);
+}
+.app-main .select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: calc(1.5em + 0.6rem);
+}
+.app-main .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: calc(1.5em + 0.6rem);
+}
+
+/* select2 dropdowns are appended to <body> (or the owning modal), outside
+   .app-main — compact them at body scope to match the pane scale. The login
+   page's language picker keeps vendor scale: its card is full-size 1rem. */
+body:not(.login-page) .select2-container--default .select2-dropdown {
+  font-size: 0.875rem;
+}
+body:not(.login-page) .select2-container--default .select2-dropdown .select2-results__option {
+  padding: 4px 8px;
+}
+
+/* ===========================================================================
+   Dark theme
+
+   AdminLTE's skin-blue already ships a dark sidebar (#222d32) and a coloured
+   header, so dark mode only has to darken the CONTENT area: the light-grey
+   content-wrapper (#ecf0f5) and the white boxes / tables / forms / modals in it.
+
+   The dark palette is re-pointed onto Bootstrap's own --bs-* dark tokens at the
+   top of the dark block (see there), so FOG chrome shares one palette with the
+   native BS5/AL4 widgets. EVERYTHING below is scoped under the dark selector, so
+   LIGHT MODE IS COMPLETELY UNTOUCHED.
+
+   Applied once, via the native switch: [data-bs-theme="dark"] body (see the
+   selector the dark block uses). data-bs-theme is the single source of truth for
+   both Bootstrap's components and this FOG chrome.
+
+   NOT yet themed (intentionally — first pass; tune/extend after live review):
+   pNotify toasts, Chart.js/Flot canvases, and per-plugin CSS.
+   =========================================================================== */
+/* -- DataTables toolbar -------------------------------------------------
+   Length menu, buttons and search share one flex row (the `dom` string in
+   fogDefaults(), fog.common.js). The search box gives way first: it starts
+   from a 10rem basis, grows to 20rem where there is room, and the input
+   inside it absorbs the shrink. Without this the box keeps its intrinsic
+   ~280px, and beside a wide button bar (the host list's) it wraps onto a line
+   of its own -- the same wasted line the one-row layout exists to remove. */
+.fog-dt-toolbar .fog-dt-search {
+  flex: 1 1 10rem;
+  /* Explicit, because the default (auto) is the content's min-content width,
+     which is the input's intrinsic ~280px. That, not the 10rem basis, is what
+     decides whether the box fits on the line, so it would still wrap. */
+  min-width: 10rem;
+  max-width: 20rem;
+}
+.fog-dt-toolbar .fog-dt-search div.dt-search {
+  display: flex;
+  align-items: center;
+}
+.fog-dt-toolbar .fog-dt-search div.dt-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* -- Per-column search row ---------------------------------------------
+   A second header row of boxes, one per filterable column, built by
+   fogColumnSearchRow() in fog.common.js and revealed by the Column search
+   button. Hidden by default: the Filter panel already covers this ground, so
+   a permanently-present row of boxes would be redundant chrome costing
+   vertical space on every grid in the product.
+
+   The cells are built fresh rather than cloned, so they carry none of the
+   title row's sort affordances -- nothing here should look clickable. */
+tr.fog-colsearch-row {
+  display: none;
+}
+.fog-colsearch-on tr.fog-colsearch-row {
+  display: table-row;
+}
+/* In scrolling mode DataTables keeps a sizing-only copy of the header in the
+   scroll body and re-clones the whole thead into it on every redraw, our row
+   included. The builder drops that copy on its next pass; this keeps the
+   transient one out of the tab order (and out of the width it measures) in
+   the meantime. It is never the visible header -- that one lives in
+   div.dt-scroll-head. */
+div.dt-scroll-body tr.fog-colsearch-row,
+div.dataTables_scrollBody tr.fog-colsearch-row {
+  display: none !important;
+}
+th.fog-colsearch-cell {
+  padding: 4px 6px;
+  vertical-align: middle;
+  cursor: default;
+}
+div.fog-colsearch {
+  display: flex;
+  /* Wrapping is the point. A grid here runs from a 60px ID column to a wide
+     host name, and side by side in the narrow ones leaves a box too thin to
+     type in; wrapping puts the picker above its box exactly where there is no
+     room for both, and leaves the wide columns on one line. */
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+}
+div.fog-colsearch select.fog-colsearch-mode {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 3.5em;
+  max-width: 100%;
+  font-size: .7rem;
+  /* The labels are deliberately terse (the readable form is the option's
+     title); this keeps the browser's own drop-arrow off them. */
+  padding: 1px 1.2rem 1px 4px;
+  background-position: right 3px center;
+}
+div.fog-colsearch input.fog-colsearch-input {
+  flex: 1 1 4em;
+  min-width: 0;
+  width: auto;
+  font-size: .7rem;
+  padding: 1px 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Dark theme rules. In 1.6 these are the fog-dark-theme mixin, included once
+   at [data-bs-theme="dark"] body. They are expanded in place here.
+   --------------------------------------------------------------------------- */
+[data-bs-theme="dark"] body {
+  /* -- dark palette --
+     Native BS5/AL4 dark mode: data-bs-theme="dark" on <html> activates
+     Bootstrap's own dark token set, so the --fog-* tokens are re-pointed onto
+     the matching --bs-* tokens. FOG's legacy AdminLTE-2 chrome (.box, sidebar,
+     settings nav — none of which are native BS components) then shares one
+     coherent palette with the native widgets. Elevation order is preserved:
+     body-bg (page) < tertiary-bg (boxes) < secondary-bg (raised). */
+  --fog-bg:           var(--bs-body-bg);         /* page background, behind the boxes */
+  --fog-surface:      var(--bs-tertiary-bg);     /* boxes / cards (raised over the page) */
+  --fog-surface-2:    var(--bs-secondary-bg);    /* raised: hovers, headers, input-group addons */
+  --fog-text:         var(--bs-body-color);
+  --fog-text-muted:   var(--bs-secondary-color); /* overrides the :root light value within dark scope */
+  --fog-border:       var(--bs-border-color);
+  --fog-heading:      var(--bs-emphasis-color);
+  --fog-input-bg:     var(--bs-body-bg);         /* native dark form-control bg (sunken below the box) */
+  --fog-input-border: var(--bs-border-color);
+  /* Disabled/readonly fields recede BELOW the editable field bg. In light mode
+     BS3 paints these #eee; dark mode re-points the .form-control bg for every
+     field, erasing that cue, so we restore it with a sunken bg + muted text
+     (see the disabled rule below). bg-subtle sits darker than --bs-body-bg. */
+  --fog-input-disabled-bg: var(--bs-secondary-bg-subtle);
+
+  /* -- modernization tokens (light defaults retuned for dark) --
+     --fog-elev-1 is composed from --fog-ink, so flipping the ink to black makes
+     box/tab shadows read on dark; canvas/hairline track the dark bg/border.
+     (--fog-stripe/--fog-row-hover are not re-pointed: dark tables are themed
+     above by the explicit .table rules.) */
+  --fog-ink:          0, 0, 0;
+  --fog-canvas:       var(--bs-body-bg);     /* = --fog-bg */
+  --fog-hairline:     var(--bs-border-color); /* = --fog-border */
+
+  /* -- settings-page tokens (light defaults read as near-white on dark) --
+     Used only by the FOG Settings nav/panels: the nav border-right and
+     panel-title border-bottom would otherwise be #f4f4f4 lines on the dark
+     box, and the count badges would be light-grey pills. Re-point them at
+     the dark border/raised-surface/text so they match the rest of dark mode. */
+  --fog-border-light: var(--bs-border-color); /* = --fog-border */
+  --fog-badge-bg:     var(--bs-secondary-bg); /* = --fog-surface-2 (raised dark pill) */
+  --fog-text-strong:  var(--bs-body-color);   /* = --fog-text (legible on the dark pill) */
+
+  /* -- modal footer (forced light-grey strip on the dark modal otherwise) --
+     The base .modal-footer rule applies var(--fog-modal-footer-bg) with
+     !important; the dark block handled .modal-body but missed this sibling.
+     Re-point the tokens so the footer reads as a raised dark strip. */
+  --fog-modal-footer-bg:     var(--bs-secondary-bg); /* = --fog-surface-2 (distinct from body) */
+  --fog-modal-footer-border: var(--bs-border-color); /* = --fog-border */
+  /* The plain dismiss button sits *on* that strip, so it needs to read as a
+     recessed surface against it rather than the literal white of light mode. */
+  --fog-modal-btn-plain-bg:  var(--bs-body-bg);     /* = --fog-bg (sunken vs the footer) */
+  --fog-modal-btn-plain-fg:  var(--bs-body-color);  /* = --fog-text */
+
+  /* -- DataTables 2.x striping --
+     Striping/hover/sorted-column shading are box-shadow overlays of
+     rgba(var(--dt-row-*), a); the triplets default to 0,0,0 (a black overlay
+     tuned for light backgrounds). Flip them to white so they read on dark.
+     (FOG tables carry the `display` class, which enables this DataTables striping.) */
+  --dt-row-stripe: 255, 255, 255;
+  --dt-row-hover: 255, 255, 255;
+  --dt-column-ordering: 255, 255, 255;
+
+  background-color: var(--fog-bg);
+  color: var(--fog-text);
+}
+
+/* -- base content area -- */
+/* The dark .content-wrapper rule (background-color + color) is ported onto the
+   body rule above. */
+[data-bs-theme="dark"] body .main-footer {
+  background-color: var(--fog-surface);
+  border-top-color: var(--fog-border);
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body .content-header > h1 small {
+  color: var(--fog-text-muted);
+}
+
+/* -- headings / links / muted text -- */
+[data-bs-theme="dark"] body h1,
+[data-bs-theme="dark"] body h2,
+[data-bs-theme="dark"] body h3,
+[data-bs-theme="dark"] body h4,
+[data-bs-theme="dark"] body h5,
+[data-bs-theme="dark"] body h6 {
+  color: var(--fog-heading);
+}
+/* :not(.btn) because an anchor styled as a button takes its colour from the
+   button classes. Without the exclusion this repainted the label of every
+   <a class="btn btn-*"> to the link colour, so a primary button rendered
+   blue-on-blue and its text was unreadable -- in dark mode only, which is
+   why it went unnoticed. */
+[data-bs-theme="dark"] body a:not(.btn) {
+  color: var(--fog-primary);
+}
+/* A .dropdown-item is an <a>, so the rule above repaints it too -- including
+   the .active item, where Bootstrap has already paired white text with a
+   primary-blue fill. An element+class selector outranks a bare element one,
+   so the selected tab in a tab-strip dropdown came out primary-blue text on
+   a primary-blue fill and read as an empty blue bar. Same blue-on-blue the
+   :not(.btn) exclusion above fixed, wearing a different hat; light mode was
+   unaffected because the link colour there is dark enough to survive.
+
+   Handing the state colours back to Bootstrap's own tokens rather than
+   hardcoding white, so they keep tracking the theme if the fill changes. */
+[data-bs-theme="dark"] body .dropdown-item.active,
+[data-bs-theme="dark"] body .dropdown-item:active {
+  color: var(--bs-dropdown-link-active-color);
+}
+[data-bs-theme="dark"] body .dropdown-item:hover,
+[data-bs-theme="dark"] body .dropdown-item:focus {
+  color: var(--bs-dropdown-link-hover-color);
+}
+[data-bs-theme="dark"] body .text-muted {
+  color: var(--fog-text-muted);
+}
+
+/* -- boxes -- */
+[data-bs-theme="dark"] body .box {
+  background-color: var(--fog-surface);
+  border-top-color: var(--fog-primary);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .box-header,
+[data-bs-theme="dark"] body .box-footer {
+  color: var(--fog-heading);
+  border-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body .box-footer {
+  background-color: var(--fog-surface);
+}
+
+/* -- tabbed boxes (nav-tabs-custom) -- */
+[data-bs-theme="dark"] body .nav-tabs-custom {
+  background-color: var(--fog-surface);
+}
+[data-bs-theme="dark"] body .nav-tabs-custom > .nav-tabs {
+  border-bottom-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body .nav-tabs-custom > .nav-tabs > li > a {
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body .nav-tabs-custom > .nav-tabs > li.active > a {
+  background-color: var(--fog-surface);
+  color: var(--fog-text);
+  border-left-color: var(--fog-border);
+  border-right-color: var(--fog-border);
+}
+/* The content panel behind the form — AdminLTE paints it #fff, which showed as
+   a white frame/band around the (dark) form and a white seam under the active
+   tab. Re-surface it so the panel matches the rest of the box. */
+[data-bs-theme="dark"] body .nav-tabs-custom > .tab-content {
+  background-color: var(--fog-surface);
+  color: var(--fog-text);
+}
+/* Tab-bar dropdown menus (Associations, Service Settings, …) — these are
+   generic Bootstrap .dropdown-menu (white). Scoped to within .nav-tabs-custom
+   so the AdminLTE navbar dropdowns are left alone. */
+[data-bs-theme="dark"] body .nav-tabs-custom .dropdown-menu {
+  background-color: var(--fog-surface);
+  border-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body .nav-tabs-custom .dropdown-menu > li > a {
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .nav-tabs-custom .dropdown-menu > li > a:hover,
+[data-bs-theme="dark"] body .nav-tabs-custom .dropdown-menu > li > a:focus {
+  background-color: var(--fog-surface-2);
+  color: var(--fog-text);
+}
+
+/* -- progress bars --
+   Bootstrap paints the .progress track #f5f5f5 (light grey), which reads as a
+   bright bar on dark — visible on the Active Tasks list, file-upload progress,
+   and multicast. Only the track needs re-surfacing; the coloured
+   .progress-bar-* fills (blue/green/etc.) already read fine on dark. */
+[data-bs-theme="dark"] body .progress {
+  background-color: var(--fog-surface-2);
+}
+
+/* -- list groups --
+   Bootstrap paints .list-group-item #fff with #555 text and a #f5f5f5 hover —
+   used by the snapin-order lists on the host/group edit Snapins tab. Re-surface
+   the items; the .active state is accent blue (#337ab7) and reads fine on dark. */
+[data-bs-theme="dark"] body .list-group-item {
+  background-color: var(--fog-surface);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .list-group-item-heading {
+  color: var(--fog-heading);
+}
+[data-bs-theme="dark"] body .list-group-item:focus,
+[data-bs-theme="dark"] body a.list-group-item:hover,
+[data-bs-theme="dark"] body a.list-group-item:focus,
+[data-bs-theme="dark"] body button.list-group-item:hover,
+[data-bs-theme="dark"] body button.list-group-item:focus {
+  background-color: var(--fog-surface-2);
+  color: var(--fog-text);
+}
+
+/* -- tables -- */
+[data-bs-theme="dark"] body .table {
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .table > thead > tr > th,
+[data-bs-theme="dark"] body .table > tbody > tr > th,
+[data-bs-theme="dark"] body .table > tbody > tr > td,
+[data-bs-theme="dark"] body .table > tfoot > tr > td {
+  border-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body .table > thead > tr > th {
+  border-bottom-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body .table-hover > tbody > tr:hover {
+  background-color: var(--fog-surface-2);
+}
+[data-bs-theme="dark"] body .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, .03);
+}
+[data-bs-theme="dark"] body .table-bordered,
+[data-bs-theme="dark"] body .table-bordered > thead > tr > th,
+[data-bs-theme="dark"] body .table-bordered > thead > tr > td,
+[data-bs-theme="dark"] body .table-bordered > tbody > tr > th,
+[data-bs-theme="dark"] body .table-bordered > tbody > tr > td,
+[data-bs-theme="dark"] body .table-bordered > tfoot > tr > th,
+[data-bs-theme="dark"] body .table-bordered > tfoot > tr > td {
+  border-color: var(--fog-border);
+}
+
+/* -- DataTables Scroller body --
+   With scroller:true the rows live in a scroll-body whose table and rows are
+   painted opaque white by hardcoded rules (no --dt-* var, no html.dark
+   variant) — that white is what showed through as washed-out rows. Re-surface
+   them; the empty-area diagonal gradient is dark-on-light, so invert it. */
+[data-bs-theme="dark"] body div.dts div.dt-scroll-body table,
+[data-bs-theme="dark"] body div.dts div.dataTables_scrollBody table,
+[data-bs-theme="dark"] body div.dts tbody tr {
+  background-color: var(--fog-surface);
+}
+[data-bs-theme="dark"] body div.dts div.dt-scroll-body,
+[data-bs-theme="dark"] body div.dts div.dataTables_scrollBody {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, .025),
+    rgba(255, 255, 255, .025) 10px,
+    rgba(255, 255, 255, 0) 10px,
+    rgba(255, 255, 255, 0) 20px
+  );
+}
+
+/* -- DataTables Buttons collection (the SearchBuilder panel's chrome) --
+   Buttons hardcodes `div.dt-buttons div.dt-button-collection {
+   background-color: #fff }` with no --dt-* var to re-point. Its own dark
+   variants are scoped `html.dark`, which FOG never sets -- the switch here
+   is data-bs-theme on <html> -- so the collection stayed an opaque white
+   slab. That is what holds the SearchBuilder panel, hence a white card of
+   light chrome, light title and grey browser-default buttons wrapped around
+   inputs that were already dark. The DateTime picker needs nothing: 1.5.6
+   ships its own :root[data-bs-theme=dark] rules. */
+[data-bs-theme="dark"] body div.dt-buttons div.dt-button-collection,
+[data-bs-theme="dark"] body div.dt-buttons div.dt-button-collection.fixed {
+  background-color: var(--fog-surface);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body div.dt-button-collection span.dt-button-spacer.bar {
+  border-bottom-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body div.dtb-popover-close {
+  background-color: var(--fog-surface-2);
+  border: 1px solid var(--fog-border);
+  color: var(--fog-text);
+}
+
+/* -- SearchBuilder panel --
+   Its buttons (Add Condition, Clear All, the per-row delete, and the
+   And/Or logic rail) are plain <button>s with no color rules of their own,
+   so they fall back to the UA's light grey. The three <select>s keep
+   SearchBuilder's red/green/blue borders -- those encode data/condition/
+   value and read fine on dark -- but need the sunken fill and light text.
+   color-scheme is what paints the native <option> popup dark; without it
+   the list that drops out of a themed box is still white (same reason the
+   length menu above carries it). */
+[data-bs-theme="dark"] body div.dtsb-searchBuilder {
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body div.dtsb-searchBuilder div.dtsb-titleRow div.dtsb-title {
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-button,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-add,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-clearAll,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-delete,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-clearGroup,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-logic {
+  background-color: var(--fog-surface-2);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-button:hover,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-add:hover,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-clearAll:hover,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-delete:hover,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-clearGroup:hover,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder button.dtsb-logic:hover {
+  background-color: var(--fog-surface);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body div.dtsb-searchBuilder div.dtsb-group div.dtsb-logicContainer {
+  border-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body div.dtsb-searchBuilder select.dtsb-dropDown,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder input.dtsb-input,
+[data-bs-theme="dark"] body div.dtsb-searchBuilder input.dtsb-value {
+  background-color: var(--fog-input-bg);
+  color: var(--fog-text);
+  color-scheme: dark;
+}
+/* The neutral 1px #cecece SearchBuilder puts on a control that has no
+   semantic color yet (an empty Value box, a disabled row). */
+[data-bs-theme="dark"] body div.dtsb-searchBuilder .dtsb-greyscale {
+  border-color: var(--fog-border) !important;
+}
+
+/* -- per-column search row --
+   color-scheme for the same reason the length menu carries it: it is what
+   makes the browser paint the native <option> popup and the date picker's
+   own calendar dark, which no background-color can reach. */
+[data-bs-theme="dark"] body div.fog-colsearch select.fog-colsearch-mode,
+[data-bs-theme="dark"] body div.fog-colsearch input.fog-colsearch-input {
+  background-color: var(--fog-input-bg);
+  border-color: var(--fog-input-border);
+  color: var(--fog-text);
+  color-scheme: dark;
+}
+[data-bs-theme="dark"] body div.fog-colsearch input.fog-colsearch-input:disabled {
+  background-color: var(--fog-surface-2);
+  color: var(--fog-text-muted);
+}
+
+/* -- DataTables wrapper controls -- */
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_filter input,
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_length select {
+  background-color: var(--fog-input-bg);
+  border-color: var(--fog-input-border);
+  color: var(--fog-text);
+  /* The length ("entries per page") menu is a native <select> -- DataTables
+     builds it after Select2 has run, so unlike FOG's other dropdowns it stays
+     un-widgetised. background-color themes the closed box, but the browser's
+     native chrome (the drop-arrow well and the <option> popup) stays light.
+     color-scheme tells the UA to paint those dark too; harmless on the
+     adjacent search input. */
+  color-scheme: dark;
+}
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_info,
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_filter,
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_length,
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: var(--fog-text-muted) !important;
+}
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+[data-bs-theme="dark"] body .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--fog-surface-2);
+  border-color: var(--fog-border);
+  color: var(--fog-text) !important;
+}
+/* Paged DataTables (DT 2.x bootstrap renderer) build their pager as
+   ul.pagination > li.dt-paging-button.page-item > a.page-link. Bootstrap
+   paints the page links #fff with a #ddd border, and the disabled prev/next
+   arrows the same, so on dark they read as white boxes. Re-surface the
+   default + disabled + hover states (the element selectors below match
+   a.page-link fine); the .active (current) page keeps its primary-blue
+   fill, which already reads fine on dark. */
+[data-bs-theme="dark"] body .pagination > li > a,
+[data-bs-theme="dark"] body .pagination > li > span,
+[data-bs-theme="dark"] body .pagination > .disabled > a,
+[data-bs-theme="dark"] body .pagination > .disabled > span {
+  background-color: var(--fog-surface);
+  border-color: var(--fog-border);
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body .pagination > li > a:hover,
+[data-bs-theme="dark"] body .pagination > li > a:focus,
+[data-bs-theme="dark"] body .pagination > li > span:hover,
+[data-bs-theme="dark"] body .pagination > li > span:focus {
+  background-color: var(--fog-surface-2);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+
+/* -- form controls -- */
+[data-bs-theme="dark"] body .form-control {
+  background-color: var(--fog-input-bg);
+  border-color: var(--fog-input-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .form-control::placeholder {
+  color: var(--fog-text-muted);
+}
+/* Restore the light-mode "not editable" cue: readonly/disabled fields recede
+   below the box and mute their text, so editable fields visibly stand apart. */
+[data-bs-theme="dark"] body .form-control[readonly],
+[data-bs-theme="dark"] body .form-control[disabled],
+[data-bs-theme="dark"] body .form-control:disabled,
+[data-bs-theme="dark"] body fieldset[disabled] .form-control {
+  background-color: var(--fog-input-disabled-bg);
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body .input-group-text {
+  background-color: var(--fog-surface-2);
+  border-color: var(--fog-input-border);
+  color: var(--fog-text);
+}
+/* Not dead code despite .btn-default being a Bootstrap 3 class: bootbox
+   4.4.0 is still enqueued (js/bootbox.min.js) and hardcodes it on its
+   dismiss button. Delete this only when bootbox is upgraded or dropped. */
+[data-bs-theme="dark"] body .btn-default {
+  background-color: var(--fog-surface-2);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+
+/* Select2 — the rendered control plus the dropdown (which is appended to body,
+   so [data-bs-theme="dark"] body still matches it as a descendant). */
+[data-bs-theme="dark"] body .select2-container--default .select2-selection--single,
+[data-bs-theme="dark"] body .select2-container--default .select2-selection--multiple {
+  background-color: var(--fog-input-bg);
+  border-color: var(--fog-input-border);
+}
+[data-bs-theme="dark"] body .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: var(--fog-text);
+}
+/* Disabled Select2 — Select2 paints these #eee in light mode (same cue as a
+   native disabled input); mirror the .form-control disabled rule so the dark
+   control recedes below the box and mutes its text instead of staying raised. */
+[data-bs-theme="dark"] body .select2-container--default.select2-container--disabled .select2-selection--single,
+[data-bs-theme="dark"] body .select2-container--default.select2-container--disabled .select2-selection--multiple {
+  background-color: var(--fog-input-disabled-bg);
+  border-color: var(--fog-input-border);
+}
+[data-bs-theme="dark"] body .select2-container--default.select2-container--disabled .select2-selection--single .select2-selection__rendered {
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body .select2-dropdown {
+  background-color: var(--fog-input-bg);
+  border-color: var(--fog-input-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .select2-search--dropdown .select2-search__field {
+  background-color: var(--fog-input-bg);
+  border-color: var(--fog-input-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .select2-container--default .select2-results__option[aria-selected=true] {
+  background-color: var(--fog-surface-2);
+}
+[data-bs-theme="dark"] body .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--fog-primary);
+}
+/* The chips in a multiple select (Group Membership, snapin and printer
+   assignment). Select2's own sheet paints `.select2-selection__choice`
+   #e4e4e4 and sets no `color`, so the label inherits the dark theme's
+   light --fog-text and lands white-on-near-white. Only the "x" stays
+   visible, because Select2 does give that a color of its own -- which is
+   exactly what the bug looks like: a readable x beside an invisible name.
+   The Bootstrap 5 theme would have supplied `color: #212529` here, but
+   none of our selects pass `theme: 'bootstrap-5'`, so they render as
+   `--default` and that rule never matches. */
+[data-bs-theme="dark"] body .select2-container--default .select2-selection--multiple .select2-selection__choice {
+  background-color: var(--fog-surface-2);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+  color: var(--fog-text);
+}
+
+/* -- date/time picker popup (bootstrap-datetimepicker) --
+   The widget popup carries the Bootstrap `.dropdown-menu` class, so it inherits
+   its hardcoded white background (and white pointer arrows). Re-surface the
+   popup and its internal greys; the active/today blue (#337ab7) reads fine on
+   dark, so it's left alone. Scoped to the widget only — generic `.dropdown-menu`
+   (e.g. the AdminLTE navbar menus) is intentionally not touched. */
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget.dropdown-menu {
+  background-color: var(--fog-surface);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget.dropdown-menu.bottom:after {
+  border-bottom-color: var(--fog-surface);
+}
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget.dropdown-menu.top:after {
+  border-top-color: var(--fog-surface);
+}
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.day:hover,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.hour:hover,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.minute:hover,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.second:hover,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td span:hover {
+  background: var(--fog-surface-2);
+}
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.cw,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.old,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.new,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td span.old,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table th.disabled,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td.disabled,
+[data-bs-theme="dark"] body .bootstrap-datetimepicker-widget table td span.disabled {
+  color: var(--fog-text-muted);
+}
+
+/* -- definition-list key/value grid -- */
+[data-bs-theme="dark"] body dt {
+  color: var(--fog-text-muted);
+}
+[data-bs-theme="dark"] body dd {
+  color: var(--fog-text);
+}
+
+/* -- code / preformatted -- */
+[data-bs-theme="dark"] body pre {
+  background-color: var(--fog-bg);
+  border-color: var(--fog-border);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body code {
+  background-color: var(--fog-surface-2);
+  color: var(--fog-warning);
+}
+
+/* -- loading overlay (white -> dark so it dims instead of flashing white) -- */
+[data-bs-theme="dark"] body .overlay,
+[data-bs-theme="dark"] body #loadingOverlay {
+  background: rgba(0, 0, 0, .4) !important;
+}
+
+/* -- modals (override the forced-white light rules above) -- */
+[data-bs-theme="dark"] body .modal-content {
+  background-color: var(--fog-surface);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .modal-header {
+  border-bottom-color: var(--fog-border);
+}
+[data-bs-theme="dark"] body .modal .modal-dialog .modal-body {
+  background-color: var(--fog-surface) !important;
+  color: var(--fog-text) !important;
+}
+
+/* -- login page -- */
+[data-bs-theme="dark"] body.login-page {
+  background-color: var(--fog-bg);
+}
+[data-bs-theme="dark"] body .login-card-body,
+[data-bs-theme="dark"] body .register-card-body {
+  background-color: var(--fog-surface);
+  color: var(--fog-text);
+}
+[data-bs-theme="dark"] body .login-box-msg {
+  color: var(--fog-text);
+}
+
+/* Single source of truth: data-bs-theme="dark" on <html>. Stamped server-side
+   from the fogTheme cookie, resolved from the OS preference by a pre-paint head
+   script when no cookie is set, and flipped live by theme.js on toggle. The
+   dark FOG chrome above is scoped to a body INSIDE that html so body.login-page
+   and the body-appended Select2 dropdown still match. */
+
+/* Fixed-layout table. Applied by $.fn.makeColumnsResizable(), which
+   registerTable() runs for every list table.
+
+   Two jobs. It makes the header's width="NN%" attributes mean something --
+   without it a table sizes columns to their longest cell, so one long
+   free-text column (plugin Description next to four short values) takes most
+   of the width while short headings wrap. And it is what makes a dragged width
+   stick: under a fixed layout the <colgroup> widths are authoritative, whereas
+   an auto layout treats them as suggestions and lets content override them. */
+.fog-table-fixed {
+  table-layout: fixed;
+}
+.fog-table-fixed thead th {
+  /* Anchors the resize strip below. */
+  position: relative;
+}
+
+/* Restore the border-spacing the bundled DataTables CSS forgets.
+
+   datatables.min.css declares `table.dataTable { border-collapse: separate; }`
+   but NOT the `border-spacing: 0` upstream always pairs with it. Bootstrap and
+   AdminLTE both set `table { border-collapse: collapse }`, which the more
+   specific `table.dataTable` overrides -- so every DataTable fell back to the
+   browser's DEFAULT `border-spacing: 2px`.
+
+   Harmless on a paged table, but Scroller sizes its virtual viewport from a
+   UNIFORM row height and computes the total scroll extent as
+   recordsDisplay * rowHeight. That arithmetic cannot see spacing BETWEEN rows,
+   so the extent under-measured by ~2px per row and the last row of every
+   scrolling grid was clipped -- 9px short on a three-row table, more as the
+   table grows. It hid inside the storage-group count bug (see
+   storagegroup.class.php), which collapsed those grids to a single row.
+
+   Applied to every DataTable rather than only scrolling ones: it is what
+   upstream intends in both cases, and scoping it to Scroller would leave paged
+   and scrolling grids with visibly different cell gaps. */
+table.dataTable {
+  border-spacing: 0;
+}
+
+/* Clip an over-long cell to an ellipsis instead of letting it run on over its
+   neighbour. Separate from the layout above because it is NOT wanted
+   everywhere: registerTable() adds it only to scrolling tables, where
+   DataTables already forces white-space:nowrap so Scroller gets the uniform
+   row height its virtual viewport is sized from. A paged or grouped table has
+   no such constraint and is better off wrapping.
+
+   The full text comes back on hover -- see the delegated mouseenter handler in
+   fog.common.js, which sets a title only on cells that are actually truncated. */
+.fog-table-clip th,
+.fog-table-clip td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The drag strip $.fn.makeColumnsResizable() puts on each header. Sits on the
+   column's trailing edge, and stays invisible until pointed at so it does not
+   add furniture to a table nobody is resizing. */
+.fog-col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+}
+.fog-col-resizer:hover {
+  background: rgba(128, 128, 128, 0.35);
+}
+
+/* Held on <body> for the duration of a drag: keeps the resize cursor even as
+   the pointer leaves the strip, and stops the drag selecting text as it goes. */
+body.fog-col-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+/* The account menu's caret flips when the menu is open.
+
+   Bootstrap draws the caret from .dropdown-toggle and puts .show on the
+   toggle while the menu is open, but it does not rotate it -- so out of the
+   box the arrow points the same way open and closed and says nothing about
+   the state. That is the half the sidebar already gets right: AdminLTE
+   rotates .nav-arrow on .menu-open, and this is the navbar's equivalent.
+
+   Scoped to #accountMenu rather than every .dropdown-toggle on purpose. FOG
+   has other toggles -- the tab dropdowns in FOGPage::renderTabs(), the split
+   buttons in the grid toolbars -- and rotating those too is a change to
+   surfaces nobody asked about.
+
+   transform-origin is set explicitly: the caret is a bordered pseudo-element
+   whose box is wider than it is tall, so rotating about the default centre
+   visibly shifts it sideways as well as turning it. */
+#accountMenu::after {
+  transition: transform 0.15s ease-in-out;
+  transform-origin: 50% 40%;
+}
+
+#accountMenu.show::after {
+  transform: rotate(180deg);
+}

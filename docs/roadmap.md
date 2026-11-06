@@ -57,10 +57,11 @@ Phase 1); the remaining gaps are behavior, breadth, and views — not schema:
 2. **Frontend direction** — *decided: server-rendered EJS + jQuery, on
    **AdminLTE 4 / Bootstrap 5*** (migrated from the AdminLTE 3 / BS4 templates).
    jQuery 3.7.1 is kept for DataTables / `fog.common.js` / parasails. Views are
-   built per-entity on top of the API/model layer. Follow-ups: upgrade DataTables
-   integration `-bs4` → `-bs5`, re-vendor Chart.js for AdminLTE 4 (dashboard
-   charts), fix `systeminformation@5` property renames (hwinfo/dashboard load),
-   and remove the unused Vue 3 / React 19 deps.
+   built per-entity on top of the API/model layer. The DataTables integration
+   moved from `-bs4` to `-bs5` (issue #145). Follow-ups: re-vendor Chart.js
+   for AdminLTE 4 (dashboard charts), fix `systeminformation@5` property
+   renames (hwinfo/dashboard load), and remove the unused Vue 3 / React 19
+   deps.
 
 ## Phases
 

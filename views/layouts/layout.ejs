@@ -50,21 +50,22 @@
     <link rel="stylesheet" href="/min/production.min.css?v=<%= sails.config.custom.assetStamp %>">
     <% } else { %>
     <!--STYLES-->
+    <link rel="stylesheet" href="/styles/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles/admin-lte/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="/styles/@fortawesome/fontawesome-free/css/v4-shims.min.css">
     <link rel="stylesheet" href="/styles/@pnotify/core/dist/PNotify.css">
     <link rel="stylesheet" href="/styles/@pnotify/mobile/dist/PNotifyMobile.css">
-    <link rel="stylesheet" href="/styles/admin-lte/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="/styles/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-autofill-bs4/css/autoFill.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-colreorder-bs4/css/colReorder.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-keytable-bs4/css/keyTable.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-rowgroup-bs4/css/rowGroup.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-rowreorder-bs4/css/rowReorder.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-scroller-bs4/css/scroller.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/datatables.net-select-bs4/css/select.bootstrap4.min.css">
-    <link rel="stylesheet" href="/styles/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-autofill-bs5/css/autoFill.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-colreorder-bs5/css/colReorder.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-keytable-bs5/css/keyTable.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-rowgroup-bs5/css/rowGroup.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-rowreorder-bs5/css/rowReorder.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-scroller-bs5/css/scroller.bootstrap5.min.css">
+    <link rel="stylesheet" href="/styles/datatables.net-select-bs5/css/select.bootstrap5.min.css">
     <link rel="stylesheet" href="/styles/icheck-bootstrap/icheck-bootstrap.min.css">
     <link rel="stylesheet" href="/styles/importer.css">
     <link rel="stylesheet" href="/styles/pace-js/themes/blue/pace-theme-minimal.css">
@@ -72,12 +73,13 @@
     <link rel="stylesheet" href="/styles/zz-fog-assoc.css">
     <link rel="stylesheet" href="/styles/zz-fog-select2.css">
     <link rel="stylesheet" href="/styles/zz-fog-tags.css">
+    <link rel="stylesheet" href="/styles/zz-fog-ui.css">
     <!--STYLES END-->
     <% } %>
   </head>
 
   <% if (req.user) { %>
-  <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+  <body class="layout-fixed sidebar-expand-lg">
     <div class="app-wrapper">
       <!-- Header -->
       <%- partial('./partials/navbar.ejs') %>
@@ -196,7 +198,7 @@
     <script src="/js/pace-js/pace.min.js"></script>
     <script src="/dependencies/cloud.js"></script>
     <script src="/js/datatables.net/js/dataTables.min.js"></script>
-    <script src="/js/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/js/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
     <script src="/js/datatables.net-autofill/js/dataTables.autoFill.min.js"></script>
     <script src="/js/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
     <script src="/js/datatables.net-buttons/js/buttons.colVis.min.js"></script>
@@ -213,15 +215,15 @@
     <script src="/js/@pnotify/core/dist/PNotify.js"></script>
     <script src="/js/@pnotify/mobile/dist/PNotifyMobile.js"></script>
     <script src="/js/chart.umd.min.js"></script>
-    <script src="/js/datatables.net-autofill-bs4/js/autoFill.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-colreorder-bs4/js/colReorder.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-keytable-bs4/js/keyTable.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-rowgroup-bs4/js/rowGroup.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-rowreorder-bs4/js/rowReorder.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-scroller-bs4/js/scroller.bootstrap4.min.js"></script>
-    <script src="/js/datatables.net-select-bs4/js/select.bootstrap4.min.js"></script>
+    <script src="/js/datatables.net-autofill-bs5/js/autoFill.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-buttons-bs5/js/buttons.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-colreorder-bs5/js/colReorder.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-keytable-bs5/js/keyTable.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-rowgroup-bs5/js/rowGroup.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-rowreorder-bs5/js/rowReorder.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-scroller-bs5/js/scroller.bootstrap5.min.js"></script>
+    <script src="/js/datatables.net-select-bs5/js/select.bootstrap5.min.js"></script>
     <script src="/js/inputmask/dist/jquery.inputmask.min.js"></script>
     <script src="/js/jszip/dist/jszip.min.js"></script>
     <script src="/js/pdfmake/build/pdfmake.min.js"></script>
