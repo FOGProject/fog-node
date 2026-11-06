@@ -180,6 +180,24 @@ describe('Schema revision 2::', () => {
     });
   });
 
+  // A database from before ADR 0001 holds the old Group model's empty group
+  // collection with a plain unique index name_1. createIndex failed on it
+  // with "An existing index has the same name" (a development database).
+  describe('a legacy group name index', () => {
+    before(async () => {
+      await seed();
+      await db.collection('group').createIndex({name: 1}, {unique: true});
+    });
+
+    it('is replaced by the index without case, and up finishes', async () => {
+      await run(1, 2);
+      await assertMigrated();
+      const onName = (await db.collection('group').indexes()).filter((i) => i.key && i.key.name === 1);
+      assert.strictEqual(onName.length, 1);
+      assert.strictEqual(onName[0].collation.strength, 2);
+    });
+  });
+
   // tools/lib/setting.js `get` threw a TypeError on a database with no
   // schema Setting, so the migrator crashed instead of saying why.
   describe('a database with no schema Setting', () => {
