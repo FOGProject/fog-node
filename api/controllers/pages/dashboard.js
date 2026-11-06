@@ -76,8 +76,9 @@ module.exports = {
     let pendingHosts = await Host.count({ pending: true });
 
     let data = {
-      header: 'Dashboard',
-      title: 'Dashboard',
+      // The FOG 1.6 content header and tab title.
+      section: 'Dashboard',
+      page: 'Dashboard',
       model: 'dashboard',
       partialname: false,
       free, used, size, legend,

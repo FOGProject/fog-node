@@ -19,7 +19,9 @@ module.exports = {
     // Respond with view.
     return {
       data,
-      title: 'Server Information',
+      // The FOG 1.6 content header and tab title (ServerInfo.php:58).
+      section: 'Hardware Information',
+      page: 'Server Information',
       partialname
     };
   }

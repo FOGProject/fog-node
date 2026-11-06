@@ -77,11 +77,14 @@ module.exports = {
     // List page (renders the core list view + this plugin's datatable partial).
     'GET /snapins': async function (req, res) {
       if (!can(req, 'read')) { return res.forbidden(); }
+      // The FOG 1.6 content header and tab title.
+      let names = sails.helpers.pageTitle.with({identity: 'snapin'});
       return res.view('pages/list', {
         header: 'Snapin List',
         theads: ['Name', 'File', 'Enabled'],
         model: 'snapin',
-        title: 'All Snapins',
+        section: names.section,
+        page: `All ${names.plural}`,
         partialname: path.join(__dirname, 'list.partial.js')
       });
     },
@@ -107,8 +110,11 @@ module.exports = {
           Create: { classes: ['btn-success', 'float-end'], type: 'submit' }
         }
       });
+      // The FOG 1.6 content header and tab title.
+      let names = sails.helpers.pageTitle.with({identity: 'snapin'});
       return res.view('pages/create', {
-        model: 'snapin', header: 'Create New Snapin', title: 'Create New Snapin',
+        model: 'snapin', header: 'Create New Snapin',
+        section: names.section, page: `Create New ${names.singular}`,
         form, partialname: false
       });
     },

@@ -12,7 +12,9 @@ module.exports = {
   fn: async function () {
     // Respond with view.
     let data = {
-      title: 'Login',
+      // The tab title, "Login | FOG Project" (1.6 management/index.php:211).
+      // The signed-out layout renders no content header.
+      page: 'Login',
       model: 'login',
       partialname: false
     };

@@ -14,8 +14,10 @@ module.exports = {
       permissions: _.get(req, 'user.permissions') || {}
     });
     return {
-      title: q ? `Search: ${q}` : 'Search',
-      header: q ? `Search results for "${q}"` : 'Search',
+      // The content header and tab title, in the FOG 1.6 shape (fog-node
+      // only). With no term, the page title is empty and the tab reads "Search".
+      section: 'Search',
+      page: q ? `Results for "${q}"` : '',
       model: 'search',
       partialname: false,
       q,

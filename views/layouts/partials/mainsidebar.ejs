@@ -2,6 +2,12 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <%- partial('./logo.ejs') %>
   <div class="sidebar-wrapper">
+    <%/* The FOG 1.6 user panel. 1.6 links the name to the user's own edit
+         page. fog-node links it to /account, which holds the password and
+         API-token self-service. */%>
+    <div class="user-panel p-2">
+      <a href="/account" class="fog-user d-block"><%= req.user.displayName || req.user.username %></a>
+    </div>
     <%- partial('./sidebar.ejs') %>
   </div>
 </aside>

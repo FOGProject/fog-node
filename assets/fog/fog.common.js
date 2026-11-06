@@ -188,7 +188,8 @@ $.readableBytes = function(bytes) {
         let doc = new DOMParser().parseFromString(html, 'text/html');
         // Scope to the page content so we never grab a navbar/search <form>.
         let form = doc.querySelector('.app-content form') || doc.querySelector('form');
-        let hdr = doc.querySelector('.app-content-header h3, .card-title');
+        // The card title holds the page's `header` local ("Create New Host").
+        let hdr = doc.querySelector('.card-title');
         if (titleEl) { titleEl.textContent = hdr ? hdr.textContent.trim() : 'Create'; }
         if (!form) { showError(body, 'Could not load the form.'); return; }
         body.innerHTML = '';

@@ -42,7 +42,10 @@ module.exports = {
       },
       partialname: false
     };
-    data.title = 'Create New Storage Node';
+    // The FOG 1.6 content header and tab title read the section, then "Create New <singular>".
+    let names = sails.helpers.pageTitle.with({identity: data.model});
+    data.section = names.section;
+    data.page = `Create New ${names.singular}`;
     data.form = await sails.helpers.formGenerator.with({
       model: data.model,
       method: 'post',

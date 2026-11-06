@@ -19,9 +19,15 @@
  *   - scss lines 1223-1240: the .slider-track, .slider-selection and
  *     .slider-handle rules in the dark theme.
  *
- * One rule moves. 1.6 paints the canvas on .content-wrapper (scss line 143,
- * and the dark rule at line 1092). fog-node has no .content-wrapper, so the
- * canvas rules apply to body instead.
+ * The light canvas rule is dropped too. 1.6 paints --fog-canvas on
+ * .content-wrapper (scss line 143), but the 1.6 shell has no
+ * .content-wrapper, so that rule matches nothing. The 1.6 canvas comes from
+ * bg-body-tertiary on the signed-in <body> (views/layouts/layout.ejs). No rule
+ * reads the --fog-canvas tokens now. They stay on purpose, so the palette
+ * blocks stay a line-for-line port of the 1.6 source. The
+ * dark .content-wrapper rule (scss line 1092) is ported onto
+ * [data-bs-theme="dark"] body. bg-body-tertiary is !important, so it wins
+ * there.
  */
 
 /* ===========================================================================
@@ -103,12 +109,6 @@
    --fog-ink/--fog-canvas/--fog-hairline). Light mode changes here; that is
    intended (unlike the palette tokens above, which kept light byte-for-byte).
    --------------------------------------------------------------------------- */
-
-/* Cooler, lower-glare content canvas (dark re-points --fog-canvas to --fog-bg).
-   Ported onto body: fog-node has no .content-wrapper. */
-body {
-  background-color: var(--fog-canvas);
-}
 
 /* ---------------------------------------------------------------------------
    Edit-page info card

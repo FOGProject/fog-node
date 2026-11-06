@@ -24,9 +24,12 @@ module.exports = {
         'Default'
       ],
       model: 'pxemenu',
-      title: 'All iPXE Menus',
       partialname: false
     };
+    // The FOG 1.6 content header and tab title. 1.6 names this list "All Boot
+    // Menu Items", not "All iPXE Menus".
+    data.section = sails.helpers.pageTitle.with({identity: data.model}).section;
+    data.page = 'All Boot Menu Items';
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
       data.partialname = partial;

@@ -68,11 +68,14 @@ module.exports = {
   routes: {
     'GET /printers': async function (req, res) {
       if (!can(req, 'read')) { return res.forbidden(); }
+      // The FOG 1.6 content header and tab title.
+      let names = sails.helpers.pageTitle.with({identity: 'printer'});
       return res.view('pages/list', {
         header: 'Printer List',
         theads: ['Name', 'IP Address', 'Model'],
         model: 'printer',
-        title: 'All Printers',
+        section: names.section,
+        page: `All ${names.plural}`,
         partialname: path.join(__dirname, 'list.partial.js')
       });
     },
@@ -94,8 +97,11 @@ module.exports = {
           Create: { classes: ['btn-success', 'float-end'], type: 'submit' }
         }
       });
+      // The FOG 1.6 content header and tab title.
+      let names = sails.helpers.pageTitle.with({identity: 'printer'});
       return res.view('pages/create', {
-        model: 'printer', header: 'Create New Printer', title: 'Create New Printer',
+        model: 'printer', header: 'Create New Printer',
+        section: names.section, page: `Create New ${names.singular}`,
         form, partialname: false
       });
     },

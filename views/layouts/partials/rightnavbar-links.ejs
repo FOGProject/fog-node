@@ -1,32 +1,47 @@
-<!-- Right navbar links -->
+<%/* Right navbar links: the FOG 1.6 account menu (management/other/index.php).
+     One dropdown holds who you are, the server time, Preferences and Log out.
+     layout.ejs renders the navbar only for a signed-in user, so req.user is
+     always set here.
+
+     The menu has no Account item, as in 1.6: the sidebar user panel name links
+     to /account (views/layouts/partials/mainsidebar.ejs).
+
+     The time is rendered on the server, in the server timezone, in the shape
+     of the 1.6 format 'M j, Y g:i A T' (for example "Nov 6, 2026 5:12 AM CST").
+     The zone label is the Intl 'short' name. It matches PHP's T for US zones
+     and UTC; elsewhere it can be an offset ("GMT+1" where PHP shows "CET").
+     It is the time at page render, not a live clock, as in 1.6. */%>
+<%
+  var fogClock = {};
+  new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short'
+  }).formatToParts(new Date()).forEach(function (part) { fogClock[part.type] = part.value; });
+%>
 <ul class="navbar-nav ms-auto">
-  <% if (req.user) { %>
-  <li class="nav-item">
-    <a class="nav-link" href="<%= (req.user.isLocalAuth ? '/user/me' : '#') %>">
-      <i class="fa fa-user"></i> <%= req.user.displayName || req.user.username %>
+  <li class="nav-item dropdown">
+    <%# dropdown-toggle draws the caret. %>
+    <a href="#" id="accountMenu" class="nav-link dropdown-toggle" role="button"
+       data-bs-toggle="dropdown" aria-expanded="false" title="Account" aria-label="Account">
+      <i class="fas fa-circle-user"></i>
     </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountMenu">
+      <li><h6 class="dropdown-header mb-0"><%= req.user.displayName || req.user.username %></h6></li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <span class="dropdown-item-text small text-body-secondary">
+          <i class="far fa-clock fa-fw me-1"></i><%= fogClock.month %> <%= fogClock.day %>, <%= fogClock.year %> <%= fogClock.hour %>:<%= fogClock.minute %> <%= fogClock.dayPeriod %> <%= fogClock.timeZoneName %>
+        </span>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <%# Opens #prefsModal (views/layouts/partials/prefs-modal.ejs). %>
+        <a class="dropdown-item" href="#" id="prefsMenuItem" data-bs-toggle="modal" data-bs-target="#prefsModal"><i class="fas fa-sliders fa-fw me-2"></i>Preferences</a>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <a class="dropdown-item" href="/logout"><i class="fas fa-right-from-bracket fa-fw me-2"></i>Log out</a>
+      </li>
+    </ul>
   </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/account">
-      <i class="fa fa-key"></i> Account
-    </a>
-  </li>
-  <li class="nav-item">
-    <%# Opens #prefsModal (views/layouts/partials/prefs-modal.ejs). %>
-    <a class="nav-link" href="#" id="prefsMenuItem" data-bs-toggle="modal" data-bs-target="#prefsModal">
-      <i class="fas fa-sliders"></i> Preferences
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/logout">
-      <i class="fa fa-sign-out"></i> Logout
-    </a>
-  </li>
-  <% } else { %>
-  <li class="nav-item">
-    <a class="nav-link" href="/login">
-      <i class="fa fa-sign-in"></i> Login
-    </a>
-  </li>
-  <% }%>
 </ul>

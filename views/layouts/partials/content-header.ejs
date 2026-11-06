@@ -1,0 +1,5 @@
+<%/* The FOG 1.6 content header (management/other/index.php): the section
+     title, then the page title as a muted <small> (#pageTitle in
+     assets/styles/zz-fog-ui.css). Each page controller sets `section` and
+     `page`. layout.ejs renders this only when `section` is defined. */%>
+<div class="app-content-header"><div class="container-fluid"><h1 id="sectionTitle"><%= section %> <small id="pageTitle"><%= typeof page !== 'undefined' ? page : '' %></small></h1></div></div>
