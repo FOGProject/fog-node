@@ -51,7 +51,9 @@ async.waterfall([
 ], (err) => {
   if (err) console.log(chalk.bgRed(err));
   COMPLETED = true;
-  process.exit();
+  // Exit 1 on a failed migration, so a script or an operator can see it.
+  // It exited 0 after a MongoError before.
+  process.exit(err ? 1 : 0);
 });
 (function wait() {
   if (!COMPLETED) setTimeout(wait, 1000);

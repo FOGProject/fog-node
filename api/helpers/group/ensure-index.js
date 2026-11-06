@@ -20,6 +20,22 @@ module.exports = {
   fn: async function () {
     let Group = sails.models.group;
     let collection = sails.getDatastore(Group.datastore).manager.collection(Group.tableName);
+    // A database from before ADR 0001 can hold the old Group model's plain
+    // unique index `name_1`, with no collation. It has the same name as the
+    // index below, so createIndex fails and the lift stops. Drop an index on
+    // {name: 1} with another collation first (migrations/2.js does the same).
+    // A missing collection has no index (code 26, NamespaceNotFound).
+    let indexes = await collection.indexes().catch((err) => {
+      if (err && err.code === 26) { return []; }
+      throw err;
+    });
+    for (let index of indexes) {
+      let onName = index.key && Object.keys(index.key).length === 1 && index.key.name === 1;
+      let c = index.collation || {};
+      if (onName && (c.locale !== Group.nameCollation.locale || c.strength !== Group.nameCollation.strength)) {
+        await collection.dropIndex(index.name);
+      }
+    }
     await collection.createIndex({name: 1}, {unique: true, collation: Group.nameCollation});
   }
 };

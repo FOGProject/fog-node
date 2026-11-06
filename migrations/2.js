@@ -27,11 +27,35 @@ function names(raw) {
   return parts.map((p) => p.trim()).filter((p) => p !== '');
 }
 
+// A database from before ADR 0001 can still hold the old Group model's empty
+// `group` collection, with a plain unique index `name_1` (no collation). Its
+// name and key equal the new index's, so createIndex fails with "An existing
+// index has the same name". Drop an index on {name: 1} whose collation is not
+// COLLATION, so the one below can replace it. A missing collection has no
+// index (code 26, NamespaceNotFound).
+async function dropLegacyNameIndex(groupColl) {
+  let indexes;
+  try {
+    indexes = await groupColl.indexes();
+  } catch (err) {
+    if (err && err.code === 26) { return; }
+    throw err;
+  }
+  for (let index of indexes) {
+    let onName = index.key && Object.keys(index.key).length === 1 && index.key.name === 1;
+    let c = index.collation || {};
+    if (onName && (c.locale !== COLLATION.locale || c.strength !== COLLATION.strength)) {
+      await groupColl.dropIndex(index.name);
+    }
+  }
+}
+
 async function up(db) {
   let groupColl = db.collection('group');
   let hostColl = db.collection('host');
 
   // The unique name index without case (api/helpers/group/ensure-index.js).
+  await dropLegacyNameIndex(groupColl);
   await groupColl.createIndex({name: 1}, {unique: true, collation: COLLATION});
 
   let hosts = await hostColl.find({$or: [{tags: {$exists: true}}, {groups: {$exists: true}}]})
