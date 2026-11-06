@@ -650,9 +650,15 @@ $.readableBytes = function(bytes) {
             if (res.ok && res.body && res.body.ok) {
               safeHide();
               if (dt) { dt.ajax.reload(null, false); }
-              window.fogToast('success', 'Created successfully.');
+              // The 1.6 text and title from general/save ("Group added!",
+              // "Group Create Success"); the old text when they are absent.
+              window.fogToast('success', res.body.msg || 'Created successfully.', res.body.title);
             } else {
-              showError(body, (res.body && res.body.message) || 'Could not save. Please check your input.');
+              let msg = (res.body && res.body.message) || 'Could not save. Please check your input.';
+              showError(body, msg);
+              // The 1.6 failure toast ("Group Create Fail") when general/save
+              // names it; the message also stays beside the form.
+              if (res.body && res.body.title) { window.fogToast('error', msg, res.body.title); }
             }
           }).catch(() => { showError(body, 'Network error — please try again.'); });
         });
@@ -780,7 +786,9 @@ $.readableBytes = function(bytes) {
   // Bootstrap). `onConfirm(el, modal)` may return false (keep open) or a promise.
   // `type` is one of MODAL_TYPES; `danger: true` means type 'danger'. As in
   // 1.6, Cancel is first and opts out of the fill (.btn.float-start), and the
-  // primary action is last.
+  // primary action is last. `secondary: {text, className, onClick(el, modal)}`
+  // adds one more button between them, such as Remove in the host list's
+  // "Group Membership" modal; its onClick works as onConfirm does.
   function modal(opts) {
     opts = opts || {};
     if (!window.bootstrap) { return null; }
@@ -809,10 +817,24 @@ $.readableBytes = function(bytes) {
     document.body.appendChild(wrap);
     let m = bootstrap.Modal.getOrCreateInstance(wrap);
     wrap.addEventListener('hidden.bs.modal', () => { m.dispose(); wrap.remove(); });
-    wrap.querySelector('[data-fog-confirm]').addEventListener('click', () => {
-      let r = opts.onConfirm ? opts.onConfirm(wrap, m) : true;
-      Promise.resolve(r).then((keep) => { if (keep !== false) { m.hide(); } });
-    });
+    // A button's handler may return false (keep the modal open) or a promise.
+    function onPress(button, handler) {
+      button.addEventListener('click', () => {
+        let r = handler ? handler(wrap, m) : true;
+        Promise.resolve(r).then((keep) => { if (keep !== false) { m.hide(); } });
+      });
+    }
+    let confirmButton = wrap.querySelector('[data-fog-confirm]');
+    onPress(confirmButton, opts.onConfirm);
+    if (opts.secondary) {
+      let second = document.createElement('button');
+      second.type = 'button';
+      second.className = opts.secondary.className || 'btn btn-secondary';
+      second.setAttribute('data-fog-secondary', '');
+      second.textContent = opts.secondary.text || '';
+      confirmButton.parentNode.insertBefore(second, confirmButton);
+      onPress(second, opts.secondary.onClick);
+    }
     if (opts.onShown) {
       wrap.addEventListener('shown.bs.modal', () => { opts.onShown(wrap); }, { once: true });
     }

@@ -3,7 +3,7 @@ const supertest = require('supertest');
 
 // A host edit tab is its own form (issue #149), so a save from the General
 // tab carries only the General fields. general/save must update only the
-// fields it receives and leave the macs and tags alone.
+// fields it receives and leave the macs and groups alone.
 describe('Host pane save::', () => {
   const app = () => sails.hooks.http.app;
   const HTML = ['Accept', 'text/html'];
@@ -29,11 +29,15 @@ describe('Host pane save::', () => {
     admin = await signIn('mochatestadmin', 'mochatestadmin');
   });
   beforeEach(async () => {
-    host = await sails.models.host.create({name: OLD, macs: ['aabbccddee01'], tags: ['mocha149']}).fetch();
+    host = await sails.models.host.create({name: OLD, macs: ['aabbccddee01'], groups: ['mocha149']}).fetch();
   });
-  afterEach(() => sails.models.host.destroy({name: {in: [OLD, NEW]}}));
+  // The host create made the Group mocha149 (group/ensure).
+  afterEach(async () => {
+    await sails.models.host.destroy({name: {in: [OLD, NEW]}});
+    await sails.models.group.destroy({name: 'mocha149'});
+  });
 
-  it('saves the General fields and leaves the macs and tags unchanged', async () => {
+  it('saves the General fields and leaves the macs and groups unchanged', async () => {
     await admin.agent.post(`/hosts/edit/${host.id}`).type('form').set(...HTML)
       .send({_csrf: admin.csrf, name: NEW, description: 'x'})
       .expect(302);
@@ -41,6 +45,6 @@ describe('Host pane save::', () => {
     assert.strictEqual(after.name, NEW);
     assert.strictEqual(after.description, 'x');
     assert.deepStrictEqual(after.macs, ['aabbccddee01']);
-    assert.deepStrictEqual(after.tags, ['mocha149']);
+    assert.deepStrictEqual(after.groups, ['mocha149']);
   });
 });

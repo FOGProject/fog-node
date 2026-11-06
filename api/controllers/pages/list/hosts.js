@@ -23,7 +23,7 @@ module.exports = {
         'Ping Status',
         'Last Deployed',
         'Assigned Image',
-        'Tags',
+        'Groups',
         'Description'
       ],
       model: 'host',

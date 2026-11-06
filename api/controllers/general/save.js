@@ -101,12 +101,36 @@ module.exports = {
     });
 
     let recordId = id;
-    // The 1.6 toast titles name the model: "Host Update Success".
+    // The 1.6 toast texts and titles name the model, in the same shape on
+    // each page: "Host added!" / "Host Create Success" / "Host Create Fail"
+    // after a create, "Host updated!" / "Host Update Success" / "Host Update
+    // Fail" after an update (GroupManagement.php ~187-189, ~1917-1919).
     let names = sails.helpers.pageTitle.with({identity: model});
     let singular = names ? names.singular : model.charAt(0).toUpperCase() + model.slice(1);
+    let verb = isUpdate ? 'Update' : 'Create';
+    let doneText = isUpdate ? `${singular} updated!` : `${singular} added!`;
+    let failTitle = `${singular} ${verb} Fail`;
+    // The status of a JSON failure answer: 403 for a denied group change.
+    let failStatus = 400;
+    // A Group rename: the name read before the update, for group/rename after it.
+    let oldGroup;
     try {
+      // A Group name taken without case, or a host's groups change that the
+      // caller may not make (403 to a JSON caller).
+      let check = await sails.helpers.group.checkSave.with({
+        model, id: isUpdate ? id : undefined, values, permissions: req.user.permissions
+      });
+      if (check.error) {
+        if (check.error.status === 403) { failStatus = 403; }
+        throw new Error(check.error.message);
+      }
+      oldGroup = check.oldGroup;
       if (isUpdate) {
-        await sails.models[model].updateOne({ id }).set(values);
+        let saved = await sails.models[model].updateOne({ id }).set(values);
+        // The members keep their membership through a rename, as in 1.6.
+        if (oldGroup && saved && saved.name !== oldGroup.name) {
+          await sails.helpers.group.rename.with({from: oldGroup.name, to: saved.name});
+        }
       } else {
         let created = await sails.models[model].create(values).fetch();
         recordId = created.id;
@@ -121,22 +145,28 @@ module.exports = {
       }
     } catch (err) {
       let msg = (err && err.message) ? String(err.message).slice(0, 200) : 'Could not save. Please check your input.';
+      // A Group duplicate that got past the check above (a concurrent create
+      // or rename) hits the unique name index: the same 1.6 text.
+      if (model === 'group' && err && err.code === 'E_UNIQUE') {
+        msg = isUpdate ? sails.models.group.takenText : sails.models.group.existsText;
+      }
       // Modal/AJAX submit -> JSON, and the modal shows the message itself;
       // full-page submit -> back to the form, with the message as a toast on
       // the next page (api/helpers/flash.js).
       if (req.wantsJSON) {
-        return res.status(400).json({ ok: false, message: msg });
+        return res.status(failStatus).json({ ok: false, message: msg, title: failTitle });
       }
-      sails.helpers.flash.with({req, type: 'error', text: msg, title: `${singular} Update Fail`});
+      sails.helpers.flash.with({req, type: 'error', text: msg, title: failTitle});
       return res.redirect(isUpdate ? `/${plural}/edit/${id}` : `/${plural}/create`);
     }
 
-    // Modal/AJAX submit -> JSON ({ok,id}), and the modal toasts; full-page
-    // submit -> the record's edit page, with the result as a toast there.
+    // Modal/AJAX submit -> JSON ({ok, id, msg, title}), and the modal toasts
+    // msg with title; full-page submit -> the record's edit page, with the
+    // same toast there.
     if (req.wantsJSON) {
-      return res.json({ ok: true, id: recordId });
+      return res.json({ ok: true, id: recordId, msg: doneText, title: `${singular} ${verb} Success` });
     }
-    sails.helpers.flash.with({req, type: 'success', text: `${singular} updated!`, title: `${singular} Update Success`});
+    sails.helpers.flash.with({req, type: 'success', text: doneText, title: `${singular} ${verb} Success`});
     return res.redirect(`/${plural}/edit/${recordId}`);
   }
 };

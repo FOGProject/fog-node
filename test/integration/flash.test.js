@@ -66,6 +66,24 @@ describe('Flash::', () => {
       assert.deepStrictEqual(toastCalls(second.text), []);
     });
 
+    // Issue #169: a create said "<Singular> updated!" (full page) or
+    // "Created successfully." (modal). 1.6 says "<Singular> added!".
+    it('a create shows "<Singular> added!" with "<Singular> Create Success", on the page and in JSON', async () => {
+      const name = 'mocha169-flash';
+      try {
+        const res = await admin.agent.post('/storagegroups/create').type('form').set(...HTML)
+          .send({_csrf: admin.csrf, name}).expect(302);
+        const page = await admin.agent.get(res.headers.location).set(...HTML).expect(200);
+        assert.deepStrictEqual(toastCalls(page.text), ['window.fogToast("success", "Storage Group added!", "Storage Group Create Success");']);
+        const json = await admin.agent.post('/storagegroups/create').type('form')
+          .set('Accept', 'application/json').set('X-Requested-With', 'XMLHttpRequest')
+          .send({_csrf: admin.csrf, name: `${name}-2`}).expect(200);
+        assert.deepStrictEqual(_.omit(json.body, 'id'), {ok: true, msg: 'Storage Group added!', title: 'Storage Group Create Success'});
+      } finally {
+        await sails.models.storagegroup.destroy({name: {in: [name, `${name}-2`]}});
+      }
+    });
+
     it('a JSON save sets no flash', async () => {
       await admin.agent.post(`/hosts/edit/${host.id}`).type('form')
         .set('Accept', 'application/json').set('X-Requested-With', 'XMLHttpRequest')

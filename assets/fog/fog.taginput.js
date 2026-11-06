@@ -1,10 +1,10 @@
-// Tag (token/chip) input widget for the host create/edit forms and the bulk
-// "Manage tags" modal. A `[data-taginput]` container (rendered server-side by
-// form-generator, or injected by the modal) carries `data-name` + `data-tags`;
-// this builds removable chips plus a text entry and keeps a hidden
-// `<input name="<data-name>">` in sync (comma-joined). The existing form POST
-// and the Host model's tag normalisation then handle it unchanged -- mirrors how
-// fog.maclist.js drives the MAC widget.
+// Token (chip) input widget for the Groups field of the host create and edit
+// forms. A `[data-taginput]` container (rendered server-side by
+// form-generator) carries `data-name` + `data-tags`; this builds removable
+// chips plus a text entry and keeps a hidden `<input name="<data-name>">` in
+// sync (comma-joined). The existing form POST and Host.normalizeGroups then
+// handle it unchanged -- mirrors how fog.maclist.js drives the MAC widget. The
+// text it shows says "group": no page shows the word "tag" (issue #169).
 (function($) {
   function esc(s) {
     return String(s)
@@ -13,7 +13,7 @@
   }
   function chipHtml(tag) {
     return `<span class="badge bg-primary fog-tag" data-tag="${esc(tag)}">${esc(tag)}` +
-      `<button type="button" class="fog-tag-x" tabindex="-1" aria-label="Remove tag">&times;</button></span>`;
+      `<button type="button" class="fog-tag-x" tabindex="-1" aria-label="Remove group">&times;</button></span>`;
   }
   // Current chip values, in display order.
   function values($root) {
@@ -43,7 +43,7 @@
     let tags = ($root.attr('data-tags') || '').split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
     $root.addClass('form-control fog-taginput').html(
       tags.map(chipHtml).join('') +
-      '<input type="text" class="fog-taginput-entry" autocomplete="off" placeholder="add tag…">' +
+      '<input type="text" class="fog-taginput-entry" autocomplete="off" placeholder="add group…">' +
       `<input type="hidden" class="fog-taginput-value" name="${esc(name)}">`
     );
     $root.data('taginputReady', true);
@@ -84,10 +84,4 @@
     $(root || document).find('[data-taginput]').each(function() { build($(this)); });
   }
   $(() => { init(document); });
-
-  window.fogTagInput = {
-    init: init,
-    build: function(el) { build($(el)); },
-    values: function(el) { return values($(el)); }
-  };
 })(jQuery);

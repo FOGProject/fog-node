@@ -31,6 +31,12 @@ const NOTES = {
     ['Assigned Image', nameOf(r.image)],
     ['Last Deployed', r.deployed]
   ],
+  // GroupManagement.php ~1732-1735. The member count is a count query, as
+  // for Storage Nodes below.
+  group: async (r) => [
+    ['Group', r.name],
+    ['Members', (await sails.helpers.group.countMembers.with({names: [r.name]}))[0]]
+  ],
   // ImageManagement.php:1053-1063. 1.6 reads `deployed` for Last Captured;
   // fog-node has lastCaptureDate, which wins when set. fog-node has no OS or
   // ImageType model, so those two show the numeric id. Primary Storage Group

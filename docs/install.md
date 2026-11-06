@@ -161,6 +161,28 @@ the fog-node directory, and run `node app.js --prod` (what `npm start` runs).
 Start fog-node after MongoDB and Redis. If fog-node starts first, it fails to
 connect and exits, so set the service to restart on failure.
 
+## Update fog-node
+
+Run these steps in the fog-node directory, in this order:
+
+1. Stop fog-node: stop the service, or end the `node` process.
+2. `git pull`
+3. `npm ci --legacy-peer-deps`
+4. `npm run migrate`
+5. Start fog-node.
+
+Stop fog-node first. A new version can store a record in a new shape, and the
+old code still writes the old shape until it stops. For example, schema
+revision 2 renames the host field `tags` to `groups`: the old code writes
+`tags`, and the new code reads only `groups`.
+
+`npm run migrate` moves the database to the schema revision of the new code.
+It runs only the revisions that the database does not have yet, and it says
+"Migration not needed" when there are none. It asks about a database backup
+before it changes anything. Make the backup, for example with `mongodump`.
+That backup is the rollback: the migrator has no command that undoes a
+revision.
+
 ## Put a web server in front (optional)
 
 fog-node listens on port 1337. To serve it on 80 and 443, put a reverse proxy

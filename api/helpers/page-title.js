@@ -16,6 +16,7 @@
  */
 const TITLES = {
   host:         {singular: 'Host',          plural: 'Hosts',          section: 'Host Management'},
+  group:        {singular: 'Group',         plural: 'Groups',         section: 'Group Management'},
   image:        {singular: 'Image',         plural: 'Images',         section: 'Image Management'},
   storagegroup: {singular: 'Storage Group', plural: 'Storage Groups', section: 'Storage Group Management'},
   storagenode:  {singular: 'Storage Node',  plural: 'Storage Nodes',  section: 'Storage Node Management'},

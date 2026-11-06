@@ -27,7 +27,7 @@ async.waterfall([
     let pendingText = 'Deltas calculated';
     let didMigrate = false;
     status.start();
-    migrations.auto(config.preferences.datastores.fogdb, (upgrade, fromRev, toRev, description) => {
+    migrations.auto(config.getMergedSettings().datastores.fogdb, (upgrade, fromRev, toRev, description) => {
       didMigrate = true;
       status.stop();
       console.log(pendingText);

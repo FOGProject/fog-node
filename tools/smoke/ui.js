@@ -67,6 +67,7 @@ const PAGES = [
   {path: '/account'},
   {path: '/hwinfo'},
   {path: '/hosts', table: true},
+  {path: '/groups', table: true},
   {path: '/images', table: true},
   {path: '/storagegroups', table: true},
   {path: '/storagenodes', table: true},
@@ -76,6 +77,7 @@ const PAGES = [
   {path: '/users', table: true},
   {path: '/workflows', table: true},
   {path: '/hosts/create'},
+  {path: '/groups/create'},
   {path: '/images/create'},
   {path: '/storagegroups/create'},
   {path: '/storagenodes/create'},
@@ -159,8 +161,9 @@ const checkStorageGroup = async (page) => {
   return name;
 };
 
-// The host edit page is the only one with the MAC list and tag input widgets
-// (api/controllers/pages/edit.js), so it also drives both.
+// The host edit page is the only one with the MAC list and the Groups chip
+// input (api/controllers/pages/edit.js), so it also drives both. It types a
+// group name and does not save it, so it creates no Group.
 const checkHost = async (page) => {
   const stamp = Date.now();
   const name = `uismoke${stamp}`;
@@ -183,9 +186,9 @@ const checkHost = async (page) => {
       if (await macRows.last().evaluate((el) => el.checkValidity())) throw new Error('the MAC field accepted "not-a-mac"');
       await macRows.last().fill('');
       await page.getByRole('tab', {name: 'General'}).click();
-      await page.fill('.fog-taginput-entry', 'ui-smoke');
+      await page.fill('.fog-taginput-entry', 'ui-smoke-group');
       await page.press('.fog-taginput-entry', 'Enter');
-      await page.locator('.fog-tag', {hasText: 'ui-smoke'}).waitFor({timeout: 5000});
+      await page.locator('.fog-tag', {hasText: 'ui-smoke-group'}).waitFor({timeout: 5000});
     }
   });
   return name;

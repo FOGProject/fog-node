@@ -1,12 +1,22 @@
 (function($) {
   let path = $(location).attr('pathname').replace(/s$/,'');
 
-  function bulk(dt, body) {
+  // `toasts` (optional): {failTitle}. The membership calls toast the server's
+  // 1.6 text and title on success, and its message on failure.
+  function bulk(dt, body, toasts) {
     $.ajax({
       url: '/api/v1/host/bulk',
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(body),
+      success: function(res) {
+        if (toasts && res && res.msg) { window.fogToast('success', res.msg, res.title); }
+      },
+      error: function(xhr) {
+        if (!toasts) { return; }
+        let json = xhr.responseJSON || {};
+        window.fogToast('error', json.message || ('Could not update (HTTP ' + xhr.status + ').'), json.title || toasts.failTitle);
+      },
       complete: function() { dt.ajax.reload(null, false); }
     });
   }
@@ -39,63 +49,57 @@
     return escHtml(s).replace(/"/g, '&quot;');
   }
 
-  // Bulk "Manage tags": add (chip input) and remove (checklist) in one request.
-  function openTagModal(dt) {
+  // The 1.6 "Edit groups" button opens the "Group Membership" modal
+  // (FOGPage.php ~1983-2060): a select2 of every Group, where a typed name
+  // that is not a Group is created on Add. Add and Remove each send one
+  // request for the target hosts.
+  function openGroupModal(dt) {
     let target = resolveTarget(dt);
 
-    function show(knownTags) {
-      let removeHtml = knownTags.length
-        ? '<div class="fog-tag-remove-list">' + knownTags.map((t) => {
-          let v = escHtml(t);
-          return '<div class="form-check form-check-inline">' +
-            '<input class="form-check-input" type="checkbox" value="' + v + '">' +
-            '<label class="form-check-label">' + v + '</label></div>';
-        }).join('') + '</div>'
-        : '<p class="text-muted mb-0">No existing tags to remove.</p>';
-
+    function show(groups) {
       let body = document.createElement('div');
+      // data-no-select2: fog.select2.js would enhance it without `tags`.
       body.innerHTML =
-        '<div class="mb-3"><label class="form-label fw-semibold">Add tags</label>' +
-          '<div data-taginput data-name="addTags" data-tags=""></div></div>' +
-        '<div><label class="form-label fw-semibold">Remove tags</label>' + removeHtml + '</div>';
+        '<select id="groupSelect" multiple="multiple" data-no-select2>' + groups.map((g) => {
+          return '<option value="' + escAttr(g) + '">' + escHtml(g) + '</option>';
+        }).join('') + '</select>' +
+        '<p class="form-text mt-2 mb-0">A name that is not already a group is created when you add.' +
+          ' Remove only works on groups that exist.</p>';
+
+      // The 1.6 failure titles (HostManagement.php ~6874-6977).
+      function send(wrap, key, failTitle) {
+        let names = $(wrap).find('#groupSelect').val() || [];
+        if (!names.length) {
+          window.fogToast('error', 'No groups are being created or selected', failTitle);
+          return false;
+        }
+        let change = {};
+        change[key] = names;
+        bulk(dt, $.extend({}, target.body, change), {failTitle: failTitle});
+        return true;
+      }
 
       window.fogModal({
-        title: 'Manage Tags — ' + target.desc,
+        title: 'Group Membership — ' + target.desc,
         body: body,
-        confirmText: 'Apply',
-        onShown: function(wrap) { if (window.fogTagInput) { window.fogTagInput.init(wrap); } },
-        onConfirm: function(wrap) {
-          let addTags = window.fogTagInput
-              ? window.fogTagInput.values(wrap.querySelector('[data-taginput]')) : [];
-          let removeTags = $(wrap).find('.fog-tag-remove-list input:checked')
-              .map(function() { return this.value; }).get();
-          if (!addTags.length && !removeTags.length) {
-            window.fogToast('error', 'Add or select at least one tag.');
-            return false;
+        confirmText: 'Add',
+        secondary: {
+          text: 'Remove',
+          className: 'btn btn-outline-danger float-end',
+          onClick: function(wrap) { return send(wrap, 'removeGroups', 'Remove Hosts from Groups Fail'); }
+        },
+        onShown: function(wrap) {
+          if ($.fn.select2) {
+            $(wrap).find('#groupSelect').select2({tags: true, width: '100%', dropdownParent: $(wrap)});
           }
-          bulk(dt, $.extend({}, target.body, {addTags: addTags, removeTags: removeTags}));
-        }
+        },
+        onConfirm: function(wrap) { return send(wrap, 'addGroups', 'Add Hosts to Group Fail'); }
       });
     }
 
-    // Removable-tag source: the union across selected rows, or -- acting on all
-    // matching -- every tag in the system.
-    if (!target.all) {
-      let seen = {};
-      let list = [];
-      dt.rows({selected: true}).data().toArray().forEach((r) => {
-        (Array.isArray(r.tags) ? r.tags : []).forEach((t) => {
-          let k = String(t).toLowerCase();
-          if (!seen[k]) { seen[k] = true; list.push(t); }
-        });
-      });
-      list.sort((a, b) => { return a.toLowerCase().localeCompare(b.toLowerCase()); });
-      show(list);
-    } else {
-      $.getJSON('/api/v1/host/tags')
-        .done((res) => { show((res && res.tags) || []); })
-        .fail(() => { show([]); });
-    }
+    $.getJSON('/api/v1/host/groups')
+      .done((res) => { show((res && res.groups) || []); })
+      .fail(() => { show([]); });
   }
 
   // Bulk "Set image": pick from a dropdown (or clear) instead of typing a name.
@@ -127,11 +131,11 @@
     order: [
       [0, 'asc']
     ],
-    // Bulk "push to a set of hosts" actions (the 1.x group replacement).
+    // Bulk actions on the selected hosts.
     extraButtons: [
       {
-        text: '<i class="fa fa-tags"></i> Manage Tags',
-        action: function(e, dt) { openTagModal(dt); }
+        text: '<i class="fas fa-sitemap"></i> Edit groups',
+        action: function(e, dt) { openGroupModal(dt); }
       },
       {
         text: '<i class="fa fa-desktop"></i> Set Image',
@@ -168,13 +172,13 @@
         }
       },
       {
-        data: 'tags',
+        data: 'groups',
         orderable: false,
         render: function(data) {
-          let tags = Array.isArray(data) ? data : (data ? [data] : []);
-          if (!tags.length) { return ''; }
-          return '<span class="fog-tag-list">' + tags.map((t) => {
-            return '<span class="badge bg-primary">' + escHtml(t) + '</span>';
+          let groups = Array.isArray(data) ? data : (data ? [data] : []);
+          if (!groups.length) { return ''; }
+          return '<span class="fog-tag-list">' + groups.map((g) => {
+            return '<span class="badge bg-primary">' + escHtml(g) + '</span>';
           }).join('') + '</span>';
         }
       },

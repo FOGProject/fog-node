@@ -67,6 +67,7 @@ describe('Sidebar menu helpers::', () => {
       assert.deepStrictEqual(menu.map((n) => [n.text, n.icon]), [
         ['Dashboard', 'fas fa-gauge-high'],
         ['Hosts', 'fas fa-desktop'],
+        ['Groups', 'fas fa-sitemap'],
         ['Images', 'far fa-hard-drive'],
         ['Snapins', 'fas fa-cube'],
         ['Storage Groups', 'far fa-object-group'],

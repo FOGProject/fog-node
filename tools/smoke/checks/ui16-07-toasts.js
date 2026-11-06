@@ -106,8 +106,11 @@ async function createModalToast({page, checkPage}) {
   await modal.locator('form').waitFor({state: 'visible', timeout: 10000});
   await modal.locator('#sgname').fill(name);
   await modal.locator('button[type="submit"]').click();
-  await page.locator(TOAST, {hasText: 'Created successfully.'}).waitFor({state: 'visible', timeout: 5000});
-  expect('the toasts after a create-modal save', (await readToasts(page)).length, 1);
+  // The 1.6 create text and title (general/save.js), as on every page.
+  await page.locator(TOAST, {hasText: 'Storage Group added!'}).waitFor({state: 'visible', timeout: 5000});
+  const made = await readToasts(page);
+  expect('the toasts after a create-modal save', made.length, 1);
+  expect('the create-modal toast title', made[0].title, 'Storage Group Create Success');
   await page.reload({waitUntil: 'networkidle'});
   await page.waitForFunction(() => jQuery('#listtable').DataTable().ajax.json() !== undefined, null, {timeout: 10000});
   expect('the toasts after a reload', (await readToasts(page)).length, 0);

@@ -73,7 +73,7 @@ const MODELS = ['Dell OptiPlex 7090', 'HP EliteDesk 800 G6', 'Lenovo ThinkCentre
   'Dell Latitude 5430', 'HP ProBook 450 G9', 'Lenovo ThinkPad T14', 'Apple iMac 24"',
   'ASUS ExpertCenter D7', 'Acer Veriton X', 'Custom Build', 'Microsoft Surface Pro 9',
   'Dell Precision 3660', 'Intel NUC 13 Pro'];
-const TAGS = ['windows', 'linux', 'macos', 'laptop', 'desktop', 'vm', 'imaged',
+const GROUPS = ['windows', 'linux', 'macos', 'laptop', 'desktop', 'vm', 'imaged',
   'pending-image', 'classroom', 'office', 'remote', 'loaner', 'staff', 'student',
   'priority', 'legacy', 'win11', 'win10', 'ssd', 'uefi', 'bios', 'docked', '1gbe', 'wifi'];
 
@@ -178,6 +178,13 @@ async function seedDemoData(opts) {
     PXE_SPECS.map(([name, desc]) => ({ name, description: desc })),
     (s) => ({ name: s.name, description: s.description, params: '', default: s.name === 'boot-local' }), 'pxe menus', log);
 
+  // ---------- groups ----------
+  // One Group per name first, so each host's save finds them all
+  // (Host.beforeCreate -> group/ensure) and creates none per host. ensure is
+  // a find-or-create that matches without case, as the unique name index does.
+  log('Seeding groups...');
+  await sails.helpers.group.ensure.with({ names: GROUPS });
+
   // ---------- hosts ----------
   const already = await Host.count({ createdBy: 'seed' });
   const start = already + 1;
@@ -195,7 +202,7 @@ async function seedDemoData(opts) {
       batch.push({
         name: `${dept}-${type}-${pad(idx, 5)}`,
         macs,
-        tags: sampleK(TAGS, rint(5)),
+        groups: sampleK(GROUPS, rint(5)),
         description: `${pick(MODELS)} — ${dept.toUpperCase()}`,
         ip: `10.${rint(254) + 1}.${rint(256)}.${rint(254) + 1}`,
         pingstatus: chance(0.65) ? '1' : '0',
