@@ -12,67 +12,55 @@
   </form>
   <div id="globalSearchResults" class="position-absolute bg-white border rounded shadow-sm" style="display:none; left:0.5rem; right:0.5rem; z-index:1050; max-height:320px; overflow:auto;"></div>
 </div>
+<%/* The FOG 1.6 menu (management/other/index.php:429-451). `menu` comes from
+     api/helpers/build-menu.js, which decides the order, the links and the
+     active state. A node with pluginOption renders under PLUGIN OPTIONS. */%>
+<% var mainNodes = menu.filter(function (n) { return !n.pluginOption; }); %>
+<% var pluginNodes = menu.filter(function (n) { return n.pluginOption; }); %>
 <nav class="mt-2">
-  <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
-    <% for (var i = 0; i < menuItems.length; i++) { %>
-    <% if (!menuItems[i].subLinks) { %>
-    <li class="nav-item">
-      <a href="<%= menuItems[i].link %>" class="nav-link">
-        <i class="nav-icon fa <%= menuItems[i].icon %>"></i>
-        <p><%= menuItems[i].text %></p>
-      </a>
-    </li>
-    <% } else { %>
-    <li class="nav-item">
-      <a href="#" class="nav-link">
-        <i class="nav-icon fa <%= menuItems[i].icon %>"></i>
-        <p>
-          <%= menuItems[i].plural %>
-          <i class="nav-arrow fa fa-angle-left"></i>
-        </p>
-      </a>
-      <ul class="nav nav-treeview">
-        <li class="nav-item">
-          <a href="<%= menuItems[i].link %>" class="nav-link">
-            <i class="nav-icon fa fa-circle-o"></i>
-            <p>List all <%= menuItems[i].plural %></p>
-          </a>
-        </li>
-        <% for (var j = 0; j < menuItems[i].subLinks.length; j++) { %>
-        <li class="nav-item">
-          <a href="<%= menuItems[i].subLinks[j].link %>" class="nav-link">
-            <i class="nav-icon fa fa-circle-o"></i>
-            <p><%= menuItems[i].subLinks[j].text %></p>
-          </a>
-        </li>
-        <% } %>
-      </ul>
+  <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="true">
+    <li class="nav-header">MAIN NAVIGATION</li>
+    <% mainNodes.forEach(function (node) { %>
+    <%- partial('./sidebar-node.ejs', {node: node}) %>
+    <% }) %>
+    <% if (pluginNodes.length) { %>
+    <li class="nav-header">
+      PLUGIN OPTIONS
+      <a href="#" class="plugin-options-alternate float-end"><i class="fas fa-minus"></i></a>
     </li>
     <% } %>
-    <% } %>
+  </ul>
+  <% if (pluginNodes.length) { %>
+  <ul class="nav sidebar-menu flex-column plugin-options" data-lte-toggle="treeview" data-accordion="true">
+    <% pluginNodes.forEach(function (node) { %>
+    <%- partial('./sidebar-node.ejs', {node: node}) %>
+    <% }) %>
+  </ul>
+  <% } %>
+  <ul class="nav sidebar-menu flex-column">
     <li class="nav-header">RESOURCES</li>
     <li class="nav-item">
       <a href="https://sourceforge.net/donate/index.php?group_id=201099" class="nav-link" target="_blank">
-        <i class="nav-icon fa fa-money"></i>
+        <i class="nav-icon fas fa-money-bill-1"></i>
         <p>Donate</p>
       </a>
     </li>
     <li class="nav-item">
       <a href="https://news.fogproject.org" class="nav-link" target="_blank">
-        <i class="nav-icon fa fa-bullhorn"></i>
+        <i class="nav-icon fas fa-bullhorn"></i>
         <p>News</p>
       </a>
     </li>
     <li class="nav-item">
       <a href="https://forums.fogproject.org" class="nav-link" target="_blank">
-        <i class="nav-icon fa fa-users"></i>
+        <i class="nav-icon fas fa-users"></i>
         <p>Forums</p>
       </a>
     </li>
     <li class="nav-item">
-      <a href="https://wiki.fogproject.org" class="nav-link" target="_blank">
-        <i class="nav-icon fa fa-book"></i>
-        <p>Wiki</p>
+      <a href="https://docs.fogproject.org" class="nav-link" target="_blank">
+        <i class="nav-icon fas fa-book"></i>
+        <p>Documentation</p>
       </a>
     </li>
   </ul>

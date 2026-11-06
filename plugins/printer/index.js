@@ -53,12 +53,14 @@ module.exports = {
     { model: 'printer', label: 'Printers', fields: ['name', 'description', 'printerModel', 'ip'] }
   ],
 
+  // Printers is a core page in FOG 1.6, so `order` puts it inline in MAIN
+  // NAVIGATION, at its 1.6 slot (after Storage Nodes), not under PLUGIN OPTIONS.
   menuItems: [
     {
-      text: 'Printer',
-      plural: 'Printers',
+      order: 90,
+      text: 'Printers',
       link: '/printers',
-      icon: 'fa-print',
+      icon: 'fas fa-print',
       subLinks: [
         { link: '/printers/create', text: 'Create New Printer' }
       ]

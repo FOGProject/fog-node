@@ -121,7 +121,9 @@
       <!-- Header -->
       <%- partial('./partials/navbar.ejs') %>
       <!-- Sidebar -->
-      <%- partial('./partials/mainsidebar.ejs', {menuItems: sails.config.globals.menuItems}) %>
+      <%/* The menu tree for this path: ordered, dead links hidden, and the
+           active and open flags set (api/helpers/build-menu.js). */%>
+      <%- partial('./partials/mainsidebar.ejs', {menu: sails.helpers.buildMenu.with({items: sails.config.globals.menuItems, currentPath: req.path})}) %>
       <!-- Main Content -->
       <main class="app-main">
         <%/* The FOG 1.6 no-role banner (index.php:596-598): this account's
@@ -304,6 +306,7 @@
     <script src="/fog/fog.prefs.js"></script>
     <script src="/fog/fog.search.js"></script>
     <script src="/fog/fog.select2.js"></script>
+    <script src="/fog/fog.sidebar.js"></script>
     <script src="/fog/fog.taginput.js"></script>
     <script src="/fog/fog.theme.js"></script>
     <!--SCRIPTS END-->

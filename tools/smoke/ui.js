@@ -57,9 +57,9 @@ const prod = process.argv.includes('--prod');
 const outDir = path.join(root, 'ui-smoke-out');
 
 // Every page in config/routes.js that renders the layout, except the edit
-// pages, which need a record id (checkRoundTrip opens them). The sidebar also
-// links pages that have no route yet, for example /hosts/pending; they 404
-// today, so they are not here. The list pages load their rows over AJAX into
+// pages, which need a record id (checkRoundTrip opens them). The sidebar hides
+// a link whose page has no route yet, for example /hosts/pending
+// (checks/ui16-04-sidebar.js). The list pages load their rows over AJAX into
 // DataTables, so `table: true` also waits for DataTables to initialize.
 const PAGES = [
   {path: '/'},
