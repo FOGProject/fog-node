@@ -19,8 +19,8 @@ JWT auth, and the seeded Administrator account are functional.
 
 **Implemented today:**
 
-- 10 core models: `Host`, `Image`, `PxeMenu`, `Role`, `Setting`, `StorageGroup`,
-  `StorageNode`, `Task`, `User`, `Workflow`. (`Group` removed — ADR 0001; `Snapin`
+- 11 core models: `Group`, `Host`, `Image`, `PxeMenu`, `Role`, `Setting`, `StorageGroup`,
+  `StorageNode`, `Task`, `User`, `Workflow`. (`Group` restored — ADR 0002; `Snapin`
   (#55/#56) and `Printer` (#57) extracted to plugins.)
 - Generic CRUD driven by a `:model` route param (`api/controllers/general/*`),
   plus DataTables list/columns endpoints.
@@ -110,8 +110,8 @@ automatically gets full REST CRUD via the generic `:model` routes once it has a
 - [x] Host↔Printer / Host↔Snapin assignments + per-host `defaultPrinter` — **now
       owned by the `printer`/`snapin` plugins** (links in each plugin's own
       `plugin_*_host` collections via `extends.host`), not core associations.
-      `Group↔*` associations were removed with the Group entity (ADR 0001: groups
-      → host `tags` + bulk list actions). Remaining core association:
+      Groups are a core record again (ADR 0002). Their
+      printer and snapin grants live in the plugins. Remaining core association:
       StorageGroup↔StorageNode (bidirectional). **Follow-up:** *assigning* core
       collection members through the API needs controller support — the generic
       `update` doesn't set collections and the blueprint nested

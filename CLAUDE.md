@@ -11,8 +11,9 @@ Read these first:
 - `docs/imaging.md`: the imaging design (HTTP stream, per-client authorization).
 - `docs/install.md`: the install guide for every OS.
 - `docs/plugins.md`: the plugin contract. Core is imaging; the rest is plugins.
-- `docs/adr/`: architecture decisions. ADR 0001 removed Groups on purpose
-  (host tags and bulk actions replace them). Do not reintroduce Groups.
+- `docs/adr/`: architecture decisions. ADR 0002 made Group a core record over
+  `host.groups`. Its printer and snapin grants are live and belong to the plugins.
+  There is no group push.
 - `AGENTS.md`: the issue tracker, triage labels, and domain-doc layout.
 
 ## Commands
@@ -23,6 +24,7 @@ Read these first:
 | Dev MongoDB + Redis | `docker compose up -d` (or `podman compose up -d`) |
 | Dev config + admin | `npm run setup:dev` (writes git-ignored `config/local.js`, `config/models.js`) |
 | Production config | `npm run setup` (interactive; checks MongoDB and Redis) |
+| Migrate the database | `npm run migrate` (stop fog-node first; runs the revisions in `migrations/` up to `schema` in `package.json`) |
 | Run | `node app.js` (development, port 1337). `npm start` runs production mode: minified bundles, built at each start |
 | Lint | `npm run lint` (eslint, `--max-warnings=0`) |
 | Test | `npm test` (lint, then the mocha suite) |
@@ -90,7 +92,8 @@ request and the merge queue.
   for every verb. CSRF does not check a GET. `test/route/no-action-blueprints.test.js`
   fails if an action answers at its blueprint path.
 - **`migrate: 'safe'`.** The ORM never auto-migrates. Schema revisions go in
-  `tools/migrate/`.
+  `migrations/<n>.js`, and `npm run migrate` runs them (`tools/migrate/`). Raise
+  `schema` in `package.json` with each one.
 - **`User.create` requires `email`.**
 - **Forms come from `api/helpers/form-generator.js`.** Change a form or a
   dropdown there, not in one view.
