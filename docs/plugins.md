@@ -62,10 +62,41 @@ module.exports = {
   // form(record) -> extra formItems (from the plugin's own collection);
   // save(hostId, params) -> persist the plugin's slice; destroy(hostId) -> cascade.
   extends: {
-    host: { form: async (record) => ({}), save: async (id, p) => {}, destroy: async (id) => {} }
+    host: { form: async (record) => ({}), save: async (id, p) => {}, destroy: async (id) => {} },
+
+    // Optional: group grants, as FOG 1.6 (its ADR 0038). A Group grants a
+    // thing to every current member and every host that joins later; a host
+    // that leaves loses it; a grant given directly to a host is never
+    // affected. The plugin keeps the grants in its own collection keyed by
+    // group. Core knows only membership and order
+    // (api/helpers/group/membership.js). Each function is optional.
+    group: {
+      // formItems for the group edit page, each with its own `tab`.
+      form: async (group) => ({}),
+      // Persist the plugin's own keys of a group save (POST /groups/edit/:id,
+      // which needs group.update). Do nothing when the keys are absent.
+      save: async (groupId, params) => {},
+      // Remove the grant rows of a deleted group.
+      destroy: async (groupId) => {},
+      // The Grants column of /groups: {[groupId]: ['2 snapins']}.
+      grants: async (groupIds) => ({}),
+      // The effective set of each host: {[hostId]: <set>}. `membership` is
+      // {[hostId]: [<Group records>]}, each list in the 1.6 order: `order`,
+      // then name without case, then id.
+      resolve: async (hostIds, membership) => ({})
+    }
   }
 };
 ```
+
+`sails.plugins` dispatches these to the enabled plugins, in `plugins.json`
+order: `groupForm(group)`, `groupSave(groupId, params)`,
+`groupDestroy(groupId)`, `groupGrants(groupIds)` (the labels in plugin order,
+so snapins come before printers), and `groupResolve(hostIds)`, which returns
+`{[hostId]: {[pluginName]: <set>}}`. A disabled plugin has no group tab, writes
+nothing on a group save, has no Grants label and no `groupResolve` key. Its rows
+stay in its own collection. The `snapin` and `printer` plugins are the
+references.
 
 ## Sidebar menu items
 
@@ -95,5 +126,6 @@ an injected "Active Directory" tab).
 - ✅ Loader + `wol` proof.
 - ✅ `extends.host` form/save/destroy extension points (AD plugin).
 - ✅ Plugins contribute **models** + **permissions** → full generic CRUD.
+- ✅ `extends.group` group grants: the `snapin` and `printer` plugins grant through a Group, as FOG 1.6.
 - Next: extract today's in-core Snapins/Printers into `fog-plugin-snapin` /
   `fog-plugin-print` using `models` (catalog CRUD) + `extends.host` (assignment).

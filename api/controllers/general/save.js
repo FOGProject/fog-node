@@ -125,8 +125,12 @@ module.exports = {
         throw new Error(check.error.message);
       }
       oldGroup = check.oldGroup;
+      // False when an update matched no record: then no plugin writes a row
+      // for it, because no destroy would ever delete that row.
+      let exists = true;
       if (isUpdate) {
         let saved = await sails.models[model].updateOne({ id }).set(values);
+        exists = !!saved;
         // The members keep their membership through a rename, as in 1.6.
         if (oldGroup && saved && saved.name !== oldGroup.name) {
           await sails.helpers.group.rename.with({from: oldGroup.name, to: saved.name});
@@ -140,8 +144,13 @@ module.exports = {
         await sails.models[model].replaceCollection(recordId, assoc).members(collections[assoc]);
       }
       // Let plugins persist their slice of a host save (their own collections).
-      if (model === 'host' && sails.plugins && sails.plugins.hostSave) {
+      if (exists && model === 'host' && sails.plugins && sails.plugins.hostSave) {
         await sails.plugins.hostSave(recordId, req.allParams());
+      }
+      // A grant save is a group edit: only an update, which the
+      // group.update check above already passed. A create grants nothing.
+      if (exists && isUpdate && model === 'group' && sails.plugins && sails.plugins.groupSave) {
+        await sails.plugins.groupSave(recordId, req.allParams());
       }
     } catch (err) {
       let msg = (err && err.message) ? String(err.message).slice(0, 200) : 'Could not save. Please check your input.';

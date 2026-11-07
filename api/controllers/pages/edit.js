@@ -136,6 +136,11 @@ module.exports = {
     if (model === 'host' && sails.plugins && sails.plugins.hostForm) {
       Object.assign(formItems, await sails.plugins.hostForm(record));
     }
+    // Plugin group grant tabs (the printer and snapin plugins' Printer and
+    // Snapin Associations, 1.6 GroupManagement.php ~1799-1812).
+    if (model === 'group' && sails.plugins && sails.plugins.groupForm) {
+      Object.assign(formItems, await sails.plugins.groupForm(record));
+    }
 
     let names = sails.helpers.pageTitle.with({identity: model});
     // A user has a username, not a name.

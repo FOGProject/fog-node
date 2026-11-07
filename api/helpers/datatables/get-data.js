@@ -241,17 +241,21 @@ module.exports = {
       _response.data = items;
       // The group list's computed columns (1.6 GroupManagement.php ~62-70):
       // the member count of each row, from one aggregate for the page, and
-      // the grants, which ui16-11b fills from the plugins.
+      // the grant labels of the enabled plugins (1.6 Route.php ~4623-4680):
+      // a list for the badges, and the joined text for export.
       if (model.identity === 'group') {
         try {
           let counts = await sails.helpers.group.countMembers.with({names: items.map((g) => g.name)});
+          let grants = (sails.plugins && sails.plugins.groupGrants)
+            ? await sails.plugins.groupGrants(items.map((g) => g.id))
+            : {};
           items.forEach((g, i) => {
             g.members = counts[i];
-            g.grants_list = [];
-            g.grants = '';
+            g.grants_list = grants[String(g.id)] || [];
+            g.grants = g.grants_list.join(', ');
           });
-        } catch (countErr) {
-          _response.error = countErr;
+        } catch (columnErr) {
+          _response.error = columnErr;
           delete _response.data;
           return exits.error(_response);
         }

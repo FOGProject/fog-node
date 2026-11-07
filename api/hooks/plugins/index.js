@@ -14,6 +14,11 @@
  *         save    -> persists the plugin's namespaced fields (e.g. params.ad)
  *                    to the plugin's collection, keyed by host id.
  *         destroy -> removes the plugin's host-linked record (cascade).
+ *     - `extends.group` : { form(group), save(groupId, params), destroy(groupId),
+ *                           grants(groupIds), resolve(hostIds, membership) }
+ *         The plugin's group grants (FOG 1.6 ADR 0038), in its own collection
+ *         keyed by group. Each function is optional; docs/plugins.md has the
+ *         contract. Core knows only membership and order (group/membership).
  *   This is the modern replacement for fog-too's PluginService + the old
  *   sails-util-mvcsloader (which targeted Sails 0.12). Imaging stays in core;
  *   management features (wol, printers, snapins, AD, ...) live as plugins.
@@ -42,11 +47,47 @@ const getPaths = (keys) => keys
   .filter((m) => m && (!m[1] || m[1].toUpperCase() === 'GET'))
   .map((m) => m[2]);
 
+// What the named plugins contribute, in the order of `names` (plugins.json
+// `enabled`): their routes, menu items, models, permissions, search entries,
+// host extensions and group extensions, and the names loaded. A name with no
+// plugins/<name>/ directory is skipped. Exported as module.exports.collect,
+// so a test can collect a list of its own.
+function collect(appRoot, names) {
+  let out = {
+    routes: {}, menuItems: [], models: {}, permissions: {}, search: [],
+    hostExtensions: [], groupExtensions: [], loaded: []
+  };
+  names.forEach((name) => {
+    let dir = path.join(appRoot, 'plugins', name);
+    if (!fs.existsSync(dir)) { return; }
+    let plugin = require(dir);
+    if (plugin.routes) {
+      Object.keys(plugin.routes).forEach((route) => {
+        let target = plugin.routes[route];
+        out.routes[route] = typeof target === 'function' ? withPreferences(target) : target;
+      });
+    }
+    if (plugin.menuItems) { out.menuItems = out.menuItems.concat(plugin.menuItems); }
+    if (plugin.models) { Object.assign(out.models, plugin.models); }
+    if (plugin.permissions) { Object.assign(out.permissions, plugin.permissions); }
+    if (plugin.search) { out.search = out.search.concat(plugin.search); }
+    if (plugin.extends && plugin.extends.host) {
+      out.hostExtensions.push(Object.assign({ name: plugin.name || name }, plugin.extends.host));
+    }
+    if (plugin.extends && plugin.extends.group) {
+      out.groupExtensions.push(Object.assign({ name: plugin.name || name }, plugin.extends.group));
+    }
+    out.loaded.push(plugin.name || name);
+  });
+  return out;
+}
+
 module.exports = function definePluginsHook(sails) {
   let appRoot = path.join(__dirname, '..', '..', '..');
   let routes = {};
   let menuItems = [];
   let hostExtensions = [];
+  let groupExtensions = [];
   let models = {};
   let permissions = {};
   let search = [];
@@ -55,25 +96,8 @@ module.exports = function definePluginsHook(sails) {
 
   try {
     let cfg = JSON.parse(fs.readFileSync(path.join(appRoot, 'plugins.json'), 'utf8'));
-    (cfg.enabled || []).forEach((name) => {
-      let dir = path.join(appRoot, 'plugins', name);
-      if (!fs.existsSync(dir)) { return; }
-      let plugin = require(dir);
-      if (plugin.routes) {
-        Object.keys(plugin.routes).forEach((route) => {
-          let target = plugin.routes[route];
-          routes[route] = typeof target === 'function' ? withPreferences(target) : target;
-        });
-      }
-      if (plugin.menuItems) { menuItems = menuItems.concat(plugin.menuItems); }
-      if (plugin.models) { Object.assign(models, plugin.models); }
-      if (plugin.permissions) { Object.assign(permissions, plugin.permissions); }
-      if (plugin.search) { search = search.concat(plugin.search); }
-      if (plugin.extends && plugin.extends.host) {
-        hostExtensions.push(Object.assign({ name: plugin.name || name }, plugin.extends.host));
-      }
-      loaded.push(plugin.name || name);
-    });
+    ({ routes, menuItems, models, permissions, search, hostExtensions, groupExtensions, loaded } =
+      collect(appRoot, cfg.enabled || []));
   } catch (err) {
     loadError = err;
   }
@@ -143,6 +167,58 @@ module.exports = function definePluginsHook(sails) {
           for (let ext of hostExtensions) {
             if (ext.destroy) { await ext.destroy(hostId); }
           }
+        },
+        // The group grants of the enabled plugins, in plugins.json order. The
+        // group functions below read sails.plugins.groupExtensions at call
+        // time, not this list, so a test can take a plugin out.
+        groupExtensions: loadError ? [] : groupExtensions,
+        // Merge every plugin's group edit tabs into one formItems object.
+        groupForm: async function (group) {
+          let out = {};
+          for (let ext of sails.plugins.groupExtensions) {
+            if (ext.form) { Object.assign(out, (await ext.form(group)) || {}); }
+          }
+          return out;
+        },
+        // Let each plugin persist its own keys of a group save.
+        groupSave: async function (groupId, params) {
+          for (let ext of sails.plugins.groupExtensions) {
+            if (ext.save) { await ext.save(groupId, params); }
+          }
+        },
+        // Cascade: let each plugin remove the grant rows of a deleted group.
+        groupDestroy: async function (groupId) {
+          for (let ext of sails.plugins.groupExtensions) {
+            if (ext.destroy) { await ext.destroy(groupId); }
+          }
+        },
+        // The Grants column: {[groupId]: [label, ...]}, one key for each id.
+        // The labels follow the plugin load order, so snapins come before
+        // printers, as 1.6 (Route.php ~8820-8830).
+        groupGrants: async function (groupIds) {
+          let out = {};
+          groupIds.forEach((id) => { out[String(id)] = []; });
+          for (let ext of sails.plugins.groupExtensions) {
+            if (!ext.grants) { continue; }
+            let labels = (await ext.grants(groupIds)) || {};
+            Object.keys(out).forEach((id) => { out[id] = out[id].concat(labels[id] || []); });
+          }
+          return out;
+        },
+        // What each host gets, direct plus group-granted:
+        // {[hostId]: {[pluginName]: <the plugin's effective set>}}. One
+        // group/membership read for every plugin, so each resolves from the
+        // same Groups in the same order.
+        groupResolve: async function (hostIds) {
+          let membership = await sails.helpers.group.membership.with({hostIds});
+          let out = {};
+          Object.keys(membership).forEach((id) => { out[id] = {}; });
+          for (let ext of sails.plugins.groupExtensions) {
+            if (!ext.resolve) { continue; }
+            let sets = (await ext.resolve(Object.keys(membership), membership)) || {};
+            Object.keys(out).forEach((id) => { out[id][ext.name] = sets[id]; });
+          }
+          return out;
         }
       };
 
@@ -150,3 +226,5 @@ module.exports = function definePluginsHook(sails) {
     }
   };
 };
+
+module.exports.collect = collect;

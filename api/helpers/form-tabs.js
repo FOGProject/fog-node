@@ -13,6 +13,11 @@ const HOST_MAP = {
   tokenlock: 'Service'
 };
 const HOST_ORDER = ['General', 'MAC Addresses', 'Identity', 'Boot', 'Active Directory', 'Printers', 'Snapins', 'Service'];
+// The 1.6 group tabs (GroupManagement.php ~1790-1812). The plugins set the
+// tab of their own fields. The Host Associations pane has no fields: the
+// form generator puts it right after General (api/controllers/pages/edit.js).
+// fog-node has no tab dropdowns, so each is a top-level tab.
+const GROUP_ORDER = ['General', 'Printer Associations', 'Snapin Associations'];
 
 module.exports = {
   friendlyName: 'Form tabs',
@@ -35,6 +40,13 @@ module.exports = {
         formItems[k].tab = formItems[k].tab || HOST_MAP[k] || 'General';
       });
       return HOST_ORDER;
+    }
+
+    if (model === 'group') {
+      Object.keys(formItems).forEach((k) => {
+        formItems[k].tab = formItems[k].tab || 'General';
+      });
+      return GROUP_ORDER;
     }
 
     // Generic: scalar fields -> General; association fields already carry

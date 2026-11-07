@@ -15,6 +15,10 @@ module.exports = {
     if (model === 'group') {
       for (let group of destroyed) {
         await sails.helpers.group.remove.with({name: group.name});
+        // Cascade: the plugins delete the group's grant rows.
+        if (sails.plugins && sails.plugins.groupDestroy) {
+          await sails.plugins.groupDestroy(group.id);
+        }
       }
     }
     // Cascade: let plugins remove their host-linked records.
