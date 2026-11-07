@@ -69,6 +69,8 @@ Two unrelated things, do not conflate:
 
 ### Groups
 
+Amended by ADR 0002: Group is a core record again, with live plugin grants.
+
 **No Group entity in core.** 1.x groups are three things; we decompose them:
 - **Mass tasking / mass config** → **bulk actions on the host list** (select
   hosts → schedule task / bulk-edit). No membership entity needed.
@@ -109,7 +111,7 @@ Two unrelated things, do not conflate:
 - **Groups removed** → host `tags` + bulk host-list actions (Add/Remove Tag,
   Set Image via `POST /api/v1/host/bulk`). The Group entity and its
   associations are deleted. (PR #51, #52). Bulk *task* scheduling is deferred to
-  the imaging engine.
+  the imaging engine. (Amended by ADR 0002.)
 - **Plugins contribute Waterline models + permissions** (via
   `sails.config.orm.moduleDefinitions.models` + `sails.config.permissions`), so
   a plugin entity gets the whole generic CRUD. (PR #54)
