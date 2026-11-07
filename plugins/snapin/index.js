@@ -10,14 +10,32 @@
  *     views; edit + save reuse the generic actions),
  *   - the host "Snapins" tab via extends.host, with the host<->snapin links kept
  *     in the plugin's own `plugin_snapin_host` collection (the core Host model
- *     has no snapins association).
+ *     has no snapins association),
+ *   - the group "Snapin Associations" tab and the group grants via
+ *     extends.group (FOG 1.6 ADR 0038), kept in `plugin_snapin_group`.
  * See docs/adr/0001 + docs/plugins.md.
  */
 const path = require('path');
 
 const LINK = 'plugin_snapin_host';
+const GROUP = 'plugin_snapin_group';  // { group, snapin }
 function linkColl() {
   return sails.getDatastore(sails.models.host.datastore).manager.collection(LINK);
+}
+function groupColl() {
+  return sails.getDatastore(sails.models.host.datastore).manager.collection(GROUP);
+}
+// The ids of a checktable value: a string, an array, or nothing. The '' entry
+// that makes the tab always send the key is dropped, as are repeats.
+function idList(given) {
+  let list = given === null || given === undefined ? [] : (Array.isArray(given) ? given : [given]);
+  return _.uniq(list.map(String).filter(Boolean));
+}
+// The ids in `given` that name a catalog snapin, in the given order.
+async function catalogIds(given) {
+  if (!given.length) { return []; }
+  let found = (await sails.models.snapin.find({ id: { in: given } }).select(['id'])).map((s) => String(s.id));
+  return given.filter((id) => found.indexOf(id) !== -1);
 }
 function can(req, action) {
   return !!(req.user && req.user.permissions && req.user.permissions.stock &&
@@ -156,6 +174,88 @@ module.exports = {
       },
       destroy: async function (hostId) {
         await linkColl().deleteMany({ host: String(hostId) });
+      }
+    },
+
+    // Group grants, as FOG 1.6 (GroupManagement.php groupSnapins ~546-605,
+    // Resolver.php resolveSnapins ~97-160). A snapin granted to a group
+    // reaches each member, now and later; a host that leaves loses it; a
+    // snapin given to the host directly is never affected. Granting does not
+    // run it.
+    group: {
+      form: async function (group) {
+        let snapins = await sails.models.snapin.find().sort('name ASC');
+        let rows = await groupColl().find({ group: String(group.id) }).toArray();
+        let checked = rows.map((r) => String(r.snapin));
+        return {
+          groupSnapins: {
+            text: 'Group Snapin Assignment', classes: [], textarea: false, type: 'checktable',
+            tab: 'Snapin Associations',
+            // The 1.6 help text without its Tasks clause: fog-node has no
+            // Tasks tab to deploy from.
+            help: 'A snapin granted here reaches every host in this group, including hosts added later. ' +
+              'Granting a snapin does not run it.',
+            options: snapins.map((s) => ({ value: s.id, label: s.name, checked: checked.indexOf(String(s.id)) !== -1 }))
+          }
+        };
+      },
+      // Each group edit tab is its own form, so a save from another tab
+      // carries no `groupSnapins` key: then the grants stay as they are. The
+      // checktable always sends the key (a hidden '' entry), so a present key
+      // with no id means "none selected". A snapin that stays keeps its row,
+      // so the grant order (by _id) stays the order the snapins were granted
+      // in, as 1.6 keeps gsaID. Only catalog snapins are granted.
+      save: async function (groupId, params) {
+        if (!params || !Object.prototype.hasOwnProperty.call(params, 'groupSnapins')) { return; }
+        let ids = await catalogIds(idList(params.groupSnapins));
+        let gid = String(groupId);
+        let coll = groupColl();
+        await coll.deleteMany({ group: gid, snapin: { $nin: ids } });
+        if (ids.length) {
+          await coll.bulkWrite(ids.map((s) => ({
+            updateOne: { filter: { group: gid, snapin: s }, update: { $setOnInsert: { group: gid, snapin: s } }, upsert: true }
+          })));
+        }
+      },
+      destroy: async function (groupId) {
+        await groupColl().deleteMany({ group: String(groupId) });
+      },
+      // The Grants column labels (1.6 Route.php ~8838-8840): one aggregate for
+      // the page. A group with no grant gets no label.
+      grants: async function (groupIds) {
+        let ids = groupIds.map(String);
+        let counts = await groupColl().aggregate([
+          { $match: { group: { $in: ids } } },
+          { $group: { _id: '$group', n: { $sum: 1 } } }
+        ]).toArray();
+        let out = {};
+        counts.forEach((c) => { out[c._id] = [c.n === 1 ? '1 snapin' : `${c.n} snapins`]; });
+        return out;
+      },
+      // The effective snapins of each host, in the 1.6 resolveSnapins order:
+      // the host's direct links by _id, then each group in membership order,
+      // its grants by _id. A snapin met twice keeps its first place, so a
+      // group never moves a snapin the host has directly. `inherited` holds
+      // the ids that come only from groups. Two reads for any number of hosts.
+      resolve: async function (hostIds, membership) {
+        let hids = hostIds.map(String);
+        // Both reads come back in _id order, and groupBy keeps it per key.
+        let direct = _.groupBy(await linkColl().find({ host: { $in: hids } }).sort({ _id: 1 }).toArray(), 'host');
+        let gids = _.uniq(_.flatten(hids.map((h) => (membership[h] || []).map((g) => String(g.id)))));
+        let granted = _.groupBy(gids.length ? await groupColl().find({ group: { $in: gids } }).sort({ _id: 1 }).toArray() : [], 'group');
+        let out = {};
+        hids.forEach((h) => {
+          let snapins = _.uniq((direct[h] || []).map((r) => String(r.snapin)));
+          let inherited = [];
+          (membership[h] || []).forEach((g) => {
+            (granted[String(g.id)] || []).forEach((r) => {
+              let s = String(r.snapin);
+              if (snapins.indexOf(s) === -1) { snapins.push(s); inherited.push(s); }
+            });
+          });
+          out[h] = { snapins, inherited };
+        });
+        return out;
       }
     }
   }

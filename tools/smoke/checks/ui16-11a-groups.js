@@ -168,7 +168,7 @@ async function editPage({page, checkPage}, name, groupId, hostName) {
   await checkPage(page, {path});
   expect('the info card', await facts(page), [['GROUP', name], ['MEMBERS', '2']]);
   expect('the tabs', (await page.locator('ul.nav-tabs[role="tablist"] a.nav-link').allInnerTexts()).map((t) => t.trim()),
-    ['General', 'Host Associations']);
+    ['General', 'Host Associations', 'Printer Associations', 'Snapin Associations']);
   await page.getByRole('tab', {name: 'Host Associations'}).click();
   const pane = page.locator('#tab-host-associations');
   expect('the pane title', (await pane.locator('h4.card-title').innerText()).trim(), 'Group Host Associations');
