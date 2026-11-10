@@ -63,6 +63,8 @@ config.json
 !/plugins/snapin/
 !/plugins/printer/
 images
+# The agent CA keys and certificates (custom.pkiDir). Never commit the keys.
+/pki
 
 ################################################
 # Dependencies

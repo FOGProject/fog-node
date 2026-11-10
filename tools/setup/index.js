@@ -11,6 +11,7 @@ const inquire = require('./lib/inquire');
 const schema = require('./lib/schema');
 const seedDemo = require('./seed-demo');
 const secure = require('./lib/secure');
+const pki = require('./pki');
 const async = require('async');
 const CLI = require('clui');
 const Spinner = CLI.Spinner;
@@ -154,6 +155,18 @@ async.waterfall([
      * local.js
      */
     const ds = payload.datastores.fogdb;
+    // A re-run keeps a custom.pkiDir that the old local.js set (the CA keys are
+    // there). Read it before the write below replaces the file.
+    let pkiOverride;
+    try {
+      pkiOverride = pki.overrideDir(config.appPath);
+    } catch (err) {
+      status.stop();
+      return next(`config/local.js exists but cannot be read, so its pkiDir cannot be kept. Fix or remove it, then re-run: ${err.message}`);
+    }
+    payload.pkiDir = pkiOverride || pki.pkiDirFor(config.appPath);
+    const pkiLines = pkiOverride ? `,
+    pkiDir: '${jsStr(pkiOverride)}'` : '';
     // Only emit credentials when a username was provided. Emitting an empty (or
     // undefined) user+password makes sails-mongo attempt authentication and fail
     // against a no-auth Mongo with "Authentication failed".
@@ -196,7 +209,7 @@ async.waterfall([
     onlyAllowOrigins: [${payload.server.origins.map((o) => `'${jsStr(o)}'`).join(', ')}]
   },
   custom: {
-    imageStorePath: '${jsStr(payload.server.imageStorePath)}'
+    imageStorePath: '${jsStr(payload.server.imageStorePath)}'${pkiLines}
   },
   datastores: {
     fogdb: {
@@ -234,6 +247,19 @@ async.waterfall([
       console.log('Database schema applied');
       next();
     });
+  },
+  // The fog-agent certificate authorities. They need local.js (written above)
+  // for a pkiDir override. Files that already exist are left as they are.
+  (next) => {
+    header.printSection('Agent certificate authority');
+    pki.ensurePki(payload.pkiDir).then(
+      () => {
+        console.log(`Agent CA files are in ${payload.pkiDir}`);
+        console.log('The CA keys there must be readable only by the user that runs fog-node.');
+        next();
+      },
+      (err) => next(`Failed to make the agent CA files: ${err && err.message ? err.message : err}`)
+    );
   },
   // Optional sample/test data -- opt-in (default no), so production installs
   // stay clean unless the admin asks for it. Sails is already loaded by the

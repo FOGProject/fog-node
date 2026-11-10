@@ -28,6 +28,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../lib/config');
 const secure = require('./lib/secure');
+const pki = require('./pki');
 const schema = require('./lib/schema');
 const cfgPath = path.join(config.appPath, 'config');
 const localCfg = path.join(cfgPath, 'local.js');
@@ -115,12 +116,23 @@ writeIfMissing(modelsCfg, 'config/models.js', `module.exports.models = {
 };
 `);
 
+// The fog-agent CAs. local.js exists now, so a custom.pkiDir in it is honored.
+// Files that already exist are left as they are.
+const pkiDir = pki.pkiDirFor(config.appPath);
+
 console.log('Seeding Administrator account...');
-schema.generate(admin.password, admin.email, (err) => {
+schema.generate(admin.password, admin.email, async (err) => {
   if (err) {
     console.error(`Failed to seed database: ${err}`);
     process.exit(1);
   }
+  try {
+    await pki.ensurePki(pkiDir);
+  } catch (pkiErr) {
+    console.error(`Failed to make the agent CA files: ${pkiErr.message}`);
+    process.exit(1);
+  }
+  console.log(`Agent CA files are in ${pkiDir}`);
   console.log('');
   console.log('Development setup complete.');
   console.log('  URL:      http://localhost:1337');

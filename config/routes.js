@@ -94,6 +94,11 @@ module.exports.routes = {
   'GET /boot.ipxe':                          {action: 'boot'},
   'GET /boot':                               {action: 'boot'},
 
+  // Public CA files for fog-agent, at the FOG 1.6 paths (the file is in `file`).
+  'GET /management/other/ca.cert.pem':       {action: 'agent/ca-file', file: 'root.pem'},
+  'GET /management/other/ca.cert.der':       {action: 'agent/ca-file', file: 'root.der'},
+  'GET /management/other/agent-ca-bundle.pem': {action: 'agent/ca-file', file: 'agent-ca-bundle.pem'},
+
   // Host Views
   'GET /hosts':                              {action: 'pages/list/hosts'},
   'GET /hosts/create':                       {action: 'pages/create/hosts'},
