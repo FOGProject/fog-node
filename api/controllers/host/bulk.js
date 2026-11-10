@@ -32,14 +32,21 @@ module.exports = {
     // included.
     let failTitle = (addGroups.length || !removeGroups.length) ? 'Add Hosts to Group Fail' : 'Remove Hosts from Groups Fail';
 
+    // The audit trail (api/hooks/audit): one row for the request. The
+    // permission goes in before each check, so a denial carries it. A
+    // membership change consults group.update; a refusal then sets the group
+    // permission that refused. The count follows the writes.
+    sails.helpers.audit.subject(req, 'host');
+    _.set(req, 'audit.permission', (hostFields || !membership) ? 'host.update' : 'group.update');
     // A call that changes no membership keeps its host.update check.
-    if ((hostFields || !membership) && !_.get(permissions, 'stock.host.update')) {
+    if ((hostFields || !membership) && !sails.helpers.audit.can(req, 'host.update')) {
       return res.forbidden();
     }
     if (membership) {
       let denied = await sails.helpers.group.authorize.with({permissions, names: addGroups});
       if (denied) {
-        return res.status(403).json({message: denied, title: failTitle});
+        req.audit.permission = denied.permission;
+        return res.status(403).json({message: denied.message, title: failTitle});
       }
     }
 
@@ -104,13 +111,15 @@ module.exports = {
       let names = _.uniq(written, (n) => String(n).toLowerCase());
       let denied = await sails.helpers.group.authorize.with({permissions, names});
       if (denied) {
-        return res.status(403).json({message: denied, title: failTitle});
+        req.audit.permission = denied.permission;
+        return res.status(403).json({message: denied.message, title: failTitle});
       }
     }
     for (let w of writes) {
       await sails.models.host.updateOne({ id: w.id }).set(w.set);
       updated++;
     }
+    req.audit.affectedCount = updated;
 
     // The 1.6 success toast (HostManagement.php ~6950-6970). A removal counts
     // the named Groups that exist.

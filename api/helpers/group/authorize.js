@@ -17,7 +17,9 @@
  *                host's new `groups` value, already normalized
  *                (Host.normalizeGroups); [] for a removal check
  *
- * It returns undefined when the change is allowed, or the 403 message.
+ * It returns undefined when the change is allowed, or {message, permission}:
+ * the 403 message and the permission that refused (group.update, or
+ * group.create). The caller records the permission for the audit trail.
  *
  * Usage: let denied = await sails.helpers.group.authorize.with({permissions: req.user.permissions, names})
  */
@@ -32,18 +34,18 @@ module.exports = {
     names: {type: 'ref', required: true, description: 'The names to add or to set.'}
   },
   exits: {
-    success: {outputType: 'ref', description: 'undefined when allowed, else the 403 message.'}
+    success: {outputType: 'ref', description: 'undefined when allowed, else {message, permission}.'}
   },
   fn: async function ({permissions, names}) {
     if (!_.get(permissions, 'stock.group.update')) {
-      return UPDATE_DENIED;
+      return {message: UPDATE_DENIED, permission: 'group.update'};
     }
     if (_.get(permissions, 'stock.group.create')) {
       return undefined;
     }
     for (let name of names) {
       if (!(await sails.helpers.group.find.with({name}))) {
-        return CREATE_DENIED;
+        return {message: CREATE_DENIED, permission: 'group.create'};
       }
     }
     return undefined;

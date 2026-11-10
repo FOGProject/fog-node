@@ -167,6 +167,16 @@ async.waterfall([
     payload.pkiDir = pkiOverride || pki.pkiDirFor(config.appPath);
     const pkiLines = pkiOverride ? `,
     pkiDir: '${jsStr(pkiOverride)}'` : '';
+    // A re-run also keeps an http.trustProxy that the old local.js set: behind
+    // a reverse proxy it makes the audit rows record the client address. The
+    // read above proved that local.js loads. JSON is valid JS for a boolean,
+    // a number, a string or a list.
+    const oldLocal = fs.existsSync(localCfg) ? require(localCfg) : undefined;
+    const trustProxy = oldLocal && oldLocal.http ? oldLocal.http.trustProxy : undefined;
+    const httpLines = trustProxy === undefined ? '' : `
+  http: {
+    trustProxy: ${JSON.stringify(trustProxy)}
+  },`;
     // Only emit credentials when a username was provided. Emitting an empty (or
     // undefined) user+password makes sails-mongo attempt authentication and fail
     // against a no-auth Mongo with "Authentication failed".
@@ -207,7 +217,7 @@ async.waterfall([
   // Production refuses to lift without the list. Re-run npm run setup to change it.
   sockets: {
     onlyAllowOrigins: [${payload.server.origins.map((o) => `'${jsStr(o)}'`).join(', ')}]
-  },
+  },${httpLines}
   custom: {
     imageStorePath: '${jsStr(payload.server.imageStorePath)}'${pkiLines}
   },

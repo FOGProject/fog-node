@@ -19,7 +19,7 @@ module.exports = {
   fn: async function () {
     const req = this.req;
     const res = this.res;
-    if (!_.get(req, 'user.permissions.stock.host.update')) {
+    if (!sails.helpers.audit.can(req, 'host.update')) {
       return res.forbidden();
     }
     const action = req.param('action');
@@ -34,11 +34,13 @@ module.exports = {
     const by = req.user.username;
     if (action === 'deny') {
       await Enrollment.updateOne({id: row.id}).set({state: 'denied', cert: '', decidedAt: Date.now(), decidedBy: by, decidedVia: 'admin'});
+      // The 1.6 trail text (Enrollment::deny). The row is the admin's.
+      await sails.helpers.agent.audit.with({req, row, text: `denied by ${by}`, by});
       return res.json({id: row.id, hostID: row.host, state: 'denied'});
     }
 
     try {
-      await sails.helpers.agent.issue.with({row, via: 'admin', by, keepCert: true});
+      await sails.helpers.agent.issue.with({row, via: 'admin', by, keepCert: true, req});
     } catch (err) {
       if (err.exit === 'notBound') { return res.status(409).json({error: 'enrollment is not bound to a host'}); }
       return res.status(503).json({error: 'signing'});

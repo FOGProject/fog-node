@@ -16,7 +16,7 @@ module.exports = {
   fn: async function () {
     const req = this.req;
     const res = this.res;
-    if (!_.get(req, 'user.permissions.stock.host.create')) {
+    if (!sails.helpers.audit.can(req, 'host.create')) {
       return res.forbidden();
     }
     const bad = (error) => res.status(400).json({error});
@@ -41,6 +41,18 @@ module.exports = {
       expires,
       createdBy: req.user.username
     }).fetch();
+    // The 1.6 trail text (Token::mint). Never the token or its hash. `expires`
+    // is UTC "YYYY-MM-DD HH:MM:SS", as the not_after of the enroll answer is.
+    await sails.helpers.audit.record.with({req, row: {
+      type: 'agent.token',
+      subjectType: 'agentenrolltoken',
+      subjectId: row.id,
+      subjectLabel: name,
+      permission: 'host.create',
+      outcome: 'allowed',
+      renderable: true,
+      text: `minted, ${uses === -1 ? 'unlimited uses' : `${uses} use(s)`}, expires ${new Date(expires).toISOString().slice(0, 19).replace('T', ' ')}`
+    }});
     return res.json({id: row.id, name, token, expires});
   }
 };

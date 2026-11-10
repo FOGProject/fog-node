@@ -14,7 +14,7 @@ module.exports = {
   fn: async function () {
     const req = this.req;
     const res = this.res;
-    if (!_.get(req, 'user.permissions.stock.host.destroy')) {
+    if (!sails.helpers.audit.can(req, 'host.destroy')) {
       return res.forbidden();
     }
     const raw = req.allParams().id;

@@ -12,7 +12,7 @@ module.exports = {
   fn: async function () {
     const req = this.req;
     const res = this.res;
-    if (!_.get(req, 'user.permissions.stock.host.update')) {
+    if (!sails.helpers.audit.can(req, 'host.update')) {
       return res.forbidden();
     }
     const raw = _.get(req.body, 'ids');

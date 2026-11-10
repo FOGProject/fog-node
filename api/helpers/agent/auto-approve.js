@@ -17,7 +17,8 @@
  *
  * A row with no host (no-mac) never auto-approves.
  *
- * Inputs: row (an AgentEnrollment record), token (any text, '' for none).
+ * Inputs: row (an AgentEnrollment record), token (any text, '' for none), req
+ * (optional, for the audit row that issue writes).
  * Output: null when the request waits, else {pem, agentId, notAfter} from issue.
  * Exit signing: an approval applied but the issue failed. The row stays pending.
  *
@@ -31,13 +32,14 @@ module.exports = {
   description: 'Issue the certificate at once when a valid token or a recent deploy vouches for the host.',
   inputs: {
     row: {type: 'ref', required: true},
-    token: {type: 'string', defaultsTo: ''}
+    token: {type: 'string', defaultsTo: ''},
+    req: {type: 'ref', defaultsTo: null, description: 'The request, for the audit row of an issue.'}
   },
   exits: {
     success: {outputType: 'ref', description: 'null, or {pem, agentId, notAfter}.'},
     signing: {description: 'The issue failed.'}
   },
-  fn: async function ({row, token}) {
+  fn: async function ({row, token, req}) {
     if (!row.host) { return null; }
 
     // Reserve a token use.
@@ -73,7 +75,7 @@ module.exports = {
     if (!via) { return null; }
 
     try {
-      return await sails.helpers.agent.issue.with({row, via, by: '', keepCert: false});
+      return await sails.helpers.agent.issue.with({row, via, by: '', keepCert: false, req});
     } catch (unused) {
       if (reserved) { await tokens.updateOne({hash}, {$inc: {uses: 1}}); }
       throw 'signing';

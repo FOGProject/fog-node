@@ -213,3 +213,9 @@ in front: nginx, Caddy, Apache, or IIS with URL Rewrite. Set the proxy to pass
 WebSocket upgrades through, for the socket.io connection (see "Browser URLs").
 If you do this, give the installer the proxy's URL (for example
 `https://fog.example.com`), not `:1337`.
+
+fog-node records the client address (`req.ip`) in the audit log and in the agent
+enrollment rows. By default it records the address of the connection, which is the
+proxy's address behind a reverse proxy. To record the client address, set
+`http: {trustProxy: true}` in `config/local.js`, and make the proxy send
+`X-Forwarded-For`. `npm run setup` keeps this setting when you run it again.

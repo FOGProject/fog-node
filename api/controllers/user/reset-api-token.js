@@ -12,8 +12,10 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     let req = this.req;
+    // can() first: it notes the permission, so the API-token refusal carries it too.
+    let mayUpdate = sails.helpers.audit.can(req, 'user.update');
     if (req.authVia === 'apitoken') return exits.forbidden();
-    if (!_.get(req, 'user.permissions.stock.user.update')) return exits.forbidden();
+    if (!mayUpdate) return exits.forbidden();
     let target = await User.findOne({ id: inputs.id });
     if (!target) return exits.notFound();
     let token = 'fpat_' + crypto.randomBytes(24).toString('hex');

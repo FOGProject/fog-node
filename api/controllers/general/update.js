@@ -31,8 +31,12 @@ module.exports = {
     // A Group name that is not text (400) or is taken without case (409), or
     // a host's groups change that the caller may not make (403). oldGroup is
     // the Group before a rename.
+    // The audit trail names the row (api/hooks/audit); the label follows the write.
+    sails.helpers.audit.subject(req, model, null, id);
     let check = await sails.helpers.group.checkSave.with({model, id, values: params, permissions: req.user.permissions});
     if (check.error) {
+      // A refusal names the group permission that refused it (the audit trail).
+      if (check.error.permission) { _.set(req, 'audit.permission', check.error.permission); }
       throw {[{400: 'badRequest', 403: 'forbidden', 409: 'conflict'}[check.error.status]]: {message: check.error.message}};
     }
     let oldGroup = check.oldGroup;
@@ -46,6 +50,7 @@ module.exports = {
       .intercept({name: 'UsageError'}, (err) => {
         return {badRequest: err};
       });
+    if (obj) { sails.helpers.audit.subject(req, model, obj); }
     // The members keep their membership through a rename, as in 1.6.
     if (oldGroup && obj && obj.name !== oldGroup.name) {
       await sails.helpers.group.rename.with({from: oldGroup.name, to: obj.name});

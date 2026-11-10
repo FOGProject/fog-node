@@ -4,10 +4,9 @@ module.exports = {
   fn: async function () {
     let req = this.req;
     let res = this.res;
-    let perms = req.user && req.user.permissions && req.user.permissions.stock && req.user.permissions.stock.image;
 
     // Creating image records, so require the image create permission.
-    if (!perms || !perms.create) { return res.forbidden(); }
+    if (!sails.helpers.audit.can(req, 'image.create')) { return res.forbidden(); }
 
     return res.json(await sails.helpers.image.scanStore());
   }

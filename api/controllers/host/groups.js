@@ -13,7 +13,7 @@ module.exports = {
     let req = this.req;
     let res = this.res;
 
-    if (!_.get(req, 'user.permissions.stock.host.read')) {
+    if (!sails.helpers.audit.can(req, 'host.read')) {
       return res.forbidden();
     }
 
