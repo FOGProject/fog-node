@@ -75,9 +75,11 @@ describe('Plugin route auth chain::', () => {
       assert.strictEqual(res.status, 302, `${path} HTML status`);
       assert.ok(/\/login/.test(res.headers.location), `${path} redirects to /login`);
     }
-    const hosts = await supertest(app()).get('/hosts').set(...JSON_ACCEPT);
+    // A JSON request with no credential is a 403 on a core page; the plugin
+    // pages must answer the same.
+    await supertest(app()).get('/hosts').set(...JSON_ACCEPT).expect(403);
     for (const path of PATHS) {
-      await supertest(app()).get(path).set(...JSON_ACCEPT).expect(hosts.status);
+      await supertest(app()).get(path).set(...JSON_ACCEPT).expect(403);
     }
   });
 

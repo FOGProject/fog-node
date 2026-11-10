@@ -24,7 +24,8 @@ module.exports = {
   // Routes bound after the app routes. Handlers are (req, res) functions.
   // NOTE: a route whose value is a function gets the `'*'` chain of
   // config/policies.js first, as a core page does. Check the
-  // permission yourself (e.g. `if (!can(req, 'read')) return res.forbidden();`).
+  // permission yourself: read req.user.permissions.stock.<identity>.<action>
+  // (plugins/printer/index.js defines a local `can()` helper for this).
   routes: {
     'POST /api/v1/host/:id/wol': async function (req, res) { /* … */ }
   },
