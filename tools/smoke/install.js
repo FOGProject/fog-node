@@ -9,7 +9,10 @@
  *     (the CSRF token and the Redis session store must both work);
  *   - a signed-in page loads;
  *   - the socket server accepts the URL that the installer was given, and
- *     refuses any other origin.
+ *     refuses any other origin;
+ *   - the installer, run again with an empty PKI folder, restores the agent
+ *     CA from the database backup (pki.passphrase in the answers file) with
+ *     the same root, and never prints the passphrase.
  *
  * Why: CI ran `npm run setup:dev`, never the installer. chalk 6 broke the
  * installer with every check green (PR #141). This runs on Linux, Windows,
@@ -32,6 +35,7 @@ const os = require('os');
 const path = require('path');
 const server = require('./lib/server');
 const testDb = require('../lib/test-db');
+const escrow = require('../../api/lib/agent-ca-escrow');
 
 const root = server.root;
 const port = 1340;
@@ -44,6 +48,14 @@ const configs = ['local.js', 'models.js'].map((f) => path.join(root, 'config', f
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'fog-install-smoke-'));
 // A new password for each run. It only ever guards the throwaway database.
 const password = crypto.randomBytes(12).toString('base64url');
+// The agent CA backup passphrase (pki.passphrase in the answers file). New
+// for each run; it only ever guards the throwaway CA.
+const passphrase = escrow.generatePassphrase();
+// The run's own PKI folder, so it never touches the checkout's pki/.
+const pkiDir = path.join(work, 'pki');
+const answersFile = path.join(work, 'answers.json');
+// Every line the installer printed, for the check that the passphrase is in none.
+const installerOutput = [];
 
 // The cookie jar for the sign-in: name=value pairs from Set-Cookie headers.
 const jar = new Map();
@@ -70,19 +82,24 @@ async function dropDatabase() {
   }
 }
 
-function runInstaller() {
+// The answers file, in the work folder that the run deletes. It holds the passphrase.
+function writeAnswers() {
   const answers = {
     database: {host: dbHost, port: 27017, database: dbName, username: ''},
     redis: {url: process.env.FOG_SMOKE_REDIS || 'redis://127.0.0.1:6379/0'},
     server: {urls: base, imageStorePath: path.join(work, 'images')},
     admin: {email: 'admin@example.com', password},
-    seed: {seed: false}
+    seed: {seed: false},
+    pki: {passphrase}
   };
-  const file = path.join(work, 'answers.json');
-  fs.writeFileSync(file, JSON.stringify(answers));
+  fs.writeFileSync(answersFile, JSON.stringify(answers));
+}
+
+function runInstaller() {
   // A timeout, so an installer that waits on a prompt fails instead of hanging.
-  const run = spawnSync(process.execPath, ['tools/setup/index.js', '--answers', file],
+  const run = spawnSync(process.execPath, ['tools/setup/index.js', '--answers', answersFile],
     {cwd: root, encoding: 'utf8', timeout: 5 * 60 * 1000});
+  installerOutput.push(run.stdout || '', run.stderr || '');
   if (run.status !== 0) {
     throw new Error(`the installer exited ${run.status}:\n${(run.stdout + run.stderr).slice(-2000)}`);
   }
@@ -161,7 +178,12 @@ async function main() {
     console.log(`ok    ${label}`);
   };
   try {
+    // The drop guard reads the configured database from config/local.js, so it runs first.
     await step('drop the smoke database', dropDatabase);
+    // The installer keeps a custom.pkiDir that the old local.js sets
+    // (tools/setup/pki.js readOldLocal), so the run uses its own PKI folder.
+    fs.writeFileSync(configs[0], `module.exports = {custom: {pkiDir: ${JSON.stringify(pkiDir)}}};\n`);
+    writeAnswers();
     await step('the installer, from an answers file', runInstaller);
     child = server.start({port, prod: true, env: {}, log});
     await step('production lift with the installed config', () => server.waitForReady(child, base));
@@ -173,6 +195,19 @@ async function main() {
     await step('sockets refuse another origin', async () => {
       const result = await socketHandshake('http://other.example');
       if (result === 'open') throw new Error('sockets accepted http://other.example');
+    });
+    // The agent CA backup: a re-run with an empty PKI folder restores the same root.
+    server.stop(child);
+    const rootOf = () => new crypto.X509Certificate(fs.readFileSync(path.join(pkiDir, 'root.pem'))).fingerprint256;
+    const rootBefore = rootOf();
+    for (const name of fs.readdirSync(pkiDir)) fs.rmSync(path.join(pkiDir, name), {recursive: true, force: true});
+    await step('the installer again restores the agent CA from the database backup', () => {
+      runInstaller();
+      const rootAfter = rootOf();
+      if (rootAfter !== rootBefore) throw new Error(`the restored root ${rootAfter} differs from ${rootBefore}`);
+    });
+    await step('the installer output does not hold the passphrase', () => {
+      if (installerOutput.some((out) => out.includes(passphrase))) throw new Error('the installer printed the passphrase');
     });
   } catch (e) {
     failed = true;

@@ -72,6 +72,7 @@
     "test:ui": "Lifts fog-node with grunt ON and drives Chromium through every routed page (tools/smoke/ui.js). It catches a broken UI dependency that npm test cannot see, because npm test never builds or loads the UI. Needs MongoDB, Redis, npm run setup:dev, and `npx playwright install chromium` once.",
     "test:install": "Runs the real installer from an answers file, lifts in production mode, signs in, and checks the socket origins (tools/smoke/install.js). CI never ran the installer before; chalk 6 broke it with every check green. Needs MongoDB and Redis. ws (devDependencies) drives the socket handshake.",
     "@peculiar/x509": "Builds and signs the fog-agent CA certificates and reads the agent's CSR (tools/setup/pki.js, api/helpers/agent). node-forge cannot parse the agent's ECDSA P-256 CSR, and Node's crypto cannot build certificates. The range stays on major 1 because 1.x ships a CommonJS build and fog-node is CommonJS; 3.x is ESM-only. Installed 1.14.3, the newest 1.x.",
+    "agent-ca": "Backs up the fog-agent CA keys to the database under a passphrase, restores them from there into an empty PKI folder, or shows the backup status: npm run agent-ca -- backup|restore|status [--passphrase-file <path>] (tools/setup/agent-ca.js). docs/install.md 'Back up the agent CA' describes it.",
     "migrate": "Moves the database from the schema revision in its schema Setting up to the revision in schema below, running each migrations/<n>.js in order (tools/migrate/index.js). It asks about a database backup first: that backup is the rollback. docs/install.md 'Update fog-node' runs it after git pull and npm ci.",
     "schema": "The latest schema revision, the highest migrations/<n>.js. tools/lib/config.js getMergedSettings merges this file over config/local.js, so the code names its own revision. A new install records it (tools/setup/lib/schema.js) and so never runs a revision on its empty database.",
     "overrides": "Force-patch vulnerable transitive deps pinned by the abandoned sails-hook-grunt/grunt-contrib-less build chain. npm audit fix can't reach them because their parents are unmaintained. Keys of the form 'pkg@N' pin one major at a time, so each consumer keeps the major it was written against. 'less' is forced to 4.x: grunt-contrib-less@1.3.0 asks for less ~2.6.0, but less >=4.6 dropped its bundled HTTP importer, which is what dragged in the unpatchable 'request' and 'image-size' advisories — 'grunt less:dev' output was verified byte-identical before and after that bump. babel-traverse@6 is knowingly left vulnerable: it comes from babel-core@6 inside sails-hook-grunt, there is no 6.x patch, and dropping it would mean dropping asset transpilation from the prod build."
@@ -112,7 +113,8 @@
     "test:ui": "node tools/smoke/ui.js",
     "test:ui:prod": "node tools/smoke/ui.js --prod",
     "test:install": "node tools/smoke/install.js",
-    "migrate": "node tools/migrate/index.js"
+    "migrate": "node tools/migrate/index.js",
+    "agent-ca": "node tools/setup/agent-ca.js"
   },
   "schema": 2,
   "main": "app.js",

@@ -299,4 +299,4 @@ const ensureServerCert = async (dir, opts = {}) => {
   await ensureServer(dir, rootPem, sans);
 };
 
-module.exports = {ensurePki, ensureServerCert, defaultSans, cleanSans, rootError, isRootError, stamp, exists};
+module.exports = {ensurePki, ensureServerCert, defaultSans, cleanSans, rootError, isRootError, stamp, exists, writeKey, writeCert};

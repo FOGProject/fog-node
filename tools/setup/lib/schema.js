@@ -16,23 +16,32 @@ var schema = {
   }
 };
 
+// The config that the setup tools give sails.load: config/local.js with
+// package.json, `overrides` merged over a copy, errors-only logging, and no
+// auto-migration. generate below and tools/setup/agent-ca.js use it.
+const sailsConfig = (overrides) => {
+  let cfg = config.getMergedSettings();
+  if (overrides) cfg = _.merge({}, cfg, overrides);
+  cfg.log = {
+    level: 'error',
+  };
+  cfg.appPath = config.appPath;
+  cfg.models = {};
+  // 'safe' = never auto-migrate. Mongo is schemaless so no migration is needed,
+  // and 'alter' can drop/recreate collections (data loss) -- catastrophically so
+  // if another app instance is pointed at the same database while this runs.
+  cfg.models.migrate = 'safe';
+  return cfg;
+};
+
 module.exports = {
+  sailsConfig,
   // `overrides` (optional) is merged over a copy of the config, for example
   // the datastore of the UI smoke test (tools/smoke/ui.js). It comes after
   // `next` so that the two setup callers (dev.js, index.js) stay as they are.
   generate: (adminPassword, adminEmail, next, overrides) => {
-    let cfg = config.getMergedSettings();
-    if (overrides) cfg = _.merge({}, cfg, overrides);
-    cfg.log = {
-      level: 'error',
-    };
+    const cfg = sailsConfig(overrides);
     if (!cfg.schema) cfg.schema = 1;
-    cfg.appPath = config.appPath;
-    cfg.models = {};
-    // 'safe' = never auto-migrate. Mongo is schemaless so no migration is needed,
-    // and 'alter' can drop/recreate collections (data loss) -- catastrophically so
-    // if another app instance is pointed at the same database while this runs.
-    cfg.models.migrate = 'safe';
     adminUser.email = adminEmail;
     adminUser.password = adminPassword;
     sails.load(cfg, async (err) => {

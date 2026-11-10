@@ -253,9 +253,14 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
         const before = snap(dir);
         await ensure(dir, {sans: ['fog.example', '0:0:0:0:0:0:0:1', 'LOCALHOST', '127.0.0.1']});
         assert.deepStrictEqual(snap(dir), before);
-        // A different address is a different set.
+        // A different address is a different set: a new pair, the old one kept
+        // aside. The first ensure above may also have stamped the fixture's pair,
+        // and two stamps in the same second share a name, so count "at least one"
+        // and compare the certificate itself instead of an exact stamp count.
+        const pem = fs.readFileSync(path.join(dir, 'server.pem'), 'utf8');
         await ensure(dir, {sans: ['localhost', '127.0.0.1', '::2', 'fog.example']});
-        assert.strictEqual(stamped(dir, 'server\\.pem').length, 1);
+        assert.notStrictEqual(fs.readFileSync(path.join(dir, 'server.pem'), 'utf8'), pem);
+        assert.ok(stamped(dir, 'server\\.pem').length >= 1);
       }));
 
       it('makes the pair again when fewer than 30 days remain', () => withCopy(async (dir) => {

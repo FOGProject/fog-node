@@ -29,6 +29,7 @@ const path = require('path');
 const config = require('../lib/config');
 const secure = require('./lib/secure');
 const pki = require('./pki');
+const escrow = require('../../api/lib/agent-ca-escrow');
 const schema = require('./lib/schema');
 const cfgPath = path.join(config.appPath, 'config');
 const localCfg = path.join(cfgPath, 'local.js');
@@ -125,6 +126,18 @@ writeIfMissing(modelsCfg, 'config/models.js', `module.exports.models = {
 // Files that already exist are left as they are.
 const pkiDir = pki.pkiDirFor(config.appPath);
 
+// The agent CA backup passphrase (tools/setup/pki.js setupPki). A new backup
+// gets a generated one, printed once. A restore reads the first line of the
+// file after --agent-ca-passphrase-file, or opens nothing without the flag.
+const passphraseAt = process.argv.indexOf('--agent-ca-passphrase-file');
+const passphraseFile = passphraseAt === -1 ? null : process.argv[passphraseAt + 1];
+const getPassphrase = async ({purpose}) => {
+  if (purpose === 'restore') return passphraseFile ? pki.readPassphraseFile(passphraseFile) : null;
+  const words = escrow.generatePassphrase();
+  pki.printPassphrase(words);
+  return words;
+};
+
 console.log('Seeding Administrator account...');
 schema.generate(admin.password, admin.email, async (err) => {
   if (err) {
@@ -138,7 +151,9 @@ schema.generate(admin.password, admin.email, async (err) => {
       newRoot: process.argv.includes('--new-agent-root'),
       settings: sails.models.setting,
       log: console.log,
-      command: 'setup:dev'
+      command: 'setup:dev',
+      escrows: sails.models.agentcaescrow,
+      getPassphrase
     });
   } catch (pkiErr) {
     // The guard errors carry the full message: print it as is.
