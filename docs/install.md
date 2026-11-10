@@ -133,6 +133,51 @@ new name has a timestamp suffix. Setup then makes new CAs. Setup records the new
 fingerprint. You must then re-enroll every fog-agent by hand with the new
 `ca.cert.pem`.
 
+#### Back up the agent CA
+
+Setup also keeps a backup of the four CA files in the database: `root.key`,
+`root.pem`, `agent-ca.key` and `agent-ca.pem`. A passphrase protects the
+backup. The backup is encrypted with a key made from the passphrase (scrypt,
+then AES-256-GCM), so a copy of the database alone does not give the CA keys.
+fog-node does not keep the passphrase.
+
+A database backup plus the passphrase restores the four CA files. Run setup
+again with an empty `pki/` folder on the same database. Setup sees that
+`pki/root.pem` is missing, asks for the passphrase, writes the four files, and
+makes the server certificate again. Setup restores only the agent CA that the
+database records. A backup of an older agent CA would cut off the agents
+enrolled since, so setup refuses it.
+
+Setup asks for the passphrase when it makes the first backup, and again when
+the CAs change (for example after `--new-agent-root`). The recommended answer
+is a generated passphrase of 6 words. Setup prints it once. Store it in a
+password manager at once. A passphrase that you type must have at least 20
+characters.
+
+The command `npm run agent-ca` manages the backup:
+
+- `npm run agent-ca -- backup` seals the CA files in `pki/` and replaces the
+  backup. It prints a new generated passphrase. Use this to make the first
+  backup of an existing install, or to change the passphrase.
+- `npm run agent-ca -- restore` writes the four CA files from the backup into
+  an empty `pki/` folder, then makes the bundle and the server certificate.
+- `npm run agent-ca -- status` shows whether a backup exists, and whether it
+  matches the recorded CAs and the files in `pki/`. It never shows the
+  passphrase.
+
+`backup` and `restore` also take `--passphrase-file <path>`: the first line of
+that file is the passphrase. `npm run setup:dev` takes
+`--agent-ca-passphrase-file <path>` for a restore.
+
+An install without prompts reads the passphrase from `pki.passphrase` in the
+answers file, for example `"pki": {"passphrase": "crane mosaic fluid oyster banjo thrift"}`.
+That file then holds the passphrase, so store it as you store the passphrase,
+or delete it after the install. Without `pki.passphrase`, setup makes no
+backup and tells you to run `npm run agent-ca -- backup`.
+
+If you lose the passphrase, the backup cannot be opened. Restore the `pki/`
+folder from a file backup, or start over with `--new-agent-root`.
+
 ### Agent port
 
 fog-node runs a second, HTTPS listener for fog-agent. It uses the port in

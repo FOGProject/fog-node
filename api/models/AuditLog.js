@@ -22,7 +22,8 @@ module.exports = {
     // attempted user name on a failed sign-in.
     createdBy: {type: 'string', defaultsTo: ''},
     ip: {type: 'string', defaultsTo: ''},
-    // How the REQUEST authenticated: session, apitoken, jwt, local, anonymous, agent.
+    // How the REQUEST authenticated: session, apitoken, jwt, local, anonymous,
+    // agent; or setup (a setup tool, no request).
     authSource: {type: 'string', defaultsTo: ''},
     // The dot-namespaced event type, e.g. auth.login or access.api.
     type: {type: 'string', defaultsTo: ''},

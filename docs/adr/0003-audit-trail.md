@@ -51,6 +51,7 @@ The events:
 | `auth.login`, `auth.login.failed`, `auth.logout`, `auth.token.rejected` | `auth/login`, `auth/logout`, `policies/isLoggedIn` |
 | `access.api`, `access.page` | the request seam, `api/hooks/audit` |
 | `agent.enroll`, `agent.token` | the enrollment route, the renew route, the admin decision and the token routes, with the 1.6 texts |
+| `agent.ca` | setup (`tools/setup/pki.js`) and `npm run agent-ca`, with `authSource` `setup`: `allowed` for a saved backup and a restore, `denied` for a wrong passphrase |
 
 A failed sign-in stores the attempted name and no reason, to avoid user
 enumeration (1.6 stores none either).
@@ -76,7 +77,8 @@ enumeration (1.6 stores none either).
   gets no second row.
 - Ids are strings (`subjectId`), because Mongo ids are strings. 1.6 uses integers.
 - `authSource` names how the request authenticated: `session`, `apitoken`, `jwt`,
-  `local` (the sign-in itself), `anonymous` or `agent`. `isLoggedIn` sets
+  `local` (the sign-in itself), `anonymous`, `agent` or `setup` (a setup tool,
+  no request). `isLoggedIn` sets
   `req.authVia` to `jwt` for the JWT strategy. A plain browser session sets
   nothing, and the helper reads that as `session`.
 - No row holds a before and after value yet.

@@ -12,6 +12,9 @@ const schema = require('./lib/schema');
 const seedDemo = require('./seed-demo');
 const secure = require('./lib/secure');
 const pki = require('./pki');
+const escrow = require('../../api/lib/agent-ca-escrow');
+// inquirer 9+ is ESM-only: the inquirer object is the default export.
+const inquirer = require('inquirer').default;
 const {cleanSans, defaultSans} = require('../../api/lib/agent-pki-files');
 const {splitList, urlHosts} = require('./lib/server-defaults');
 const async = require('async');
@@ -25,6 +28,46 @@ var payload = {};
 // Escape a value for a single-quoted JS string in a generated config file.
 // A Windows path has backslashes, which would otherwise become escapes.
 const jsStr = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+
+// The agent CA backup passphrase (tools/setup/pki.js setupPki). purpose is
+// 'new', 'replace' or 'restore'. Returns a normalized passphrase, or null.
+// Answers mode takes pki.passphrase from the file and never generates one,
+// so nothing is printed into an automated log. A weak one throws E_ESCROW_WEAK.
+const answersPki = inquire.fileSection('pki');
+const getPassphrase = async ({purpose}) => {
+  if (answersPki) {
+    if (answersPki.passphrase === undefined || answersPki.passphrase === null) return null;
+    const given = escrow.normalize(answersPki.passphrase);
+    escrow.checkPassphrase(given);
+    return given;
+  }
+  if (purpose === 'restore') return inquire.askPassphrase('Enter the agent CA backup passphrase:');
+  const {generated} = await inquirer.prompt([{
+    name: 'generated',
+    type: 'confirm',
+    default: true,
+    message: 'Use a generated passphrase for the agent CA backup (recommended)?'
+  }]);
+  if (generated) {
+    const words = escrow.generatePassphrase();
+    pki.printPassphrase(words);
+    return words;
+  }
+  for (;;) {
+    const first = await inquire.askPassphrase('Enter a passphrase for the agent CA backup (at least 20 characters):');
+    const second = await inquire.askPassphrase('Enter the passphrase again:');
+    if (first !== second) {
+      console.log(chalk.yellow('The two passphrases differ.'));
+      continue;
+    }
+    try {
+      escrow.checkPassphrase(first);
+      return first;
+    } catch (err) {
+      console.log(chalk.yellow(err.message));
+    }
+  }
+};
 
 header.print(welcome);
 
@@ -157,27 +200,27 @@ async.waterfall([
      * local.js
      */
     const ds = payload.datastores.fogdb;
-    // A re-run keeps a custom.pkiDir that the old local.js set (the CA keys are
-    // there). Read it before the write below replaces the file.
-    let pkiOverride;
+    // A re-run keeps a custom.pkiDir (the CA keys are there) and an
+    // http.trustProxy that the old local.js set. One read, before the write
+    // below replaces the file; it also drops the old file from the require cache.
+    let oldLocal;
     try {
-      pkiOverride = pki.overrideDir(config.appPath);
+      oldLocal = pki.readOldLocal(config.appPath);
     } catch (err) {
       status.stop();
       return next(`config/local.js exists but cannot be read, so its pkiDir cannot be kept. Fix or remove it, then re-run: ${err.message}`);
     }
-    payload.pkiDir = pkiOverride || pki.pkiDirFor(config.appPath);
+    const pkiOverride = oldLocal.pkiDir;
+    payload.pkiDir = pkiOverride || pki.defaultPkiDir(config.appPath);
     // The server certificate of the agent listener names this computer and
     // the host of each URL that the installer was given.
     payload.agentTlsSans = cleanSans([...defaultSans(), ...urlHosts(splitList(payload.server.urls))]);
     const pkiLines = pkiOverride ? `,
     pkiDir: '${jsStr(pkiOverride)}'` : '';
-    // A re-run also keeps an http.trustProxy that the old local.js set: behind
-    // a reverse proxy it makes the audit rows record the client address. The
-    // read above proved that local.js loads. JSON is valid JS for a boolean,
-    // a number, a string or a list.
-    const oldLocal = fs.existsSync(localCfg) ? require(localCfg) : undefined;
-    const trustProxy = oldLocal && oldLocal.http ? oldLocal.http.trustProxy : undefined;
+    // The kept http.trustProxy: behind a reverse proxy it makes the audit rows
+    // record the client address. JSON is valid JS for a boolean, a number, a
+    // string or a list.
+    const trustProxy = oldLocal.trustProxy;
     const httpLines = trustProxy === undefined ? '' : `
   http: {
     trustProxy: ${JSON.stringify(trustProxy)}
@@ -279,7 +322,11 @@ async.waterfall([
       settings: sails.models.setting,
       log: console.log,
       command: 'setup',
-      sans: payload.agentTlsSans
+      sans: payload.agentTlsSans,
+      // The backup in the database. Interactive: INTERACTIVE_TRIES tries at a restore; answers mode: one.
+      escrows: sails.models.agentcaescrow,
+      getPassphrase,
+      restoreTries: answersPki ? 1 : pki.INTERACTIVE_TRIES
     }).then(
       () => {
         console.log(`Agent CA files are in ${payload.pkiDir}`);
@@ -287,8 +334,8 @@ async.waterfall([
         next();
       },
       (err) => {
-        // The guard errors carry the full message: show it as is.
-        if (pki.isRootError(err)) return next(err.message);
+        // The guard errors and a weak answers-file passphrase carry the full message: show it as is.
+        if (pki.isRootError(err) || (err && err.code === 'E_ESCROW_WEAK')) return next(err.message);
         next(`Failed to make the agent CA files: ${err && err.message ? err.message : err}`);
       }
     );

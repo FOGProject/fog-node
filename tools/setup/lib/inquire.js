@@ -9,6 +9,7 @@ const Spinner = CLI.Spinner;
 const chalk = require('chalk').default;
 const database = require('../../lib/database');
 const redis = require('../../lib/redis');
+const escrow = require('../../../api/lib/agent-ca-escrow');
 const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require('./server-defaults');
 
 // Ends the install with exit code 1, for answers-file mode.
@@ -86,6 +87,15 @@ const verifyDB = (answers, next) => {
 };
 
 module.exports = {
+  // One section of the answers file ({} when it is absent), or null when the
+  // install is interactive. The agent CA backup reads pki.passphrase from it.
+  fileSection: (section) => (fileAnswers ? (fileAnswers[section] || {}) : null),
+  // One hidden prompt for an agent CA backup passphrase, normalized
+  // (api/lib/agent-ca-escrow.js). The installer and npm run agent-ca use it.
+  askPassphrase: async (message) => {
+    const answers = await inquirer.prompt([{name: 'passphrase', type: 'password', message}]);
+    return escrow.normalize(answers.passphrase);
+  },
   getDatabaseInfo: (next) => {
     let questions = [
       {

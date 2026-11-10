@@ -58,6 +58,10 @@ const verifies = (certPem, issuerPem, leaf) => {
 // The Setting that records the root CA that enrolled fog-agents pin.
 const ROOT_SETTING = 'FOG_AGENT_ROOT_FINGERPRINT';
 const ROOT_SETTING_DESCRIPTION = 'The SHA-256 fingerprint of the root CA that enrolled fog-agents pin. Setup refuses another root while this is set.';
+// The Setting that records the agent CA. Setup writes it with ROOT_SETTING, and
+// the agent CA backup (api/lib/agent-ca-escrow.js) is restored only when it matches.
+const AGENT_CA_SETTING = 'FOG_AGENT_CA_FINGERPRINT';
+const AGENT_CA_SETTING_DESCRIPTION = 'The SHA-256 fingerprint of the agent CA that issues fog-agent client certificates.';
 
 // The fingerprint of a certificate, as Node prints it (colon hex, upper case).
 const fingerprintOf = (pem) => new crypto.X509Certificate(pem).fingerprint256;
@@ -100,4 +104,4 @@ const version = (value) => {
   return /^[vV]/.test(v) ? v.slice(1) : v;
 };
 
-module.exports = {DAY_MS, CLIENT_AUTH, RSA, ROOT_SETTING, ROOT_SETTING_DESCRIPTION, MAX_CSR, fingerprintOf, isCsrPem, randomSerial, subjectOf, importPair, verifies, agentCn, leafInfo, jsonBody, text, version};
+module.exports = {DAY_MS, CLIENT_AUTH, RSA, ROOT_SETTING, ROOT_SETTING_DESCRIPTION, AGENT_CA_SETTING, AGENT_CA_SETTING_DESCRIPTION, MAX_CSR, fingerprintOf, isCsrPem, randomSerial, subjectOf, importPair, verifies, agentCn, leafInfo, jsonBody, text, version};
