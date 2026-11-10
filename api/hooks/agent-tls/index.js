@@ -3,9 +3,11 @@
  *
  * After Sails lifts, it starts an HTTPS server on custom.agentTlsPort (default
  * 8443; 0 turns it off). The server runs the same Express app as the main
- * port, so every route answers on both ports and an agent uses one base URL,
- * https://<host>:<port>, for ca.cert.pem, enroll, poll and renew. It closes the
- * server when Sails lowers.
+ * port, but it passes a request to the app only for the agent's own paths:
+ * /agent/v1/* and the two CA files (agentPath). Every other path gets a 404
+ * from the listener, so this port never serves the UI, login or admin API (it
+ * bypasses the reverse proxy). An agent uses one base URL, https://<host>:<port>,
+ * for ca.cert.pem, enroll, poll and renew. It closes the server when Sails lowers.
  *
  * TLS: the server certificate is pki/server.pem (made by api/lib/agent-pki-files.js,
  * signed by the root). The server REQUESTS a client certificate and never
@@ -34,6 +36,26 @@ const path = require('path');
 // ensureServerCert on it to hold the lift at the await.
 const pkiFiles = require('../../lib/agent-pki-files');
 
+// The CA files the agent's CA probe fetches from the same base URL. These
+// repeat two routes in config/routes.js on purpose: a route reaches the agent
+// port only when it is added here too.
+const CA_FILES = ['/management/other/ca.cert.pem', '/management/other/ca.cert.der'];
+
+/**
+ * True when the agent listener may pass `url` (a request target) to the app:
+ * a path under /agent/v1/, or exactly one of the two CA files. The query string
+ * is ignored. The path is not decoded, because Express routes on the raw path
+ * and the agent never sends a percent sign. The path must use only letters,
+ * digits and `/ - _ .`, and must equal its own normalized form, so `%`, `\`,
+ * a NUL, `..`, `.` and `//` are all refused.
+ */
+const agentPath = (url) => {
+  if (typeof url !== 'string') { return false; }
+  const raw = url.split(/[?#]/)[0];
+  if (!/^[A-Za-z0-9/_.-]+$/.test(raw) || !raw.startsWith('/') || path.posix.normalize(raw) !== raw) { return false; }
+  return raw.startsWith('/agent/v1/') || CA_FILES.includes(raw);
+};
+
 /**
  * Start the agent listener on `app`. Returns the server, or null when `port`
  * is 0 or the PKI files are missing (one warning in that case). A port that is
@@ -42,6 +64,13 @@ const pkiFiles = require('../../lib/agent-pki-files');
  */
 const startAgentListener = (app, {port, pkiDir}) => {
   if (!port) { return null; }
+  // Any other path gets a 404 here, so no session, CSRF or page code runs.
+  const handler = (req, res) => {
+    if (agentPath(req.url)) { return app(req, res); }
+    const body = JSON.stringify({error: 'not found'});
+    res.writeHead(404, {'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body)});
+    res.end(body);
+  };
   const notStarted = (err) => sails.log.warn(`Agent listener not started: cannot listen on port ${port} (${err.code || err.message}). fog-node runs without it.`);
   let server;
   try {
@@ -53,7 +82,7 @@ const startAgentListener = (app, {port, pkiDir}) => {
       requestCert: true,
       rejectUnauthorized: false,
       minVersion: 'TLSv1.2'
-    }, app);
+    }, handler);
   } catch (err) {
     sails.log.warn(`Agent listener not started: the PKI files in ${pkiDir} are missing or unreadable (${err.code || err.message}).`);
     return null;
@@ -121,3 +150,4 @@ module.exports = function defineAgentTlsHook(sails) {
 };
 
 module.exports.startAgentListener = startAgentListener;
+module.exports.agentPath = agentPath;

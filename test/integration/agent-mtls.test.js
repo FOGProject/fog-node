@@ -166,10 +166,23 @@ describe('Agent mTLS::', function () {
   after(cleanup);
 
   describe('the listener::', () => {
-    it('gives a browser-style request with no client certificate the login page', async () => {
-      const res = await mtls('GET', '/login', {headers: {Accept: 'text/html'}});
-      assert.strictEqual(res.status, 200);
-      assert.match(res.text, /name="password"/);
+    it('answers 404 for the UI, the login and the admin API, and runs no session code', async () => {
+      const before = await sessionCount();
+      for (const [method, urlPath] of [['GET', '/'], ['GET', '/login'], ['POST', '/api/v1/host'], ['GET', '/csrfToken'], ['GET', '/agent/v1/../login']]) {
+        const res = await mtls(method, urlPath, {headers: {Accept: 'text/html'}, body: method === 'POST' ? {} : undefined});
+        assert.strictEqual(res.status, 404, `${method} ${urlPath}`);
+        assert.match(res.headers['content-type'], /^application\/json/);
+        assert.deepStrictEqual(res.json, {error: 'not found'});
+        assert.strictEqual(res.headers['set-cookie'], undefined, 'no cookie');
+      }
+      assert.strictEqual(await sessionCount(), before, 'no new sess: key');
+    });
+
+    it('still serves the CA file and the agent routes', async () => {
+      const ca = await mtls('GET', '/management/other/ca.cert.pem');
+      assert.strictEqual(ca.status, 200);
+      assert.match(ca.text, /-----BEGIN CERTIFICATE-----/);
+      assert.strictEqual((await mtls('POST', '/agent/v1/poll', {body: {}})).status, 401);
     });
 
     it('serves a certificate that verifies against the root, with the right SAN entry types', async () => {
