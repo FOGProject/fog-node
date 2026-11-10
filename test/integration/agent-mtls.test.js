@@ -21,8 +21,8 @@ describe('Agent mTLS::', function () {
   const fixtureDir = support.useFixture();
   const app = () => sails.hooks.http.app;
   const AJAX = ['X-Requested-With', 'XMLHttpRequest'];
-  // Every name this file creates starts with PREFIX, which starts with one of
-  // the PREFIXES in test/lifecycle.test.js, so the audit rows are removable.
+  // Every name this file creates starts with PREFIX, so the names never
+  // collide with another test file's names in the same run.
   const RUN = crypto.randomBytes(3).toString('hex');
   const PREFIX = 'mcm' + RUN;
   let seq = 0;

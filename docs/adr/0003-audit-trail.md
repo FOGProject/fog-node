@@ -105,12 +105,8 @@ enumeration (1.6 stores none either).
 - A full-page save that fails answers 302. `general/save` sets
   `req.audit.outcome` (`denied` for a refused group change, `failed` for any other
   error), and the seam uses it in place of the status.
-- At the end of a run, the test suite (`test/lifecycle.test.js`) deletes the
-  `AuditLog` rows that meet both conditions:
-  - `createdAt` is at or after the start of the run.
-  - `createdBy` is `mochatestadmin` or starts with one of `PREFIXES`, or
-    `subjectLabel` starts with one of `PREFIXES`.
-  The one test that checks the `agent-<fingerprint>` fallback host name also deletes
-  the rows of the hosts it made, by `subjectId`. A dev server that shares the
-  database keeps all its other rows. The rows of anonymous denied requests and the
-  `auth.token.rejected` rows of the suite have no name, so they stay.
+- The test suite (`test/lifecycle.test.js`) runs on `<db>_test`, never on the
+  configured database, and the suite empties that database before each run. It
+  stops with an error if the name does not end in `_test`. The suite deletes no
+  `AuditLog` rows itself, so a dev server that uses the configured database keeps
+  all its rows.

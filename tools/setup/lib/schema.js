@@ -1,5 +1,6 @@
 const config = require('../../lib/config');
 const sails = require('sails');
+const _ = require('@sailshq/lodash');
 var adminRole = {
   name: 'Administrator',
   isAdmin: true,
@@ -16,8 +17,12 @@ var schema = {
 };
 
 module.exports = {
-  generate: (adminPassword, adminEmail, next) => {
+  // `overrides` (optional) is merged over a copy of the config, for example
+  // the datastore of the UI smoke test (tools/smoke/ui.js). It comes after
+  // `next` so that the two setup callers (dev.js, index.js) stay as they are.
+  generate: (adminPassword, adminEmail, next, overrides) => {
     let cfg = config.getMergedSettings();
+    if (overrides) cfg = _.merge({}, cfg, overrides);
     cfg.log = {
       level: 'error',
     };

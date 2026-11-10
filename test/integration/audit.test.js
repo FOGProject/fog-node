@@ -5,7 +5,6 @@ const path = require('path');
 const supertest = require('supertest');
 const agentCsr = require('../support/agent-csr');
 const support = require('../support/pki');
-const {PREFIXES} = require('../lifecycle.test');
 
 // The audit trail core (docs/adr/0003-audit-trail.md): the AuditLog model, the
 // record helper, the request seam (api/hooks/audit), the sign-in events and the
@@ -14,9 +13,8 @@ const {PREFIXES} = require('../lifecycle.test');
 // The seam writes after the response finishes, so a test that expects a row
 // polls for it. A test that expects NO row makes its request, then a sentinel
 // request that does write a row (a denied GET by the same actor), waits for the
-// sentinel row, and only then asserts the absence. Every name a test creates
-// starts with a lifecycle PREFIXES entry. The correlation id is not exposed to
-// a client, so no test filters on it.
+// sentinel row, and only then asserts the absence. The correlation id is not
+// exposed to a client, so no test filters on it.
 describe('Audit trail::', function () {
   this.timeout(120000);
 
@@ -26,9 +24,9 @@ describe('Audit trail::', function () {
   const AJAX = ['X-Requested-With', 'XMLHttpRequest'];
   const RUN = crypto.randomBytes(3).toString('hex');
   // Users, roles and attempted sign-in names.
-  const PREFIX = PREFIXES[0] + '-aud' + RUN;
+  const PREFIX = 'mocha-aud' + RUN;
   // Hosts, tokens and agent hostnames: a host name is at most 15 characters.
-  const SHORT = PREFIXES[1] + RUN;
+  const SHORT = 'mc' + RUN;
   const PASSWORD = 'mocha-audit-pw';
   let seq = 0;
   const uniq = () => PREFIX + '-' + (seq++);
