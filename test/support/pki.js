@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {ensurePki} = require('../../tools/setup/pki');
+const {ROOT_SETTING, ROOT_SETTING_DESCRIPTION, fingerprintOf} = require('../../api/lib/agent-pki');
 
 // One PKI for the whole mocha run. RSA-4096 generation is slow, so the tests
 // share it. The folder is read-only for the tests: one that deletes, replaces
@@ -28,17 +29,37 @@ const foreign = () => {
   return foreignPki;
 };
 
+// The fingerprint of the root in a PKI folder.
+const rootOf = (dir) => fingerprintOf(fs.readFileSync(path.join(dir, 'root.pem')));
+
+// Set the root fingerprint Setting to a value, or remove it with undefined.
+// An existing record keeps its description; a new one gets the setup text.
+const setRoot = async (value) => {
+  if (value === undefined) return Setting.destroy({name: ROOT_SETTING});
+  const updated = await Setting.updateOne({name: ROOT_SETTING}).set({value});
+  if (!updated) await Setting.create({name: ROOT_SETTING, description: ROOT_SETTING_DESCRIPTION, value});
+};
+
 // Point sails.config.custom.pkiDir at the shared fixture for one describe
-// block, and restore it after. Returns a getter for the fixture path.
+// block, and restore it after. The Setting that records the agent root is set
+// to the fixture root, and put back as it was (or removed) after. Returns a
+// getter for the fixture path.
 const useFixture = () => {
   let dir;
   let saved;
+  let savedRoot;
   before(async () => {
     dir = await fixture();
     saved = sails.config.custom.pkiDir;
     sails.config.custom.pkiDir = dir;
+    const record = await Setting.findOne({name: ROOT_SETTING});
+    savedRoot = record ? record.value : undefined;
+    await setRoot(rootOf(dir));
   });
-  after(() => { sails.config.custom.pkiDir = saved; });
+  after(async () => {
+    sails.config.custom.pkiDir = saved;
+    await setRoot(savedRoot);
+  });
   return () => dir;
 };
 
@@ -57,4 +78,4 @@ const copy = (dir) => {
   return to;
 };
 
-module.exports = {fixture, foreign, useFixture, copy};
+module.exports = {fixture, foreign, useFixture, copy, rootOf, setRoot};

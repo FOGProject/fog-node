@@ -88,6 +88,13 @@ const writeCert = (file, pem) => fs.writeFileSync(file, pem.endsWith('\n') ? pem
 // UTC YYYYMMDDHHMMSS: the suffix of a file that a new one replaces.
 const stamp = () => new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
 
+const {fingerprintOf, ROOT_SETTING, ROOT_SETTING_DESCRIPTION} = shared;
+
+// An error that the setup tools recognize by its code.
+const rootError = (code, message) => Object.assign(new Error(message), {code});
+// Is it one of the two guard errors? The tools print its message and stop.
+const isRootError = (err) => Boolean(err) && (err.code === 'E_AGENT_ROOT_MISSING' || err.code === 'E_AGENT_ROOT_MISMATCH');
+
 /**
  * Make the CA files that are missing. As 1.6: a certificate file is what
  * "exists" means.
@@ -99,10 +106,25 @@ const stamp = () => new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
  *   suffix first. A re-mint with root.key missing throws.
  * - agent-ca-bundle.pem is brought up to date on every call. It is written
  *   only when its text differs, so a second call changes no file.
+ * - opts.expectedRoot (a fingerprint256 string) guards the root. A missing
+ *   root.pem throws E_AGENT_ROOT_MISSING, and a root.pem with another
+ *   fingerprint throws E_AGENT_ROOT_MISMATCH. Both throw before any file is
+ *   written. Without it, the rules above apply unchanged.
+ * Returns {rootFingerprint}, the fingerprint of root.pem after the call.
  */
-const ensurePki = async (dir) => {
-  fs.mkdirSync(dir, {recursive: true, mode: 0o700});
+const ensurePki = async (dir, opts = {}) => {
+  const {expectedRoot} = opts;
   const f = (name) => path.join(dir, name);
+  if (expectedRoot) {
+    if (!exists(f('root.pem'))) {
+      throw rootError('E_AGENT_ROOT_MISSING', `The agent root ${f('root.pem')} is missing, but the database records the root ${expectedRoot}.`);
+    }
+    const onDisk = fingerprintOf(fs.readFileSync(f('root.pem'), 'utf8'));
+    if (onDisk !== expectedRoot) {
+      throw rootError('E_AGENT_ROOT_MISMATCH', `The agent root ${f('root.pem')} has the fingerprint ${onDisk}, but the database records the root ${expectedRoot}.`);
+    }
+  }
+  fs.mkdirSync(dir, {recursive: true, mode: 0o700});
 
   if (!exists(f('root.pem'))) {
     if (exists(f('root.key'))) fs.renameSync(f('root.key'), f(`root.key.${stamp()}`));
@@ -130,6 +152,51 @@ const ensurePki = async (dir) => {
   if (!exists(f('agent-ca-bundle.pem')) || fs.readFileSync(f('agent-ca-bundle.pem'), 'utf8') !== bundle) {
     writeCert(f('agent-ca-bundle.pem'), bundle);
   }
+  return {rootFingerprint: fingerprintOf(rootPem)};
+};
+
+/**
+ * The setup step for the agent CAs. It records the root fingerprint in the
+ * Setting ROOT_SETTING (api/lib/agent-pki.js) and refuses another root while it is set.
+ * - settings: the Setting model. log: a function for the printed lines.
+ * - newRoot: true after --new-agent-root. With a recorded root, the four CA
+ *   files that exist get a timestamp suffix, so ensurePki makes new CAs.
+ * - command: 'setup' or 'setup:dev', the npm script that the messages name.
+ * Returns {rootFingerprint}. A refusal throws an error that keeps its code
+ * (E_AGENT_ROOT_MISSING or E_AGENT_ROOT_MISMATCH) and has the full message.
+ */
+const setupPki = async ({pkiDir, newRoot, settings, log, command}) => {
+  const record = await settings.findOne({name: ROOT_SETTING});
+  const recorded = record ? record.value : undefined;
+  const replace = Boolean(newRoot && recorded);
+
+  if (replace) {
+    const suffix = stamp();
+    for (const name of ['root.pem', 'root.key', 'agent-ca.pem', 'agent-ca.key']) {
+      const file = path.join(pkiDir, name);
+      if (exists(file)) fs.renameSync(file, `${file}.${suffix}`);
+    }
+  }
+
+  let result;
+  try {
+    result = await ensurePki(pkiDir, {expectedRoot: replace ? undefined : recorded});
+  } catch (err) {
+    if (!isRootError(err)) throw err;
+    throw rootError(err.code, `${err.message}\n` +
+      `Restore the pki folder from your backup to ${pkiDir}, then run setup again.\n` +
+      'To start over with a new root on purpose (every enrolled agent must then be re-enrolled by hand), ' +
+      `run: npm run ${command} -- --new-agent-root`);
+  }
+
+  if (replace) log('A new agent root was made. Every enrolled fog-agent must be re-enrolled with the new ca.cert.pem.');
+
+  if (record) {
+    await settings.updateOne({name: ROOT_SETTING}).set({value: result.rootFingerprint});
+  } else {
+    await settings.create({name: ROOT_SETTING, description: ROOT_SETTING_DESCRIPTION, value: result.rootFingerprint});
+  }
+  return result;
 };
 
 /**
@@ -146,4 +213,4 @@ const overrideDir = (appPath) => {
 // The folder the setup tools use: the local.js override, else <app>/pki as config/custom.js.
 const pkiDirFor = (appPath) => overrideDir(appPath) || path.join(appPath, 'pki');
 
-module.exports = {ensurePki, overrideDir, pkiDirFor};
+module.exports = {ensurePki, setupPki, isRootError, overrideDir, pkiDirFor};
