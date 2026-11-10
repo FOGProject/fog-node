@@ -31,7 +31,8 @@ module.exports = {
   name: 'wol',
   routes: {
     'POST /api/v1/host/:id/wol': async function (req, res) {
-      // Plugin routes aren't covered by the core action policies, so guard here.
+      // The plugins hook runs the '*' policy chain first, which sets req.user
+      // for a session, a jwt cookie or an API token. Keep this guard as defense.
       if (!req.user) { return res.forbidden(); }
       let host = await sails.models.host.findOne({ id: req.param('id') });
       if (!host) { return res.notFound(); }

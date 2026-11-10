@@ -250,11 +250,12 @@ describe('Account preferences::', () => {
       assert.strictEqual(themePref(res.text), '');
     });
 
-    // api/hooks/plugins wraps each plugin function route to run loadPreferences
-    // first. Sails sends a rejected promise to next() (a 500) only when the
-    // bound handler is itself an async function, so the wrapper must be one.
+    // api/hooks/plugins wraps each plugin function route to run the '*' policy
+    // chain (loadPreferences included) first. Sails sends a rejected promise to
+    // next() (a 500) only when the bound handler is itself an async function,
+    // so the wrapper must be one.
     // Otherwise the rejection is unhandled, and it stops the server.
-    it('keeps a failing plugin route a 500 behind the loadPreferences wrapper', async () => {
+    it('keeps a failing plugin route a 500 behind the policy-chain wrapper', async () => {
       // The wol route (plugins/wol) awaits Host.findOne(). Make it reject.
       const host = sails.models.host;
       const findOne = host.findOne;

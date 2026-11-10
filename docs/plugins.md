@@ -22,10 +22,10 @@ enable only what they need instead of one monolith.
 module.exports = {
   name: 'wol',
   // Routes bound after the app routes. Handlers are (req, res) functions.
-  // NOTE: plugin routes are not covered by the core action policies — guard
-  // auth yourself (e.g. `if (!req.user) return res.forbidden();`). The loader
-  // runs only the read-only loadPreferences policy first, so a page that
-  // renders the layout gets the user's theme.
+  // NOTE: a route whose value is a function gets the `'*'` chain of
+  // config/policies.js first, as a core page does. Check the
+  // permission yourself: read req.user.permissions.stock.<identity>.<action>
+  // (plugins/printer/index.js defines a local `can()` helper for this).
   routes: {
     'POST /api/v1/host/:id/wol': async function (req, res) { /* … */ }
   },

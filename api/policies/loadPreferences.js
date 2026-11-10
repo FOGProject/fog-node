@@ -9,8 +9,9 @@
  * the system theme.
  *
  * config/policies.js runs it on the '*' and account/* chains. A plugin page
- * route bound as a plain function skips the policy chain, so
- * api/hooks/plugins/index.js runs this first on each one.
+ * route bound as a plain function skips Sails' policy binding, so
+ * api/hooks/plugins/index.js runs the '*' chain (this policy included) first
+ * on each one.
  */
 const UserPrefStore = require('../services/UserPrefStore');
 
