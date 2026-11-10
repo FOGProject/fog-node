@@ -38,19 +38,25 @@
  *   created    {host, storageGroup}: the names the round trips created; a
  *              name is undefined when its round trip failed
  *
- * Environment:
- *   FOG_UI_PASSWORD  the Administrator password (default: fogadmin1, the
- *                    `npm run setup:dev` default)
+ * Database: the run never uses the configured database. It empties the
+ * database `<configured name>_test` (tools/lib/test-db.js), seeds the
+ * Administrator account there with a password that exists only in memory
+ * (the same seed as `npm run setup:dev`), and lifts on it. Redis sessions are
+ * shared with a dev server, but session ids are random, so they do not collide.
  */
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const {chromium} = require('playwright');
 const server = require('./lib/server');
+const testDb = require('../lib/test-db');
+const schema = require('../setup/lib/schema');
 
 const root = server.root;
 const port = 1339;
 const base = `http://127.0.0.1:${port}`;
-const password = process.env.FOG_UI_PASSWORD || 'fogadmin1';
+// A new password for each run. It only ever guards the test database.
+const password = crypto.randomBytes(12).toString('hex');
 // --prod lifts with the production asset build: concatenated and minified
 // bundles (issue #115 broke that build, and nothing noticed).
 const prod = process.argv.includes('--prod');
@@ -219,12 +225,45 @@ const CHECKS = fs.readdirSync(checksDir).filter((f) => f.endsWith('.js')).sort()
 });
 
 async function main() {
+  const target = await testDb.prepare();
+  const datastores = {[target.datastore]: target.overrides};
+  // Seed the Administrator into the test database, then close that Sails.
+  // custom.testDatabase makes config/bootstrap.js refuse any other database.
+  await new Promise((resolve, reject) => {
+    schema.generate(password, 'admin@example.com', (err) => (err ? reject(err) : resolve()),
+      {datastores, custom: {testDatabase: target.database}});
+  });
+  await new Promise((resolve) => require('sails').lower(() => resolve()));
+  // The datastore overrides reach the server as sails_datastores__<name>__<key>.
+  const datastoreEnv = {};
+  for (const [key, value] of Object.entries(target.overrides)) {
+    datastoreEnv[`sails_datastores__${target.datastore}__${key}`] = value;
+  }
   // Production refuses to lift without socket origins. `npm run setup`
   // writes them, but `npm run setup:dev` does not, so the test sets the one
   // origin that its browser uses.
   const child = server.start({
     port, prod, log: serverLog,
-    env: {'sails_sockets__onlyAllowOrigins': JSON.stringify([base])}
+    env: {
+      'sails_sockets__onlyAllowOrigins': JSON.stringify([base]),
+      'sails_custom__testDatabase': target.database,
+      ...datastoreEnv
+    }
+  });
+  // With custom.testDatabase set, config/bootstrap.js prints the database the
+  // models use, and refuses to lift on another one. Keep that line, so the
+  // check below does not depend on the 200 lines that serverLog keeps.
+  let reported;
+  let childOut = '';
+  child.stdout.on('data', function watchDatabase(buf) {
+    childOut += buf.toString();
+    const match = /fog-node models database: (.+?)\r?\n/.exec(childOut);
+    if (match) {
+      reported = match[1];
+      child.stdout.off('data', watchDatabase);
+    } else {
+      childOut = childOut.slice(-500);
+    }
   });
   let browser;
   let failed = 0;
@@ -247,6 +286,10 @@ async function main() {
   };
   try {
     await server.waitForReady(child, base);
+    // No browser action unless the server reported the test database.
+    if (reported !== target.database) {
+      throw new Error(`the server uses the database "${reported}", not the test database "${target.database}"`);
+    }
     browser = await chromium.launch();
     const page = await browser.newPage();
     const loginErrors = await collectErrors(page, () => login(page));
@@ -280,6 +323,8 @@ async function main() {
     process.exit(1);
   }
   console.log('\nAll UI checks passed.');
+  // The seed's Sails app and its Redis client keep the process alive.
+  process.exit(0);
 }
 
 main();

@@ -1,5 +1,6 @@
 const assert = require('assert');
 const {MongoClient} = require('mongodb');
+const {datastoreUrl} = require('../../tools/lib/database');
 const migration = require('../../tools/migrate/lib/migration');
 const revision2 = require('../../migrations/2');
 
@@ -18,8 +19,7 @@ describe('Schema revision 2::', () => {
       const url = new URL(ds.url);
       return {url: ds.url, name: `${decodeURIComponent(url.pathname.slice(1)) || 'fog'}_migration_test`};
     }
-    const auth = ds.user ? `${ds.user}:${ds.password || ''}@` : '';
-    return {url: `mongodb://${auth}${ds.host}:${ds.port}/${ds.database}`, name: `${decodeURIComponent(ds.database)}_migration_test`};
+    return {url: datastoreUrl(ds), name: `${decodeURIComponent(ds.database)}_migration_test`};
   }
 
   const run = (from, to) => new Promise((resolve, reject) => {

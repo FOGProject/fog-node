@@ -17,7 +17,7 @@
  *
  * Usage: npm run test:install
  *   It needs MongoDB and Redis. It installs into the database
- *   fog_install_smoke, which it drops first, and an image directory under the
+ *   fog_install_smoke_test, which it drops first, and an image directory under the
  *   OS temp directory. It saves config/local.js and config/models.js first
  *   and puts them back at the end, so a dev checkout keeps its config.
  *
@@ -31,11 +31,14 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const server = require('./lib/server');
+const testDb = require('../lib/test-db');
 
 const root = server.root;
 const port = 1340;
 const base = `http://127.0.0.1:${port}`;
-const dbName = 'fog_install_smoke';
+// A throwaway name that ends in _test, as every test database does
+// (tools/lib/test-db.js). dropDatabase refuses it if it is the configured one.
+const dbName = 'fog_install_smoke' + testDb.SUFFIX;
 const dbHost = process.env.FOG_SMOKE_DB_HOST || '127.0.0.1';
 const configs = ['local.js', 'models.js'].map((f) => path.join(root, 'config', f));
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'fog-install-smoke-'));
@@ -54,6 +57,10 @@ const keepCookies = (res) => {
 const cookieHeader = () => [...jar].map(([k, v]) => `${k}=${v}`).join('; ');
 
 async function dropDatabase() {
+  // The guard: never drop the database this checkout is configured to use.
+  if (dbName === testDb.configuredName()) {
+    throw new Error(`Refusing to drop "${dbName}": it is the configured database.`);
+  }
   const {MongoClient} = require('mongodb');
   const client = await MongoClient.connect(`mongodb://${dbHost}:27017`, {useUnifiedTopology: true});
   try {

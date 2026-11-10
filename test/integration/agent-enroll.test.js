@@ -50,8 +50,7 @@ describe('Agent enroll::', function () {
     agent_version: 'v0.0.1',
     os: 'linux',
     arch: 'amd64',
-    // A prefixed name, so the audit rows of the test are removable
-    // (test/lifecycle.test.js). The fallback name test passes its own.
+    // The fallback name test passes its own.
     hostname: uniq(),
     identity: {system_uuid: '', system_serial: '', board_serial: '', chassis_asset: '', macs: []},
     csr_pem: c.pem
@@ -190,19 +189,11 @@ describe('Agent enroll::', function () {
     });
 
     it('unknown-host: a hostname that fails the name rule or is over 15 characters becomes agent-<fingerprint>', async () => {
-      const hostIds = [];
-      try {
-        for (const hostname of ['bad name!', 'x'.repeat(16), '']) {
-          const c = await newCsr();
-          await enroll(c, {hostname, identity: identity({macs: [mac()]})}).expect(202);
-          const host = await hostOf((await rowOf(c)).host);
-          hostIds.push(host.id);
-          assert.strictEqual(host.name, 'agent-' + c.fingerprint.slice(0, 8), `hostname ${JSON.stringify(hostname)}`);
-        }
-      } finally {
-        // The fallback name has no suite prefix, so remove the audit rows of
-        // these hosts by their id (the lifecycle cleanup cannot attribute them).
-        await AuditLog.destroy({subjectType: 'host', subjectId: hostIds});
+      for (const hostname of ['bad name!', 'x'.repeat(16), '']) {
+        const c = await newCsr();
+        await enroll(c, {hostname, identity: identity({macs: [mac()]})}).expect(202);
+        const host = await hostOf((await rowOf(c)).host);
+        assert.strictEqual(host.name, 'agent-' + c.fingerprint.slice(0, 8), `hostname ${JSON.stringify(hostname)}`);
       }
     });
 

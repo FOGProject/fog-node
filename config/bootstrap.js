@@ -11,6 +11,19 @@
 
 module.exports.bootstrap = async function() {
 
+  // A test run (test/lifecycle.test.js, tools/smoke/ui.js) sets
+  // custom.testDatabase to the database it must use (tools/lib/test-db.js).
+  // Report the database the models really use, read from the live
+  // connection, and refuse to lift on any other one. This runs before the
+  // index writes below. Nothing else sets custom.testDatabase.
+  if (sails.config.custom.testDatabase) {
+    const name = User.getDatastore().manager.databaseName;
+    console.log(`fog-node models database: ${name}`);
+    if (name !== sails.config.custom.testDatabase) {
+      throw new Error(`Refusing to lift: the models use the database "${name}", not the test database "${sails.config.custom.testDatabase}".`);
+    }
+  }
+
   // The ?v= value on the production bundle links (views/layouts/layout.ejs).
   // A production lift rebuilds the bundles, so each lift gets a new value and
   // browsers fetch the new bundle despite production's one-year cache.
