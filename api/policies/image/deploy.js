@@ -1,6 +1,6 @@
 module.exports = async function(req, res, next) {
   'use strict';
-  if (_.get(req, 'user.permissions.stock.image.deploy')) {
+  if (sails.helpers.audit.can(req, 'image.deploy')) {
     return next();
   }
   res.forbidden();

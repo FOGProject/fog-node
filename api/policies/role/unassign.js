@@ -1,6 +1,6 @@
 module.exports = async function(req, res, next) {
   'use strict';
-  if (_.get(req, 'user.permissions.stock.role.unassign')) {
+  if (sails.helpers.audit.can(req, 'role.unassign')) {
     return next();
   }
   res.forbidden();

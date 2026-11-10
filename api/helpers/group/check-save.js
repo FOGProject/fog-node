@@ -24,7 +24,7 @@
  *
  * It returns {error: {status, message}} when the write must stop (400 for a
  * name that is not text, 409 for a taken name, 403 for a denied membership
- * change), else {oldGroup}: the Group as read before a rename, for
+ * change, which also carries the refusing `permission`), else {oldGroup}: the Group as read before a rename, for
  * group/rename after the write.
  *
  * Usage: let check = await sails.helpers.group.checkSave.with({model, id, values, permissions: req.user.permissions})
@@ -92,7 +92,8 @@ module.exports = {
       }
       let denied = await sails.helpers.group.authorize.with({permissions, names});
       if (denied) {
-        return {error: {status: 403, message: denied}};
+        // The permission that refused goes with the message, for the audit trail.
+        return {error: {status: 403, message: denied.message, permission: denied.permission}};
       }
     }
     return {};

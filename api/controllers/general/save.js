@@ -27,7 +27,10 @@ module.exports = {
     // Permission: the generic create/update policies can't run here (no :model
     // param), so check the relevant permission for the derived model directly.
     let perm = isUpdate ? 'update' : 'create';
-    if (!_.get(req, 'user.permissions.stock.' + model + '.' + perm)) {
+    // The audit trail (api/hooks/audit): the permission before the decision,
+    // and the row once it is known.
+    sails.helpers.audit.subject(req, model, null, id);
+    if (!sails.helpers.audit.can(req, model + '.' + perm)) {
       res.forbidden();
       return res.end();
     }
@@ -123,7 +126,11 @@ module.exports = {
         model, id: isUpdate ? id : undefined, values, permissions: req.user.permissions
       });
       if (check.error) {
-        if (check.error.status === 403) { failStatus = 403; }
+        if (check.error.status === 403) {
+          failStatus = 403;
+          // The group permission that refused it (the audit trail).
+          _.set(req, 'audit.permission', check.error.permission);
+        }
         throw new Error(check.error.message);
       }
       oldGroup = check.oldGroup;
@@ -133,6 +140,7 @@ module.exports = {
       if (isUpdate) {
         let saved = await sails.models[model].updateOne({ id }).set(values);
         exists = !!saved;
+        if (saved) { sails.helpers.audit.subject(req, model, saved); }
         // The members keep their membership through a rename, as in 1.6.
         if (oldGroup && saved && saved.name !== oldGroup.name) {
           await sails.helpers.group.rename.with({from: oldGroup.name, to: saved.name});
@@ -140,6 +148,7 @@ module.exports = {
       } else {
         let created = await sails.models[model].create(values).fetch();
         recordId = created.id;
+        sails.helpers.audit.subject(req, model, created);
       }
       // Apply many-to-many associations (replace == authoritative set).
       for (let assoc of _.keys(collections)) {
@@ -161,6 +170,10 @@ module.exports = {
       if (model === 'group' && err && err.code === 'E_UNIQUE') {
         msg = isUpdate ? sails.models.group.takenText : sails.models.group.existsText;
       }
+      // The audit trail: a full-page failure answers 302, which the seam
+      // would read as allowed. A refused group change is denied, any other
+      // error is failed.
+      req.audit.outcome = failStatus === 403 ? 'denied' : 'failed';
       // Modal/AJAX submit -> JSON, and the modal shows the message itself;
       // full-page submit -> back to the form, with the message as a toast on
       // the next page (api/helpers/flash.js).

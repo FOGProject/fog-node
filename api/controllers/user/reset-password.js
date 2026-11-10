@@ -14,9 +14,11 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     let req = this.req;
+    // can() first: it notes the permission, so the API-token refusal carries it too.
+    let mayUpdate = sails.helpers.audit.can(req, 'user.update');
     // Password changes are never permitted over an API token.
     if (req.authVia === 'apitoken') return exits.forbidden();
-    if (!_.get(req, 'user.permissions.stock.user.update')) return exits.forbidden();
+    if (!mayUpdate) return exits.forbidden();
     if (inputs.password !== inputs.passwordConfirm) return exits.badRequest({ message: 'Passwords do not match.' });
     let target = await User.findOne({ id: inputs.id });
     if (!target) return exits.notFound();

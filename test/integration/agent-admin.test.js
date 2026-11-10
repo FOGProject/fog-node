@@ -39,7 +39,9 @@ describe('Agent admin::', function () {
     agent_version: '1.0.0',
     os: 'linux',
     arch: 'amd64',
-    hostname: '',
+    // A prefixed name, so the audit rows of the test are removable
+    // (test/lifecycle.test.js).
+    hostname: uniq(),
     identity: {system_uuid: '', system_serial: '', board_serial: '', chassis_asset: '', macs},
     csr_pem: c.pem
   }, extra);

@@ -24,6 +24,10 @@ module.exports.bootstrap = async function() {
   // agentId), for the same reason.
   await sails.helpers.agent.ensureIndexes();
 
+  // The audit trail indexes (createdAt, createdBy, correlationId, outcome and
+  // the subject), for the same reason.
+  await sails.helpers.audit.ensureIndexes();
+
   // By convention, this is a good place to set up fake data during development.
   //
   // For example:

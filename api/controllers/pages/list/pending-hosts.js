@@ -22,7 +22,7 @@ module.exports = {
     }
   },
   fn: async function () {
-    if (!_.get(this.req, 'user.permissions.stock.host.read')) {
+    if (!sails.helpers.audit.can(this.req, 'host.read')) {
       throw 'forbidden';
     }
     let data = {

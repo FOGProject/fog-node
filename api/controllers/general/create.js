@@ -31,6 +31,8 @@ module.exports = {
     // a host's groups change that the caller may not make (403).
     let check = await sails.helpers.group.checkSave.with({model, values: params, permissions: req.user.permissions});
     if (check.error) {
+      // A refusal names the group permission that refused it (the audit trail).
+      if (check.error.permission) { _.set(req, 'audit.permission', check.error.permission); }
       throw {[{400: 'badRequest', 403: 'forbidden', 409: 'conflict'}[check.error.status]]: {message: check.error.message}};
     }
     let obj = await sails.models[model].create(params)
@@ -45,6 +47,8 @@ module.exports = {
         return {badRequest: err};
       })
       .fetch();
+    // The audit trail: the row that this request wrote (api/hooks/audit).
+    sails.helpers.audit.subject(req, model, obj);
     return await sails.models[model].findOne({id: obj.id}).populateAll();
   }
 };

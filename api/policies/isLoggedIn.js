@@ -16,7 +16,12 @@ module.exports = async (req, res, next) => {
       req.authVia = 'apitoken';
       return req.login(user.toJSON(), { session: false }, (err) => err ? next(err) : next());
     }
-    // Unknown token: fall through unauthenticated -> isAuthenticated will 403.
+    // Unknown token: record it (never the token value), then fall through
+    // unauthenticated -> isAuthenticated will 403.
+    await sails.helpers.audit.record.with({req, row: {
+      type: 'auth.token.rejected', outcome: 'denied', subjectType: 'system',
+      authSource: 'apitoken', createdBy: ''
+    }});
   }
 
   // 2) Session / JWT (cookie or bearer) auth -- existing behaviour.
@@ -24,7 +29,9 @@ module.exports = async (req, res, next) => {
     await passport.authenticate(sails.config.globals.jwtAuthMechanisms, { session: false }, async (err, user) => {
       if (err) return next(err);
       if (!user) return next();
-      req.authVia = 'session';
+      // The JWT strategy (cookie or header). A plain browser session sets no
+      // authVia: the audit trail reads that as 'session'.
+      req.authVia = 'jwt';
       user = user.toJSON();
       // keepSessionInfo: Passport >=0.6 regenerates the session on req.login
       // (fixation protection). Since this policy re-logs-in on every

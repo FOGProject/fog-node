@@ -16,7 +16,8 @@
  * agent in the same request and leaves `cert` ''.
  *
  * Inputs: row (an AgentEnrollment record), via (token, deploy or admin), by
- * (the admin's user name, '' when automatic), keepCert.
+ * (the admin's user name, '' when automatic), keepCert, req (optional, for the
+ * audit row `agent.enroll` that it writes).
  * Output {pem, agentId, notAfter}: pem is the leaf then the agent CA.
  *
  * Exits:
@@ -35,14 +36,15 @@ module.exports = {
     row: {type: 'ref', required: true},
     via: {type: 'string', required: true},
     by: {type: 'string', defaultsTo: ''},
-    keepCert: {type: 'boolean', defaultsTo: false}
+    keepCert: {type: 'boolean', defaultsTo: false},
+    req: {type: 'ref', defaultsTo: null, description: 'The request, for the audit row.'}
   },
   exits: {
     success: {outputType: 'ref', description: '{pem, agentId, notAfter}'},
     notBound: {description: 'The row has no host, or the host is gone.'},
     signing: {description: 'The signing failed.'}
   },
-  fn: async function ({row, via, by, keepCert}) {
+  fn: async function ({row, via, by, keepCert, req}) {
     const Host = sails.models.host;
     const host = row.host ? await Host.findOne({id: row.host}) : undefined;
     if (!host) { throw 'notBound'; }
@@ -88,6 +90,10 @@ module.exports = {
       decidedBy: by,
       decidedVia: via,
       cert: keepCert ? pem : ''
+    });
+    // The 1.6 trail text (Enrollment::_issue): how, and which key.
+    await sails.helpers.agent.audit.with({
+      req, row, by, text: `issued via ${via}, key ${row.fingerprint.slice(0, 16)}`
     });
     return {pem, agentId, notAfter};
   }

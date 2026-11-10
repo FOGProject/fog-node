@@ -11,12 +11,26 @@ module.exports = {
   fn: async function (inputs, exits) {
     let req = this.req;
     let res = this.res;
+    // The attempted name for a refused sign-in row: trimmed, cut to the 191
+    // characters of a 1.6 user name.
+    const attempted = String(req.param('username') || '').trim().slice(0, 191);
+    // The auth.login.failed row. No reason is stored (1.6 stores none: it
+    // would help enumerate users). Only the outcome differs.
+    const recordFailed = (outcome) => sails.helpers.audit.record.with({req, row: {
+      type: 'auth.login.failed', outcome, subjectType: 'user', subjectId: '',
+      subjectLabel: attempted, createdBy: attempted, authSource: 'local', text: ''
+    }});
     await passport.authenticate(sails.config.globals.authenticationMechanisms, async (err, user, info) => {
-      if (err) return exits.error(err);
+      if (err) {
+        // A strategy error (the database) is a failed sign-in, not a refused one.
+        await recordFailed('failed');
+        return exits.error(err);
+      }
       // No user => bad credentials. Return a clean 401 (JSON) or bounce back to
       // the login form, instead of calling req.login(undefined) which throws a
       // 500 ("Failed to serialize user into session").
       if (!user) {
+        await recordFailed('denied');
         let message = (info && info.message) || 'Invalid username or password';
         if (req.wantsJSON) {
           res.status(401);
@@ -30,6 +44,10 @@ module.exports = {
       }
       await req.login(user, async (err) => {
         if (err) return exits.error(err);
+        await sails.helpers.audit.record.with({req, row: {
+          type: 'auth.login', outcome: 'allowed', subjectType: 'user', subjectId: user.id,
+          subjectLabel: user.username, createdBy: user.username, authSource: 'local'
+        }});
         await jwt.sign(
           {user: user.id},
           sails.config.auth.jwt.secret,

@@ -10,7 +10,7 @@ module.exports = {
   description: 'List the agent enrollment tokens.',
   fn: async function () {
     const res = this.res;
-    if (!_.get(this.req, 'user.permissions.stock.host.read')) {
+    if (!sails.helpers.audit.can(this.req, 'host.read')) {
       return res.forbidden();
     }
     const now = Date.now();

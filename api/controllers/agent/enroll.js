@@ -96,10 +96,16 @@ module.exports = {
       not_after: result.notAfter
     });
     const signing = () => res.status(503).json({status: 'error', reason: 'signing'});
-    // Run the automatic approval; answer 200, 503 or (when it waits) 202.
-    const autoApprove = async (row) => {
+    // The 1.6 audit row of a transition (Enrollment::_audit), as the agent.
+    const audit = (row, what) => sails.helpers.agent.audit.with({req, row, text: what, by: ''});
+    // Run the automatic approval; answer 200, 503 or (when it waits) 202. On a
+    // first contact that waits, 1.6 records why (a repeat records nothing).
+    const autoApprove = async (row, firstContact = false) => {
       try {
-        const result = await sails.helpers.agent.autoApprove.with({row, token: text(body.token, MAX_TOKEN)});
+        const result = await sails.helpers.agent.autoApprove.with({row, token: text(body.token, MAX_TOKEN), req});
+        if (!result && firstContact) {
+          await audit(row, row.reason === 'no-mac' ? 'waiting: no MAC address reported' : `waiting: ${row.reason}`);
+        }
         return result ? issued(result) : pending(row);
       } catch (unused) {
         return signing();
@@ -148,7 +154,9 @@ module.exports = {
       }
       if (found.state === 'issued') {
         // The agent lost its certificate but kept its key. An admin looks at it.
-        return pending(await Enrollment.updateOne({id: found.id}).set({state: 'pending', reason: 'reissue'}));
+        const again = await Enrollment.updateOne({id: found.id}).set({state: 'pending', reason: 'reissue'});
+        await audit(again, 'waiting: reissue');
+        return pending(again);
       }
       // Still pending: refresh the row, and re-check the automatic paths. A
       // token may be valid now, or the deploy may have finished.
@@ -195,6 +203,6 @@ module.exports = {
       });
       row = await Enrollment.updateOne({id: row.id}).set({host: host.id});
     }
-    return await autoApprove(row);
+    return await autoApprove(row, true);
   }
 };

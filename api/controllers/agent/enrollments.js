@@ -11,7 +11,7 @@ module.exports = {
   description: 'List the pending agent enrollment requests.',
   fn: async function () {
     const res = this.res;
-    if (!_.get(this.req, 'user.permissions.stock.host.read')) {
+    if (!sails.helpers.audit.can(this.req, 'host.read')) {
       return res.forbidden();
     }
     const rows = await sails.models.agentenrollment.find({state: 'pending'}).sort('createdAt ASC');
