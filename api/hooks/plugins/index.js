@@ -27,17 +27,45 @@
  */
 const path = require('path');
 const fs = require('fs');
-const loadPreferences = require('../../policies/loadPreferences');
 
 // A plugin route whose value is a function binds as plain middleware, so no
-// policy runs on it. Run loadPreferences (read-only, never denies) first, so
-// the layout gets the user's theme on /snapins, /printers and the rest. A
-// route whose value is an {action: ...} target already gets the policies.
+// policy runs on it. Without isLoggedIn, a user who signed in only through the
+// "Remember Me" jwt cookie (no live session) has no req.user, and the plugin
+// pages answer 403. Run the same chain that config/policies.js gives '*' (the
+// core pages) first, then the plugin's function. A route whose value is an
+// {action: ...} target already gets the policies.
+// The chain is read on each request: collect() runs before the policies hook
+// fills sails.hooks.policies.middleware. Sails keys that dictionary by the
+// lowercased policy name. A string is a one-name list, true is no policy, and
+// false denies. A name with no policy passes an Error to next (a 500), never a
+// silent skip.
 // The wrapper is async on purpose: Sails sends a rejected promise to next()
 // (a 500) only when the bound handler is an AsyncFunction
 // (sails/lib/router/bind.js). A plain wrapper would leave the rejection of an
 // async route unhandled, and that stops the server.
-const withPreferences = (fn) => async (req, res, next) => loadPreferences(req, res, () => fn(req, res, next));
+const withPolicies = (fn) => async (req, res, next) => {
+  let chain = sails.config.policies['*'];
+  if (chain === false) { return res.forbidden(); }
+  chain = chain === true || chain === undefined ? [] : [].concat(chain);
+  let run = async (i) => {
+    if (i >= chain.length) {
+      // A policy such as isLoggedIn calls proceed() from a passport callback
+      // and drops the returned promise, so catch a rejection of the plugin
+      // function here and send it to next() (a 500).
+      try { return await fn(req, res, next); } catch (err) { return next(err); }
+    }
+    let policy = sails.hooks.policies.middleware[String(chain[i]).toLowerCase()];
+    if (typeof policy !== 'function') { return next(new Error(`Plugin route: no policy named '${chain[i]}'`)); }
+    // The next policy runs only when this one calls proceed(). A policy that
+    // answers (a redirect, a 403) stops the chain. proceed(err) sends the
+    // error to next() (a 500), as on a core page.
+    let proceed = (err) => (err ? next(err) : run(i + 1));
+    // Catch a rejection of the policy itself too, so an async policy that
+    // rejects cannot hang the request.
+    try { return await policy(req, res, proceed); } catch (err) { return next(err); }
+  };
+  return run(0);
+};
 
 // The GET paths of route keys: 'GET /hosts/edit/:id' -> '/hosts/edit/:id'.
 // A key with no verb ('/hwinfo') answers GET too. Any other verb, and a key
@@ -64,7 +92,7 @@ function collect(appRoot, names) {
     if (plugin.routes) {
       Object.keys(plugin.routes).forEach((route) => {
         let target = plugin.routes[route];
-        out.routes[route] = typeof target === 'function' ? withPreferences(target) : target;
+        out.routes[route] = typeof target === 'function' ? withPolicies(target) : target;
       });
     }
     if (plugin.menuItems) { out.menuItems = out.menuItems.concat(plugin.menuItems); }
