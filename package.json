@@ -35,7 +35,7 @@
     "icheck-bootstrap": "^3.0.1",
     "inputmask": "^5.0.10",
     "inquirer": "^14.2.5",
-    "joi": "^18.3.1",
+    "joi": "^18.3.2",
     "jquery": "^4.0.0",
     "jsonwebtoken": "~>9.0.0",
     "jszip": "^3.10.2",
