@@ -99,13 +99,23 @@ function normalizeIdentity(values) {
   });
 }
 
+// The host name rule. api/helpers/agent/create-pending-host.js checks an agent's
+// hostname against it, so it lives in one place (Host.nameRegex).
+const NAME_REGEX = /^[a-z\d]([a-z\d\-]{0,61}[a-z\d])?(\.[a-z\d]([a-z\d\-]{0,61}[a-z\d])?)*$/i;
+
+// The fields that only the fog-agent enroll code writes (a forged
+// agentFingerprint would bind a key to a host). The edit page does not show
+// them, and general/save, create and update drop them from a request body.
+// Exposed as Host.serverOwned.
+const SERVER_OWNED = ['agentFingerprint', 'agentNotAfter', 'agentVersion', 'agentCheckin', 'agentId'];
+
 module.exports = {
   attributes: {
     name: {
       type: 'string',
       required: true,
       maxLength: 63,
-      regex: /^[a-z\d]([a-z\d\-]{0,61}[a-z\d])?(\.[a-z\d]([a-z\d\-]{0,61}[a-z\d])?)*$/i,
+      regex: NAME_REGEX,
       unique: true
     },
     description: {
@@ -204,6 +214,28 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false
     },
+    // --- fog-agent enrollment (api/helpers/agent/issue.js): server-owned, see
+    //     SERVER_OWNED above. agentNotAfter is UTC "YYYY-MM-DD HH:MM:SS"; the
+    //     checkin is ms. agentId is the host number in the agent certificate
+    //     (CN=fog-agent host <agentId>), assigned once and never reused. It is
+    //     0 until the host first gets an agent, so its unique index is partial
+    //     (api/helpers/agent/ensure-indexes.js). ---
+    agentFingerprint: {
+      type: 'string'
+    },
+    agentNotAfter: {
+      type: 'string'
+    },
+    agentVersion: {
+      type: 'string'
+    },
+    agentCheckin: {
+      type: 'number'
+    },
+    agentId: {
+      type: 'number',
+      isInteger: true
+    },
     image: {
       model: 'image'
     },
@@ -224,5 +256,8 @@ module.exports = {
   beforeCreate: beforeSave,
   beforeUpdate: beforeSave,
   // A custom model method (sails.models.host.normalizeGroups).
-  normalizeGroups
+  normalizeGroups,
+  // Custom model values: the host name rule and the server-owned agent fields.
+  nameRegex: NAME_REGEX,
+  serverOwned: SERVER_OWNED
 };

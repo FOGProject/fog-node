@@ -26,6 +26,8 @@ module.exports = {
     let id = params.id;
     // API-token requests may never write credentials (password / apiTokenHash).
     if (req.authVia === 'apitoken') { delete params.password; delete params.apiTokenHash; }
+    // The host's agent fields are server-owned: only the enroll code writes them.
+    if (model === 'host') { params = _.omit(params, sails.models.host.serverOwned); }
     // A Group name that is not text (400) or is taken without case (409), or
     // a host's groups change that the caller may not make (403). oldGroup is
     // the Group before a rename.

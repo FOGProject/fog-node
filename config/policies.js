@@ -31,6 +31,14 @@ module.exports.policies = {
   // Group name list (checks host read permission itself -- no :model param here)
   'host/groups':           ['isLoggedIn','isAuthenticated'],
 
+  // fog-agent enrollment admin routes (each action checks its host permission
+  // itself). apiCsrfGuard: a cookie-authed mutation on CSRF-exempt /api/v1.
+  'agent/enrollments':     ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
+  'agent/decide':          ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
+  'agent/tokens':          ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
+  'agent/mint-token':      ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
+  'agent/revoke-token':    ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
+
   // Image Policies
   'image/capture':         ['isLoggedIn','isAuthenticated', 'image/capture'],
   'image/deploy':          ['isLoggedIn','isAuthenticated', 'image/deploy'],
@@ -76,6 +84,9 @@ module.exports.policies = {
 
   // The CA files are public: the agent fetches them before it has a session
   'agent/ca-file':         true,
+
+  // So is the enroll route: the agent has no session (it proves its key by the CSR)
+  'agent/enroll':          true,
 
   // System info
   'system/info':           true,

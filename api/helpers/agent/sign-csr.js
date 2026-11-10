@@ -45,12 +45,10 @@ module.exports = {
     // Same check as the 1.6 helper. It also keeps the subject text safe.
     if (!/^[0-9]{1,10}$/.test(hostId)) throw 'badHostId';
 
+    // The marker, the parse and the self-signature: the check that enroll makes.
     let csr;
     try {
-      if (!pki.isCsrPem(csrPem)) throw new Error('not a CSR');
-      csr = new x509.Pkcs10CertificateRequest(csrPem);
-      // Proof of possession: the CSR is signed by the key it carries.
-      if (!(await csr.verify())) throw new Error('bad signature');
+      csr = await sails.helpers.agent.verifyCsr(csrPem);
     } catch (unused) {
       throw 'badCsr';
     }
@@ -90,7 +88,7 @@ module.exports = {
       const ca = new x509.X509Certificate(caPem);
       const leaf = await x509.X509CertificateGenerator.create({
         serialNumber: pki.randomSerial(),
-        subject: pki.subjectOf(`fog-agent host ${hostId}`, 'FOG Agent'),
+        subject: pki.subjectOf(pki.agentCn(hostId), 'FOG Agent'),
         issuer: ca.subjectName,
         notBefore: new Date(),
         notAfter: new Date(Date.now() + 365 * pki.DAY_MS),
