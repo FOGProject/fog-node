@@ -87,6 +87,11 @@ writeIfMissing(localCfg, 'config/local.js', `module.exports = {
       }
     }
   },
+  // The fog-agent HTTPS port (api/hooks/agent-tls). The certificate names are
+  // the default list: localhost, this computer and its addresses.
+  custom: {
+    agentTlsPort: 8443
+  },
   datastores: {
     fogdb: {
       adapter: 'sails-mongo',

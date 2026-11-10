@@ -12,6 +12,8 @@ const schema = require('./lib/schema');
 const seedDemo = require('./seed-demo');
 const secure = require('./lib/secure');
 const pki = require('./pki');
+const {cleanSans, defaultSans} = require('../../api/lib/agent-pki-files');
+const {splitList, urlHosts} = require('./lib/server-defaults');
 const async = require('async');
 const CLI = require('clui');
 const Spinner = CLI.Spinner;
@@ -165,6 +167,9 @@ async.waterfall([
       return next(`config/local.js exists but cannot be read, so its pkiDir cannot be kept. Fix or remove it, then re-run: ${err.message}`);
     }
     payload.pkiDir = pkiOverride || pki.pkiDirFor(config.appPath);
+    // The server certificate of the agent listener names this computer and
+    // the host of each URL that the installer was given.
+    payload.agentTlsSans = cleanSans([...defaultSans(), ...urlHosts(splitList(payload.server.urls))]);
     const pkiLines = pkiOverride ? `,
     pkiDir: '${jsStr(pkiOverride)}'` : '';
     // A re-run also keeps an http.trustProxy that the old local.js set: behind
@@ -219,7 +224,11 @@ async.waterfall([
     onlyAllowOrigins: [${payload.server.origins.map((o) => `'${jsStr(o)}'`).join(', ')}]
   },${httpLines}
   custom: {
-    imageStorePath: '${jsStr(payload.server.imageStorePath)}'${pkiLines}
+    imageStorePath: '${jsStr(payload.server.imageStorePath)}',
+    // The fog-agent HTTPS port (0 = off) and the names and addresses in the
+    // certificate that it serves. Re-run npm run setup to change them.
+    agentTlsPort: ${payload.server.agentTlsPort},
+    agentTlsSans: [${payload.agentTlsSans.map((s) => `'${jsStr(s)}'`).join(', ')}]${pkiLines}
   },
   datastores: {
     fogdb: {
@@ -269,7 +278,8 @@ async.waterfall([
       newRoot: process.argv.includes('--new-agent-root'),
       settings: sails.models.setting,
       log: console.log,
-      command: 'setup'
+      command: 'setup',
+      sans: payload.agentTlsSans
     }).then(
       () => {
         console.log(`Agent CA files are in ${payload.pkiDir}`);

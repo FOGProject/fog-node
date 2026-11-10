@@ -19,6 +19,11 @@ module.exports.custom = {
   // override it (the setup tools carry that override forward).
   pkiDir: path.join(__dirname, '..', 'pki'),
 
+  // The HTTPS port of the fog-agent listener (api/hooks/agent-tls). It asks the
+  // agent for its client certificate (mTLS) and serves the same routes as the
+  // main port. 0 turns the listener off. Agents use https://<host>:<port>.
+  agentTlsPort: 8443,
+
   // Image store: one folder per image -> <imageStorePath>/<image>/<partition>.img.
   // Single source of truth for the deploy streamer, dashboard/hwinfo disk usage,
   // and the image-store scan. Matches FOG's storageLocation (default /images).

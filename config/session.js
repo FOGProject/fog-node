@@ -41,8 +41,11 @@ module.exports.session = {
   * https://sailsjs.com/config/session                                       *
   *                                                                          *
   ***************************************************************************/
-  // isSessionDisabled: function (req){
-  //   return !!req.path.match(req._sails.LOOKS_LIKE_ASSET_RX);
-  // },
+  // The Sails default (assets), plus the fog-agent paths: an agent keeps no
+  // cookies, so without this every poll would create a Redis session.
+  isSessionDisabled: function (req){
+    return !!req.path.match(req._sails.LOOKS_LIKE_ASSET_RX) ||
+      req.path.startsWith('/agent/v1/');
+  },
 
 };

@@ -178,6 +178,17 @@ module.exports = {
             return `fog-node cannot write to that directory: ${err.message}`;
           }
         }
+      },
+      {
+        name: 'agentTlsPort',
+        type: 'number',
+        message: 'Enter the HTTPS port for fog-agent (mTLS), or 0 to turn it off:',
+        default: 8443,
+        required: true, // See the database port question.
+        validate: (value) => {
+          if (!Number.isInteger(value) || value < 0 || value > 65535) return 'You must enter a port number from 0 to 65535';
+          return true;
+        }
       }
     ];
     prompt('server', questions).then((answers) => {

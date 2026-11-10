@@ -68,15 +68,36 @@ const AGENT_CN_PREFIX = 'fog-agent host ';
 const agentCn = (hostId) => `${AGENT_CN_PREFIX}${hostId}`;
 const AGENT_CN_RX = new RegExp(`^CN=${AGENT_CN_PREFIX}(\\d+)$`, 'm');
 
+// A date as UTC "YYYY-MM-DD HH:MM:SS", the 1.6 format of not_after.
+const utc = (date) => date.toISOString().slice(0, 19).replace('T', ' ');
+
 // The host number and expiry of an agent leaf. `agentId` is null when the CN
-// is not an agent CN. `notAfter` is UTC "YYYY-MM-DD HH:MM:SS", the 1.6 format.
+// is not an agent CN. `notAfter` is in the utc format.
 const leafInfo = (pem) => {
   const leaf = new crypto.X509Certificate(pem);
   const cn = AGENT_CN_RX.exec(leaf.subject);
   return {
     agentId: cn ? Number(cn[1]) : null,
-    notAfter: new Date(Date.parse(leaf.validTo)).toISOString().slice(0, 19).replace('T', ' ')
+    notAfter: utc(new Date(Date.parse(leaf.validTo)))
   };
 };
 
-module.exports = {DAY_MS, CLIENT_AUTH, RSA, ROOT_SETTING, ROOT_SETTING_DESCRIPTION, fingerprintOf, isCsrPem, randomSerial, subjectOf, importPair, verifies, agentCn, leafInfo};
+// The JSON body of an agent request as an object, or {} for anything else.
+const jsonBody = (req) => ((req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {});
+
+// The agent request fields that enroll, renew and poll share.
+// A CSR is about 500 characters (ECDSA P-256) and an RSA-4096 CSR about 1800.
+// 16384 leaves room for any real key, and stops a caller from making a route
+// parse and store a huge value.
+const MAX_CSR = 16384;
+
+// The field limits of the 1.6 columns, so a caller cannot store more.
+const text = (value, max) => (typeof value === 'string' ? value.slice(0, max) : '');
+
+// Update::normalize: trim, and strip one leading v or V.
+const version = (value) => {
+  const v = text(value, 50).trim();
+  return /^[vV]/.test(v) ? v.slice(1) : v;
+};
+
+module.exports = {DAY_MS, CLIENT_AUTH, RSA, ROOT_SETTING, ROOT_SETTING_DESCRIPTION, MAX_CSR, fingerprintOf, isCsrPem, randomSerial, subjectOf, importPair, verifies, agentCn, leafInfo, jsonBody, text, version};

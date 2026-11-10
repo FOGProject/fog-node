@@ -24,4 +24,7 @@ const forge = (pem) => {
   return `-----BEGIN CERTIFICATE REQUEST-----\n${der.toString('base64').match(/.{1,64}/g).join('\n')}\n-----END CERTIFICATE REQUEST-----\n`;
 };
 
-module.exports = {newKey, csrFor, newCsr, forge};
+// The private key of a key pair as PKCS#8 PEM, for https.request({key}).
+const keyPem = (keys) => crypto.KeyObject.from(keys.privateKey).export({type: 'pkcs8', format: 'pem'});
+
+module.exports = {newKey, csrFor, newCsr, forge, keyPem};

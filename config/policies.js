@@ -93,6 +93,11 @@ module.exports.policies = {
   // So is the enroll route: the agent has no session (it proves its key by the CSR)
   'agent/enroll':          true,
 
+  // Renew and poll prove the agent by its client certificate. Named one by one:
+  // agent/* would also catch agent/enroll, agent/ca-file and the admin actions.
+  'agent/renew':           'agentPrincipal',
+  'agent/poll':            'agentPrincipal',
+
   // System info
   'system/info':           true,
   'system/bandwidth':      true,

@@ -21,19 +21,10 @@
  * request is the one that is signed. No session: the route is public, as boot.
  */
 const net = require('net');
-const {leafInfo} = require('../../lib/agent-pki');
+const {leafInfo, jsonBody, MAX_CSR, text, version} = require('../../lib/agent-pki');
 
 const RETRY_AFTER = 300;
 const MAC = /^(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i;
-
-// The field limits of the 1.6 columns, so a public caller cannot store more.
-const text = (value, max) => (typeof value === 'string' ? value.slice(0, max) : '');
-
-// Update::normalize: trim, and strip one leading v or V.
-const version = (value) => {
-  const v = text(value, 50).trim();
-  return /^[vV]/.test(v) ? v.slice(1) : v;
-};
 
 // The valid MACs in the Host `macs` form (12 lower-case hex digits), no repeats.
 const macsOf = (list) => {
@@ -45,10 +36,6 @@ const macsOf = (list) => {
   return out;
 };
 
-// A CSR is about 500 characters (ECDSA P-256) and an RSA-4096 CSR about 1800.
-// 16384 leaves room for any real key, and stops a caller from making the
-// public route parse and store a huge value.
-const MAX_CSR = 16384;
 const MAX_MACS = 32;
 // The caps for the stored identity fields and the enroll token. No real
 // firmware string or minted token (48 hex) comes near them.
@@ -86,7 +73,7 @@ module.exports = {
     const req = this.req;
     const res = this.res;
     const Enrollment = sails.models.agentenrollment;
-    const body = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
+    const body = jsonBody(req);
 
     const pending = (row) => res.status(202).json({status: 'pending', reason: row.reason, retry_after: RETRY_AFTER});
     const issued = (result) => res.status(200).json({

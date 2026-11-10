@@ -44,7 +44,7 @@ const rules = {
   // are still reported.
   'camelcase':                    ['warn', {'properties':'always', 'allow': [
     '^default_iface$', '^(tx|rx)_(bytes|errors|dropped|sec)$', '^grants_list$',
-    '^(retry_after|host_id|certificate_pem|not_after|csr_pem|agent_version)$',
+    '^(retry_after|host_id|certificate_pem|not_after|csr_pem|agent_version|poll_interval|server_time)$',
     '^(system_uuid|system_serial|board_serial|chassis_asset|smbios_version)$'
   ]}],
   'comma-style':                  ['warn', 'last'],

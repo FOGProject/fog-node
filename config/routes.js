@@ -115,6 +115,9 @@ module.exports.routes = {
   // fog-agent enrollment (public, no session: the agent has no certificate yet).
   // Agent-facing, so it follows the FOG 1.6 wire format, not fog-node's API.
   'POST /agent/v1/enroll':                   {action: 'agent/enroll', csrf: false},
+  // fog-agent renew and poll: mTLS on the agent listener (policy agentPrincipal).
+  'POST /agent/v1/renew':                    {action: 'agent/renew', csrf: false},
+  'POST /agent/v1/poll':                     {action: 'agent/poll', csrf: false},
 
   // Host Views
   'GET /hosts':                              {action: 'pages/list/hosts'},
