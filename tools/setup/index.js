@@ -252,13 +252,25 @@ async.waterfall([
   // for a pkiDir override. Files that already exist are left as they are.
   (next) => {
     header.printSection('Agent certificate authority');
-    pki.ensurePki(payload.pkiDir).then(
+    // Sails is loaded by the schema step, so the Setting model is ready. A
+    // recorded root that pki/ no longer has stops setup unless --new-agent-root.
+    pki.setupPki({
+      pkiDir: payload.pkiDir,
+      newRoot: process.argv.includes('--new-agent-root'),
+      settings: sails.models.setting,
+      log: console.log,
+      command: 'setup'
+    }).then(
       () => {
         console.log(`Agent CA files are in ${payload.pkiDir}`);
         console.log('The CA keys there must be readable only by the user that runs fog-node.');
         next();
       },
-      (err) => next(`Failed to make the agent CA files: ${err && err.message ? err.message : err}`)
+      (err) => {
+        // The guard errors carry the full message: show it as is.
+        if (pki.isRootError(err)) return next(err.message);
+        next(`Failed to make the agent CA files: ${err && err.message ? err.message : err}`);
+      }
     );
   },
   // Optional sample/test data -- opt-in (default no), so production installs

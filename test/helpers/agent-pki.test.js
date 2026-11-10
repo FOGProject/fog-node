@@ -1,10 +1,11 @@
 const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const x509 = require('@peculiar/x509');
-const {ensurePki} = require('../../tools/setup/pki');
-const {DAY_MS} = require('../../api/lib/agent-pki');
+const {ensurePki, setupPki} = require('../../tools/setup/pki');
+const {DAY_MS, ROOT_SETTING} = require('../../api/lib/agent-pki');
 const support = require('../support/pki');
 
 // The fog-agent PKI (the CAs, CSR signing and the key fingerprint), against the
@@ -249,7 +250,158 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
     it('throws signFailed when the agent CA does not verify against the root', () => withCopy(async (dir) => {
       const other = await support.foreign();
       fs.copyFileSync(path.join(other, 'root.pem'), path.join(dir, 'root.pem'));
-      assert.strictEqual(await exitOf(sign(CSR_PEM)), 'signFailed');
+      // The Setting records the foreign root, so the guard passes and the CA check fails.
+      await support.setRoot(support.rootOf(other));
+      try {
+        assert.strictEqual(await exitOf(sign(CSR_PEM)), 'signFailed');
+      } finally {
+        await support.setRoot(support.rootOf(fixtureDir()));
+      }
+    }));
+
+    it('throws notConfigured when root.pem differs from the recorded root', () => withCopy(async (dir) => {
+      const other = await support.foreign();
+      fs.copyFileSync(path.join(other, 'root.pem'), path.join(dir, 'root.pem'));
+      assert.strictEqual(await exitOf(sign(CSR_PEM)), 'notConfigured');
+    }));
+
+    it('signs when the Setting is unset', () => withCopy(async () => {
+      await support.setRoot(undefined);
+      try {
+        const {leafPem} = await sign(CSR_PEM);
+        assert.ok(new crypto.X509Certificate(leafPem));
+      } finally {
+        await support.setRoot(support.rootOf(fixtureDir()));
+      }
+    }));
+  });
+
+  describe('root guard::', () => {
+    const snapshot = (dir) => fs.readdirSync(dir).sort().map((n) => {
+      const p = path.join(dir, n);
+      return [n, fs.statSync(p).mtimeMs, fs.readFileSync(p, 'utf8')];
+    });
+    const recorded = async () => (await Setting.findOne({name: ROOT_SETTING})).value;
+    const setup = (pkiDir, extra = {}) => setupPki(Object.assign({
+      pkiDir, newRoot: false, settings: sails.models.setting, log: () => {}, command: 'setup'
+    }, extra));
+    // Run fn with an empty temp folder, then remove it.
+    const withEmpty = async (fn) => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fog-pki-empty-'));
+      try {
+        return await fn(dir);
+      } finally {
+        fs.rmSync(dir, {recursive: true, force: true});
+      }
+    };
+    // setupPki writes the Setting, so put the fixture value back after each test.
+    afterEach(() => support.setRoot(support.rootOf(fixtureDir())));
+
+    it('ensurePki with the matching fingerprint changes no file and returns it', () => withCopy(async (dir) => {
+      const before = snapshot(dir);
+      const expectedRoot = support.rootOf(dir);
+      assert.deepStrictEqual(await ensurePki(dir, {expectedRoot}), {rootFingerprint: expectedRoot});
+      assert.deepStrictEqual(snapshot(dir), before);
+    }));
+
+    it('ensurePki throws E_AGENT_ROOT_MISSING and changes no file when root.pem is gone', () => withCopy(async (dir) => {
+      const expectedRoot = support.rootOf(dir);
+      fs.unlinkSync(path.join(dir, 'root.pem'));
+      const before = snapshot(dir);
+      await assert.rejects(() => ensurePki(dir, {expectedRoot}), {code: 'E_AGENT_ROOT_MISSING'});
+      assert.deepStrictEqual(snapshot(dir), before);
+    }));
+
+    it('ensurePki throws E_AGENT_ROOT_MISMATCH and changes no file for another root', () => withCopy(async (dir) => {
+      const expectedRoot = support.rootOf(dir);
+      fs.copyFileSync(path.join(await support.foreign(), 'root.pem'), path.join(dir, 'root.pem'));
+      const before = snapshot(dir);
+      await assert.rejects(() => ensurePki(dir, {expectedRoot}), {code: 'E_AGENT_ROOT_MISMATCH'});
+      assert.deepStrictEqual(snapshot(dir), before);
+    }));
+
+    it('ensurePki with no expectedRoot makes the missing root as before', () => withEmpty(async (dir) => {
+      const {rootFingerprint} = await ensurePki(dir);
+      assert.strictEqual(rootFingerprint, support.rootOf(dir));
+    }));
+
+    it('setupPki refuses an empty folder while the Setting is set, with the restore message', () => withEmpty(async (dir) => {
+      const expected = support.rootOf(fixtureDir());
+      await assert.rejects(() => setup(dir), (err) => {
+        assert.strictEqual(err.code, 'E_AGENT_ROOT_MISSING');
+        assert.ok(err.message.includes(expected));
+        assert.ok(err.message.includes(`Restore the pki folder from your backup to ${dir}, then run setup again.`));
+        assert.ok(err.message.includes('run: npm run setup -- --new-agent-root'));
+        assert.ok(err.message.indexOf('Restore the pki') < err.message.indexOf('start over'));
+        return true;
+      });
+      assert.deepStrictEqual(fs.readdirSync(dir), []);
+      assert.strictEqual(await recorded(), expected);
+    }));
+
+    it('setupPki names setup:dev in its message for command setup:dev', () => withEmpty(async (dir) => {
+      await assert.rejects(() => setup(dir, {command: 'setup:dev'}), /npm run setup:dev -- --new-agent-root/);
+    }));
+
+    it('setupPki names both fingerprints for a mismatch', () => withCopy(async (dir) => {
+      fs.copyFileSync(path.join(await support.foreign(), 'root.pem'), path.join(dir, 'root.pem'));
+      await assert.rejects(() => setup(dir), (err) => {
+        assert.strictEqual(err.code, 'E_AGENT_ROOT_MISMATCH');
+        assert.ok(err.message.includes(support.rootOf(fixtureDir())));
+        assert.ok(err.message.includes(support.rootOf(dir)));
+        return true;
+      });
+    }));
+
+    it('setupPki with newRoot on an empty folder makes a root, renames nothing and updates the Setting', () => withEmpty(async (dir) => {
+      const lines = [];
+      const {rootFingerprint} = await setup(dir, {newRoot: true, log: (l) => lines.push(l)});
+      assert.deepStrictEqual(fs.readdirSync(dir).sort(),
+        ['agent-ca-bundle.pem', 'agent-ca.key', 'agent-ca.pem', 'root.key', 'root.pem']);
+      assert.strictEqual(rootFingerprint, support.rootOf(dir));
+      assert.notStrictEqual(rootFingerprint, support.rootOf(fixtureDir()));
+      assert.strictEqual(await recorded(), rootFingerprint);
+      assert.strictEqual(lines.length, 1);
+      assert.ok(lines[0].startsWith('A new agent root was made.'));
+    }));
+
+    it('setupPki with newRoot on a full folder renames the four files and makes new CAs', () => withCopy(async (dir) => {
+      const old = {};
+      for (const n of ['root.pem', 'root.key', 'agent-ca.pem', 'agent-ca.key']) old[n] = fs.readFileSync(path.join(dir, n), 'utf8');
+      const {rootFingerprint} = await setup(dir, {newRoot: true});
+      const names = fs.readdirSync(dir);
+      for (const n of Object.keys(old)) {
+        const kept = names.filter((x) => new RegExp(`^${n.replace('.', '\\.')}\\.\\d{14}$`).test(x));
+        assert.strictEqual(kept.length, 1, n);
+        assert.strictEqual(fs.readFileSync(path.join(dir, kept[0]), 'utf8'), old[n]);
+        assert.notStrictEqual(fs.readFileSync(path.join(dir, n), 'utf8'), old[n]);
+      }
+      assert.notStrictEqual(rootFingerprint, support.rootOf(fixtureDir()));
+      assert.strictEqual(await recorded(), rootFingerprint);
+      assert.ok(cert(path.join(dir, 'agent-ca.pem')).checkIssued(cert(path.join(dir, 'root.pem'))));
+    }));
+
+    it('setupPki with newRoot and no Setting is a plain run: it renames nothing', () => withCopy(async (dir) => {
+      await support.setRoot(undefined);
+      const before = snapshot(dir);
+      await setup(dir, {newRoot: true});
+      assert.deepStrictEqual(snapshot(dir), before);
+      assert.strictEqual(await recorded(), support.rootOf(dir));
+    }));
+
+    it('setupPki with no Setting records the root of an existing folder and changes no file', () => withCopy(async (dir) => {
+      await support.setRoot(undefined);
+      const before = snapshot(dir);
+      const {rootFingerprint} = await setup(dir);
+      assert.deepStrictEqual(snapshot(dir), before);
+      assert.strictEqual(rootFingerprint, support.rootOf(dir));
+      assert.strictEqual(await recorded(), rootFingerprint);
+    }));
+
+    it('setupPki on a second run with the Setting set succeeds and changes no file', () => withCopy(async (dir) => {
+      const before = snapshot(dir);
+      await setup(dir);
+      assert.deepStrictEqual(snapshot(dir), before);
     }));
   });
 

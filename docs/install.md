@@ -110,6 +110,29 @@ encryption key in `config/models.js`, because a new key makes encrypted data
 unreadable. It also keeps the existing Administrator account. A re-run does not
 change that account's email or password, and the installer says so.
 
+### Agent certificate authority
+
+Setup makes the certificate authority (CA) files for fog-agent in the `pki/`
+folder of the application folder. A `custom.pkiDir` in `config/local.js` moves
+the folder, and a re-run keeps it. Every enrolled fog-agent pins the root
+certificate `pki/root.pem`. Back up the `pki/` folder together with the
+database. The `pki/` folder holds the CA keys, so only the user that runs
+fog-node may read it.
+
+Setup records the SHA-256 fingerprint of the root in the database, in the
+setting `FOG_AGENT_ROOT_FINGERPRINT`. While that setting is set, setup stops if
+`pki/root.pem` is missing or is a different root. The error shows the recorded
+fingerprint. A reinstall that wipes the application folder causes this. Restore
+the `pki/` folder from your backup, then run setup again. Until you do, fog-node
+does not sign agent certificates.
+
+To start over with a new root on purpose, run
+`npm run setup -- --new-agent-root` (`npm run setup:dev -- --new-agent-root`
+for development). Setup renames the four CA files that exist in `pki/`. Each
+new name has a timestamp suffix. Setup then makes new CAs. Setup records the new
+fingerprint. You must then re-enroll every fog-agent by hand with the new
+`ca.cert.pem`.
+
 ### Install without prompts
 
 To script an install, put the answers in a JSON file and run

@@ -127,9 +127,17 @@ schema.generate(admin.password, admin.email, async (err) => {
     process.exit(1);
   }
   try {
-    await pki.ensurePki(pkiDir);
+    // A recorded root that pki/ no longer has stops setup unless --new-agent-root.
+    await pki.setupPki({
+      pkiDir,
+      newRoot: process.argv.includes('--new-agent-root'),
+      settings: sails.models.setting,
+      log: console.log,
+      command: 'setup:dev'
+    });
   } catch (pkiErr) {
-    console.error(`Failed to make the agent CA files: ${pkiErr.message}`);
+    // The guard errors carry the full message: print it as is.
+    console.error(pki.isRootError(pkiErr) ? pkiErr.message : `Failed to make the agent CA files: ${pkiErr.message}`);
     process.exit(1);
   }
   console.log(`Agent CA files are in ${pkiDir}`);

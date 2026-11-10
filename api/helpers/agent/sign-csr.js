@@ -13,7 +13,8 @@
  * Exits (a caller maps them; the enroll brief maps notConfigured to 503):
  *   badHostId      hostId is not 1 to 10 digits
  *   badCsr         not a CSR, does not parse, or its self-signature fails
- *   notConfigured  a CA file is missing from custom.pkiDir
+ *   notConfigured  a CA file is missing from custom.pkiDir, or root.pem is not
+ *                  the root that the Setting ROOT_SETTING records
  *   signFailed     the signing failed, or a result does not verify
  *
  * The CA key is read from custom.pkiDir on each call.
@@ -37,7 +38,7 @@ module.exports = {
     success: {outputType: 'ref', description: '{leafPem, chainPem}'},
     badHostId: {description: 'hostId is not 1 to 10 digits.'},
     badCsr: {description: 'The CSR is not valid, or its signature does not verify.'},
-    notConfigured: {description: 'The agent CA files are missing.'},
+    notConfigured: {description: 'The agent CA files are missing, or the root is not the recorded one.'},
     signFailed: {description: 'The signing or its self-check failed.'}
   },
   fn: async function ({csrPem, hostId}) {
@@ -65,6 +66,19 @@ module.exports = {
     const rootPem = read('root.pem');
     const caPem = read('agent-ca.pem');
     const caKeyPem = read('agent-ca.key');
+
+    // The root that enrolled agents pin is recorded by setup. Do not sign under
+    // another root. Unset (an install before the guard): sign as before.
+    const recorded = await sails.models.setting.findOne({name: pki.ROOT_SETTING});
+    if (recorded && recorded.value) {
+      let onDisk;
+      try {
+        onDisk = pki.fingerprintOf(rootPem);
+      } catch (unused) {
+        throw 'notConfigured';
+      }
+      if (onDisk !== recorded.value) throw 'notConfigured';
+    }
 
     // Do not sign under an agent CA that the root did not issue.
     if (!pki.verifies(caPem, rootPem)) throw 'signFailed';

@@ -55,4 +55,11 @@ const verifies = (certPem, issuerPem, leaf) => {
   }
 };
 
-module.exports = {DAY_MS, CLIENT_AUTH, RSA, isCsrPem, randomSerial, subjectOf, importPair, verifies};
+// The Setting that records the root CA that enrolled fog-agents pin.
+const ROOT_SETTING = 'FOG_AGENT_ROOT_FINGERPRINT';
+const ROOT_SETTING_DESCRIPTION = 'The SHA-256 fingerprint of the root CA that enrolled fog-agents pin. Setup refuses another root while this is set.';
+
+// The fingerprint of a certificate, as Node prints it (colon hex, upper case).
+const fingerprintOf = (pem) => new crypto.X509Certificate(pem).fingerprint256;
+
+module.exports = {DAY_MS, CLIENT_AUTH, RSA, ROOT_SETTING, ROOT_SETTING_DESCRIPTION, fingerprintOf, isCsrPem, randomSerial, subjectOf, importPair, verifies};
