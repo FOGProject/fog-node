@@ -63,6 +63,14 @@ module.exports.routes = {
   'POST /api/v1/host/bulk':                  {action: 'host/bulk', csrf: false},
   'GET /api/v1/host/groups':                 {action: 'host/groups', csrf: false},
 
+  // fog-agent enrollment admin API (host permissions; must precede the :model
+  // routes, or GET /api/v1/agent/tokens is read as :model=agent/:id=tokens).
+  'GET /api/v1/agent/enrollments':           {action: 'agent/enrollments', csrf: false},
+  'POST /api/v1/agent/enrollment/:id/:action': {action: 'agent/decide', csrf: false},
+  'GET /api/v1/agent/tokens':                {action: 'agent/tokens', csrf: false},
+  'POST /api/v1/agent/token':                {action: 'agent/mint-token', csrf: false},
+  'DELETE /api/v1/agent/token/:id':          {action: 'agent/revoke-token', csrf: false},
+
   // Global search (must precede the :model routes).
   'GET /api/v1/search':                      {action: 'search', csrf: false},
 
@@ -98,6 +106,10 @@ module.exports.routes = {
   'GET /management/other/ca.cert.pem':       {action: 'agent/ca-file', file: 'root.pem'},
   'GET /management/other/ca.cert.der':       {action: 'agent/ca-file', file: 'root.der'},
   'GET /management/other/agent-ca-bundle.pem': {action: 'agent/ca-file', file: 'agent-ca-bundle.pem'},
+
+  // fog-agent enrollment (public, no session: the agent has no certificate yet).
+  // Agent-facing, so it follows the FOG 1.6 wire format, not fog-node's API.
+  'POST /agent/v1/enroll':                   {action: 'agent/enroll', csrf: false},
 
   // Host Views
   'GET /hosts':                              {action: 'pages/list/hosts'},

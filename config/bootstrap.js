@@ -20,6 +20,10 @@ module.exports.bootstrap = async function() {
   // no index, and createIndex does nothing when it exists.
   await sails.helpers.group.ensureIndex();
 
+  // The fog-agent enrollment indexes (the unique fingerprint, token hash and
+  // agentId), for the same reason.
+  await sails.helpers.agent.ensureIndexes();
+
   // By convention, this is a good place to set up fake data during development.
   //
   // For example:

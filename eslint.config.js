@@ -38,9 +38,14 @@ const rules = {
   // tx_/rx_ set mirrors the field names the `systeminformation` package hands
   // us. Renaming them would change a public API response for cosmetic reasons.
   // grants_list is a group list row field, named as in FOG 1.6
-  // (fog.group.list.js). Purely internal snake_case locals are still reported.
+  // (fog.group.list.js). The fog-agent enroll wire format is FOG 1.6's and the
+  // same agent binary speaks it to both servers, so its JSON keys keep their
+  // names (api/controllers/agent/enroll.js). Purely internal snake_case locals
+  // are still reported.
   'camelcase':                    ['warn', {'properties':'always', 'allow': [
-    '^default_iface$', '^(tx|rx)_(bytes|errors|dropped|sec)$', '^grants_list$'
+    '^default_iface$', '^(tx|rx)_(bytes|errors|dropped|sec)$', '^grants_list$',
+    '^(retry_after|host_id|certificate_pem|not_after|csr_pem|agent_version)$',
+    '^(system_uuid|system_serial|board_serial|chassis_asset|smbios_version)$'
   ]}],
   'comma-style':                  ['warn', 'last'],
   // 'multi-line' rather than the template's default 'all'.  Every one of the

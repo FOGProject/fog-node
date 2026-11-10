@@ -62,4 +62,21 @@ const ROOT_SETTING_DESCRIPTION = 'The SHA-256 fingerprint of the root CA that en
 // The fingerprint of a certificate, as Node prints it (colon hex, upper case).
 const fingerprintOf = (pem) => new crypto.X509Certificate(pem).fingerprint256;
 
-module.exports = {DAY_MS, CLIENT_AUTH, RSA, ROOT_SETTING, ROOT_SETTING_DESCRIPTION, fingerprintOf, isCsrPem, randomSerial, subjectOf, importPair, verifies};
+// The agent leaf CN, "fog-agent host <id>" (contract 4.2). signCsr writes it and
+// leafInfo reads it back, so the text lives here once.
+const AGENT_CN_PREFIX = 'fog-agent host ';
+const agentCn = (hostId) => `${AGENT_CN_PREFIX}${hostId}`;
+const AGENT_CN_RX = new RegExp(`^CN=${AGENT_CN_PREFIX}(\\d+)$`, 'm');
+
+// The host number and expiry of an agent leaf. `agentId` is null when the CN
+// is not an agent CN. `notAfter` is UTC "YYYY-MM-DD HH:MM:SS", the 1.6 format.
+const leafInfo = (pem) => {
+  const leaf = new crypto.X509Certificate(pem);
+  const cn = AGENT_CN_RX.exec(leaf.subject);
+  return {
+    agentId: cn ? Number(cn[1]) : null,
+    notAfter: new Date(Date.parse(leaf.validTo)).toISOString().slice(0, 19).replace('T', ' ')
+  };
+};
+
+module.exports = {DAY_MS, CLIENT_AUTH, RSA, ROOT_SETTING, ROOT_SETTING_DESCRIPTION, fingerprintOf, isCsrPem, randomSerial, subjectOf, importPair, verifies, agentCn, leafInfo};

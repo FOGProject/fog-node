@@ -54,6 +54,8 @@ module.exports = {
     let model = plural.replace(/s$/, '');
     let id = req.param('id');
     let skip = ['id', 'createdAt', 'updatedAt', 'password', 'permissions'];
+    // The agent fields are server-owned: the edit page shows none of them.
+    if (model === 'host') { skip = skip.concat(sails.models.host.serverOwned); }
 
     if (!model || !sails.models[model]) {
       throw 'notFound';

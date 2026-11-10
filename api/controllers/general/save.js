@@ -34,6 +34,8 @@ module.exports = {
 
     // Build the values from the body, dropping non-attribute keys.
     let values = _.omit(req.allParams(), ['model', '_csrf', 'id', '__primac']);
+    // The host's agent fields are server-owned: only the enroll code writes them.
+    if (model === 'host') { values = _.omit(values, sails.models.host.serverOwned); }
 
     // API-token requests may never write credentials (password / apiTokenHash).
     if (req.authVia === 'apitoken') { delete values.password; delete values.apiTokenHash; }
