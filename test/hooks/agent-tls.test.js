@@ -9,7 +9,7 @@ const path = require('path');
 const tls = require('tls');
 const defineAgentTlsHook = require('../../api/hooks/agent-tls');
 const pkiFiles = require('../../api/lib/agent-pki-files');
-const {startAgentListener} = defineAgentTlsHook;
+const {startAgentListener, agentPath} = defineAgentTlsHook;
 const agentCsr = require('../support/agent-csr');
 const support = require('../support/pki');
 const {freePort} = require('../support/port');
@@ -52,14 +52,42 @@ describe('Agent listener::', function () {
     }
   };
 
-  const get = (port, options = {}) => new Promise((resolve, reject) => {
-    const req = https.request(Object.assign({host: '127.0.0.1', port, path: '/', ca: rootPem(), agent: false}, options), (res) => {
+  // One HTTPS request to the listener. Resolves {status, body}, the body parsed as JSON.
+  const request = (port, options = {}) => new Promise((resolve, reject) => {
+    const req = https.request(Object.assign({host: '127.0.0.1', port, path: '/agent/v1/x', ca: rootPem(), agent: false}, options), (res) => {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => resolve(JSON.parse(data)));
+      res.on('end', () => resolve({status: res.statusCode, body: JSON.parse(data)}));
     });
     req.on('error', reject);
     req.end();
+  });
+  const get = async (port, options) => (await request(port, options)).body;
+
+  describe('agentPath::', () => {
+    it('allows the agent API and the two CA files, with or without a query string', () => {
+      for (const url of [
+        '/agent/v1/poll', '/agent/v1/enroll', '/agent/v1/', '/agent/v1/payload/7', '/agent/v1/poll?x=1',
+        '/agent/v1/renew', '/agent/v1/result', '/agent/v1/payload/update/12', '/agent/v1/identity/check', '/agent/v1/directory/rejoin/start',
+        '/management/other/ca.cert.pem', '/management/other/ca.cert.der', '/management/other/ca.cert.pem?v=1'
+      ]) {
+        assert.strictEqual(agentPath(url), true, url);
+      }
+    });
+
+    it('refuses every other path, traversal and encoded traversal', () => {
+      for (const url of [
+        '/', '/login', '/api/v1/host', '/agent/v1', '/agent/v1x', '/agent/v10/', '/agent/v1/../login',
+        '/%2e%2e/login', '/agent/v1/%2e%2e/%2e%2e/login', '/agent/v1/%2E%2E/login', '/agent/v1//x', '/agent/v1/./x',
+        '/agent/v1/..%2flogin', '/agent/v1/%5c..%5clogin', '/agent/v1/%zz', '/agent/v1/%00',
+        '/%61gent/v1/poll', '/agent%2Fv1/poll', '/management/other/ca%2Ecert.pem', '/management%2Fother%2Fca.cert.pem',
+        '/agent/v1/%252e%252e/login', '/agent/v1/a b', '/agent/v1/a\\b',
+        '/management/other/ca.cert.pem.bak', '/management/other/ca.cert.der/x', '/management/other/ca.cert.pem/',
+        '/management/other/agent-ca-bundle.pem', '//agent/v1/poll', 'agent/v1/poll', 'http://x/login', '*', '', undefined
+      ]) {
+        assert.strictEqual(agentPath(url), false, String(url));
+      }
+    });
   });
 
   it('returns null for port 0, and logs nothing', async () => {
@@ -259,6 +287,13 @@ describe('Agent listener::', function () {
       } finally {
         socket.destroy();
       }
+    });
+
+    it('answers 404 with a JSON body for a path that is not the agent\'s, without calling the app', async () => {
+      // The stub app answers 200 JSON, so a 404 here comes from the listener's filter.
+      const res = await request(port, {path: '/login'});
+      assert.strictEqual(res.status, 404);
+      assert.deepStrictEqual(res.body, {error: 'not found'});
     });
 
     it('requests a client certificate and never requires one', async () => {

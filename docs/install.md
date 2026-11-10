@@ -138,9 +138,11 @@ fingerprint. You must then re-enroll every fog-agent by hand with the new
 fog-node runs a second, HTTPS listener for fog-agent. It uses the port in
 `custom.agentTlsPort` in `config/local.js`. The default is 8443. The agent
 proves itself with its client certificate on this port (mTLS), so it works on
-any OS with no proxy setup. The listener serves the same routes as the main
-port. An agent uses one base URL for everything: `https://<host>:<port>`, for
-example `https://fogserver:8443`.
+any OS with no proxy setup. The listener serves only the agent routes
+(`/agent/v1/...`) and the two CA files (`/management/other/ca.cert.pem` and
+`.der`). Every other path, such as the web UI, the login, and `/api/v1`, answers
+404 on this port. An agent uses one base URL for everything:
+`https://<host>:<port>`, for example `https://fogserver:8443`.
 
 To change the port, run `npm run setup` again, or edit `custom.agentTlsPort`
 and restart fog-node. The value `0` turns the listener off. The answers file
