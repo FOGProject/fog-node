@@ -62,6 +62,11 @@ module.exports.routes = {
   // by apiCsrfGuard instead (see config/policies.js).
   'POST /api/v1/host/bulk':                  {action: 'host/bulk', csrf: false},
   'GET /api/v1/host/groups':                 {action: 'host/groups', csrf: false},
+  // The Pending Hosts page (GET /hosts/pending). DELETE /api/v1/host/pending
+  // must precede DELETE /api/v1/:model/:id?, or it is read as :model=host/:id=pending.
+  'POST /api/v1/host/pending/datatable':     {action: 'host/pending-datatable', csrf: false},
+  'POST /api/v1/host/pending/approve':       {action: 'host/pending-approve', csrf: false},
+  'DELETE /api/v1/host/pending':             {action: 'host/pending-delete', csrf: false},
 
   // fog-agent enrollment admin API (host permissions; must precede the :model
   // routes, or GET /api/v1/agent/tokens is read as :model=agent/:id=tokens).
@@ -115,6 +120,10 @@ module.exports.routes = {
   'GET /hosts':                              {action: 'pages/list/hosts'},
   'GET /hosts/create':                       {action: 'pages/create/hosts'},
   'POST /hosts/create':                      {action: 'general/save'},
+  // fog-agent enrollment pages, at the FOG 1.6 sub names (HostManagement.php)
+  'GET /hosts/pending':                      {action: 'pages/list/pending-hosts'},
+  'GET /hosts/pendingAgents':                {action: 'pages/list/pending-agents'},
+  'GET /hosts/agentTokens':                  {action: 'pages/list/agent-tokens'},
 
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},

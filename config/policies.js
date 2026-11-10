@@ -30,6 +30,11 @@ module.exports.policies = {
   'host/bulk':             ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
   // Group name list (checks host read permission itself -- no :model param here)
   'host/groups':           ['isLoggedIn','isAuthenticated'],
+  // Pending hosts (each action checks its host permission itself). The datatable
+  // only reads; approve and delete mutate on CSRF-exempt /api/v1, so apiCsrfGuard.
+  'host/pending-datatable': ['isLoggedIn','isAuthenticated'],
+  'host/pending-approve':  ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
+  'host/pending-delete':   ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
 
   // fog-agent enrollment admin routes (each action checks its host permission
   // itself). apiCsrfGuard: a cookie-authed mutation on CSRF-exempt /api/v1.

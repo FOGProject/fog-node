@@ -43,7 +43,7 @@ describe('Dashboard::', function () {
     assert.ok(/class="callout callout-warning alert-dismissible"/.test(html), 'it is a dismissible warning callout');
     assert.ok(/<button[^>]*class="btn-close"[^>]*data-bs-dismiss="alert"/.test(html), 'it has a .btn-close that dismisses it');
     assert.ok(html.includes(`<h4>${title}</h4>`), `its h4 reads "${title}"`);
-    assert.ok(html.includes('Click <a href="/hosts"><b>here</b></a> to review.'), 'it links to /hosts');
+    assert.ok(html.includes('Click <a href="/hosts/pending"><b>here</b></a> to review.'), 'it links to /hosts/pending');
   });
 
   it('renders the three 1.6 cards across the top', async () => {

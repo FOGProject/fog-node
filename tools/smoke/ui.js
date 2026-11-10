@@ -58,7 +58,7 @@ const outDir = path.join(root, 'ui-smoke-out');
 
 // Every page in config/routes.js that renders the layout, except the edit
 // pages, which need a record id (checkRoundTrip opens them). The sidebar hides
-// a link whose page has no route yet, for example /hosts/pending
+// a link whose page has no route yet, for example /hosts/pendingMacs
 // (checks/ui16-04-sidebar.js). The list pages load their rows over AJAX into
 // DataTables, so `table: true` also waits for DataTables to initialize.
 const PAGES = [
@@ -67,6 +67,9 @@ const PAGES = [
   {path: '/account'},
   {path: '/hwinfo'},
   {path: '/hosts', table: true},
+  {path: '/hosts/pending', table: true},
+  {path: '/hosts/pendingAgents', table: true},
+  {path: '/hosts/agentTokens', table: true},
   {path: '/groups', table: true},
   {path: '/images', table: true},
   {path: '/storagegroups', table: true},
@@ -93,7 +96,16 @@ async function collectErrors(page, fn) {
   const onConsole = (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`); };
   const onPageError = (e) => errors.push(`exception: ${e.message}`);
   const onResponse = (r) => { if (r.status() >= 400) errors.push(`HTTP ${r.status()}: ${r.url()}`); };
-  const onFailed = (r) => errors.push(`request failed: ${r.url()} (${r.failure() && r.failure().errorText})`);
+  // net::ERR_ABORTED is the browser cancelling a request: when the check
+  // navigates with a table-state save or a datatable reload still in flight,
+  // or when page code drops a superseded request. Neither is a page fault. A
+  // server fault shows as an HTTP status above, a script fault as a pageerror,
+  // and a page that needs the cancelled request must fail the check's own
+  // assertions. Every other network failure still counts.
+  const onFailed = (r) => {
+    const err = r.failure() && r.failure().errorText;
+    if (err !== 'net::ERR_ABORTED') errors.push(`request failed: ${r.method()} ${r.url()} (${err})`);
+  };
   page.on('console', onConsole);
   page.on('pageerror', onPageError);
   page.on('response', onResponse);

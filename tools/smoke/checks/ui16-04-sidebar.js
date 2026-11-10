@@ -80,7 +80,9 @@ async function checkShape({page, base, checkPage}) {
   expect('the sidebar headers', got.headers, ['MAIN NAVIGATION', 'RESOURCES']);
   expect('the number of ul.plugin-options', got.pluginLists, 0);
   expect('the User Administration children', got.groupChildren, [['Users', 'fas fa-users'], ['Roles', 'fas fa-user-shield']]);
-  expect('the Hosts sub-links', got.hostsSubs, [['List All Hosts', 'nav-icon far fa-circle'], ['Create New Host', 'nav-icon far fa-circle']]);
+  // Pending MACs, Export Hosts and Import Hosts have no route, so the sidebar hides them.
+  expect('the Hosts sub-links', got.hostsSubs, ['List All Hosts', 'Create New Host', 'Pending Hosts', 'Pending Agents', 'Agent Tokens']
+    .map((text) => [text, 'nav-icon far fa-circle']));
 }
 
 async function checkActive(page, path, activeSubs) {

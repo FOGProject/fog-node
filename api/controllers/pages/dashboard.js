@@ -74,6 +74,8 @@ module.exports = {
 
     // The 1.6 pending-hosts callout: hosts awaiting approval.
     let pendingHosts = await Host.count({ pending: true });
+    // And the fog-agent enrollments that wait for an admin (DashboardPage.php:200-228).
+    let pendingAgents = await sails.models.agentenrollment.count({ state: 'pending' });
 
     let data = {
       // The FOG 1.6 content header and tab title.
@@ -84,7 +86,7 @@ module.exports = {
       free, used, size, legend,
       webserver, loadaverage, uptime,
       avail, staged, active,
-      pendingHosts
+      pendingHosts, pendingAgents
     };
     let partial = path.join(partialPath, `${data.model}.js`);
     if (fs.existsSync(partial)) {
