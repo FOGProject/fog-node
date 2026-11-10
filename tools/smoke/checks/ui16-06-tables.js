@@ -24,9 +24,14 @@ const SELECT = ['Select All', 'Deselect All'];
 const SHARED = ['Column search', 'Column Visibility', 'Refresh'];
 const TOOLBARS = {
   '/hosts': [...SELECT, ...SHARED, 'Edit groups', 'Set Image'],
+  '/hosts/pending': [...SELECT, ...SHARED, 'Approve selected'],
+  '/hosts/pendingAgents': [...SELECT, ...SHARED, 'Approve selected', 'Deny selected'],
+  '/hosts/agentTokens': [...SELECT, ...SHARED, 'Create token', 'Revoke selected'],
   '/images': [...SELECT, ...SHARED, 'Scan store'],
   '/tasks': SHARED
 };
+// The 1.6 title of a list that does not start with "All " (HostManagement::agentTokens).
+const TITLES = {'/hosts/agentTokens': 'Agent Enrollment Tokens'};
 
 // The 1.6 paged length menu (1.6 fog.common.js lengthMenu).
 const LENGTH_MENU = ['10', '25', '50', '100', '250', '500', 'All'];
@@ -71,7 +76,9 @@ async function toolbars({page, checkPage, PAGES}) {
     const got = await toolbar(page);
     const want = TOOLBARS[path] || [...SELECT, ...SHARED];
     expect(`${path}: the toolbar`, got, want.map((t) => [t, true]));
-    expect(`${path}: the title`, (await page.locator('.card-header > h4.card-title').first().innerText()).trim().startsWith('All '), true);
+    const title = (await page.locator('.card-header > h4.card-title').first().innerText()).trim();
+    if (TITLES[path]) expect(`${path}: the title`, title, TITLES[path]);
+    else expect(`${path}: the title`, title.startsWith('All '), true);
   }
   // Tasks is not selectable (1.6 TaskManagement.php:59).
   await openList(page, checkPage, '/tasks');

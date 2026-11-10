@@ -346,6 +346,56 @@ function fogEscape(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;'}[c]));
 }
 
+// A ms timestamp as the browser's local date and time ('' for none).
+function fogWhen(ms) {
+  return ms ? new Date(ms).toLocaleString() : '';
+}
+window.fogWhen = fogWhen;
+
+// DataTables column renders: a server value shows as text, never as markup; a
+// ms timestamp shows as a local date and time. Sort and filter use the raw value.
+window.fogTextCell = (data, type) => (type === 'display' ? fogEscape(data) : data);
+window.fogWhenCell = (data, type) => (type === 'display' ? fogWhen(data) : data);
+
+// The error of a failed $.ajax call: the body's `error` key, else the HTTP status.
+function fogErrorOf(xhr) {
+  return (xhr.responseJSON && xhr.responseJSON.error) || ('HTTP ' + xhr.status);
+}
+window.fogErrorOf = fogErrorOf;
+
+// Confirm, then one $.ajax per selected row in turn, then collect the failures,
+// deselect, reload and toast. A list page uses it for an action on each row.
+//   dt             the DataTables API of the list
+//   opts.confirm   fogConfirm options, or a function of the row count
+//   opts.request   function(id) -> $.ajax options (url, type)
+//   opts.verb      'decided' or 'revoked': the failure toast reads
+//                  "N <verb>, M not: <id>: <error>; ..."
+//   opts.success   {text, title}; opts.failTitle  the failure toast title
+window.fogRunEach = function(dt, opts) {
+  let ids = dt.rows({selected: true}).data().toArray().map((r) => r.id).filter(Boolean);
+  if (!ids.length) { return; }
+  let ask = typeof opts.confirm === 'function' ? opts.confirm(ids.length) : opts.confirm;
+  window.fogConfirm(ask).then(async (ok) => {
+    if (!ok) { return; }
+    let failed = [];
+    for (let id of ids) {
+      await new Promise((resolve) => {
+        $.ajax(opts.request(id)).done(() => resolve()).fail((xhr) => {
+          failed.push(id + ': ' + fogErrorOf(xhr));
+          resolve();
+        });
+      });
+    }
+    dt.rows({selected: true}).deselect();
+    dt.ajax.reload();
+    if (failed.length) {
+      window.fogToast('error', (ids.length - failed.length) + ' ' + opts.verb + ', ' + failed.length + ' not: ' + failed.join('; '), opts.failTitle);
+      return;
+    }
+    window.fogToast('success', opts.success.text, opts.success.title);
+  });
+};
+
 // Every list table, built like a FOG 1.6 grid (1.6 fog.common.js
 // $.fn.registerTable, 4280-4720): the 1.6 toolbar, the column-search row,
 // column show/hide, reorder and resize, the saved per-user layout, and the
@@ -549,7 +599,8 @@ function fogActionBox(node, table, opts) {
     }).then((ok) => {
       if (!ok) { return; }
       $.ajax({
-        url: '/api/v1/' + encodeURIComponent(node.attr('data-model')),
+        // A page can send the delete elsewhere (list.ejs deleteUrl), for example the pending hosts.
+        url: node.attr('data-delete-url') || '/api/v1/' + encodeURIComponent(node.attr('data-model')),
         type: 'DELETE',
         contentType: 'application/json',
         data: JSON.stringify({id: ids}),

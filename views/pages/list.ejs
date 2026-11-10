@@ -5,7 +5,10 @@
      scrollMode and pageLength (api/helpers/table-settings.js), and the
      optional editBase (the first column links to <editBase>/edit/<id>) and
      selectable (false: no row selection and no Delete selected, as 1.6
-     FOGPage::$selectable; registerTable reads data-selectable).
+     FOGPage::$selectable; registerTable reads data-selectable), deleteUrl
+     (optional: "Delete selected" sends its DELETE there, not to
+     /api/v1/<model>; fogActionBox reads data-delete-url) and deleteButton
+     (false: no "Delete selected" button; default true).
      $.fn.registerTable (assets/fog/fog.common.js) reads all of them from the
      markup below. */%>
 <input type="hidden" id="scrollMode" value="<%= scrollMode %>">
@@ -23,7 +26,8 @@
             <table id="listtable" class="display table table-bordered table-striped listtable no-footer" role="grid"
                    data-model="<%= model %>" data-singular="<%= singular %>" data-plural="<%= plural %>"<% if (typeof editBase === 'string' && editBase) { %>
                    data-edit-base="<%= editBase %>"<% } %><% if (typeof selectable !== 'undefined' && selectable === false) { %>
-                   data-selectable="false"<% } %>>
+                   data-selectable="false"<% } %><% if (typeof deleteUrl === 'string' && deleteUrl) { %>
+                   data-delete-url="<%= deleteUrl %>"<% } %>>
               <thead>
                 <tr class="header" role="row">
                   <% for (var i = 0;i < theads.length;i++) { %>
@@ -35,7 +39,7 @@
               </tbody>
             </table>
             <div class="btn-actionbox">
-              <% if (typeof selectable === 'undefined' || selectable !== false) { %>
+              <% if ((typeof selectable === 'undefined' || selectable !== false) && (typeof deleteButton === 'undefined' || deleteButton !== false)) { %>
               <button type="button" id="deleteSelected" class="btn btn-danger float-start" disabled>Delete selected</button>
               <% } %>
               <div class="btn-group float-end"></div>

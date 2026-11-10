@@ -56,7 +56,8 @@ describe('Sidebar menu helpers::', () => {
       assert.strictEqual(known('/printers/create'), true);
       assert.strictEqual(known('/hosts/edit/abc'), true);
       assert.strictEqual(known('/task-history'), false);
-      assert.strictEqual(known('/hosts/pending'), false);
+      assert.strictEqual(known('/hosts/pending'), true);
+      assert.strictEqual(known('/hosts/pendingMacs'), false);
     });
   });
 
@@ -100,7 +101,8 @@ describe('Sidebar menu helpers::', () => {
 
     it('drops the sub-links with no route from the real menu', () => {
       const menu = build('/');
-      assert.deepStrictEqual(subTexts(find(menu, 'Hosts')), ['List All Hosts', 'Create New Host']);
+      // Pending MACs, Export Hosts and Import Hosts have no route yet.
+      assert.deepStrictEqual(subTexts(find(menu, 'Hosts')), ['List All Hosts', 'Create New Host', 'Pending Hosts', 'Pending Agents', 'Agent Tokens']);
       assert.deepStrictEqual(subTexts(find(menu, 'Images')), ['List All Images', 'Create New Image']);
       assert.deepStrictEqual(subTexts(find(menu, 'Snapins')), ['List All Snapins', 'Create New Snapin']);
       assert.deepStrictEqual(subTexts(find(menu, 'Printers')), ['List All Printers', 'Create New Printer']);

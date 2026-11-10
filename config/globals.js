@@ -63,6 +63,8 @@ module.exports.globals = {
         {link: '/hosts/create', text: 'Create New Host'},
         {link: '/hosts/pending', text: 'Pending Hosts'},
         {link: '/hosts/pendingMacs', text: 'Pending MACs'},
+        {link: '/hosts/pendingAgents', text: 'Pending Agents'},
+        {link: '/hosts/agentTokens', text: 'Agent Tokens'},
         {link: '/hosts/export', text: 'Export Hosts'},
         {link: '/hosts/import', text: 'Import Hosts'}
       ]

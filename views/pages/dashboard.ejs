@@ -3,11 +3,18 @@
     <% // The FOG 1.6 dashboard (DashboardPage.php:186-556). %>
     <% if (pendingHosts > 0) { %>
     <% // 1.6 displayAlert($title, $hostPend, 'warning', true, true): a dismissible callout (FOGPage.php:1676-1707). %>
-    <% // The link goes to /hosts until a pending-hosts page exists. %>
     <div class="callout callout-warning alert-dismissible" id="pendingCallout">
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       <h4><%= pendingHosts %> <%= pendingHosts !== 1 ? 'Pending hosts' : 'Pending host' %></h4>
-      Click <a href="/hosts"><b>here</b></a> to review.
+      Click <a href="/hosts/pending"><b>here</b></a> to review.
+    </div>
+    <% } %>
+    <% if (pendingAgents > 0) { %>
+    <% // Pending fog-agent enrollments (DashboardPage.php:200-228), rendered only when there are some. %>
+    <div class="callout callout-warning alert-dismissible" id="pendingAgentsCallout">
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <h4><%= pendingAgents %> <%= pendingAgents !== 1 ? 'Pending agents' : 'Pending agent' %></h4>
+      Click <a href="/hosts/pendingAgents"><b>here</b></a> to review.
     </div>
     <% } %>
     <% // gy-3: every card is a column of this one row, as in 1.6, so the stacked cards get a vertical gutter. %>
