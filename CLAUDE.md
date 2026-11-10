@@ -108,7 +108,7 @@ request and the merge queue.
 | `api/controllers/general/` | The generic CRUD and DataTables endpoints |
 | `api/controllers/pages/` | Page controllers for the EJS views |
 | `api/helpers/` | Shared helpers: forms, DataTables, image locks and stream, search |
-| `api/hooks/` | `fog-version`, `plugins` (loads `plugins.json`), `watchdog` |
+| `api/hooks/` | `fog-version`, `plugins` (loads `plugins.json`), `watchdog`, `agent-tls` (the fog-agent mTLS listener) |
 | `plugins/<name>/` | Plugins: `ad`, `printer`, `snapin`, `wol` |
 | `tools/setup/` | The production installer (`index.js`) and the dev setup (`dev.js`) |
 | `views/` | EJS layouts and pages |

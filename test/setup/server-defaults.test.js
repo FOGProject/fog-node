@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore} = require('../../tools/setup/lib/server-defaults');
+const {splitList, isWebUrl, toOrigins, urlHosts, defaultUrls, defaultImageStore} = require('../../tools/setup/lib/server-defaults');
 
 describe('Installer server defaults ::', () => {
   it('splits a comma list and drops empty entries', () => {
@@ -34,6 +34,11 @@ describe('Installer server defaults ::', () => {
     };
     assert.deepStrictEqual(defaultUrls(interfaces, 'fogserver'),
       ['http://fogserver:1337', 'http://localhost:1337', 'http://10.0.0.5:1337', 'http://192.168.1.9:1337']);
+  });
+
+  // The server certificate of the agent listener names the host of each URL.
+  it('takes the host of each URL, with no port and no IPv6 brackets', () => {
+    assert.deepStrictEqual(urlHosts(['http://fog.example:1337', 'https://10.0.0.5', 'http://[::1]:1337']), ['fog.example', '10.0.0.5', '::1']);
   });
 
   // The macOS root volume is read-only, so /images cannot be created there.

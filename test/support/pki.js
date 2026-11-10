@@ -1,7 +1,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const {ensurePki} = require('../../tools/setup/pki');
+const {ensurePki} = require('../../api/lib/agent-pki-files');
 const {ROOT_SETTING, ROOT_SETTING_DESCRIPTION, fingerprintOf} = require('../../api/lib/agent-pki');
 
 // One PKI for the whole mocha run. RSA-4096 generation is slow, so the tests
@@ -12,14 +12,20 @@ let shared;
 // root. Made on first use only, for the same reason.
 let foreignPki;
 
-const make = (prefix) => {
+const make = (prefix, sans) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  return ensurePki(dir).then(() => dir);
+  return ensurePki(dir, {sans}).then(() => dir);
 };
 
-// The shared PKI folder (a promise of its path). The first call makes it.
+// The SAN list of the fixture's server certificate. test/lifecycle.test.js
+// gives the lift this list as custom.agentTlsSans, so the lift-time
+// ensureServerCert changes nothing in the fixture.
+const SANS = ['localhost', '127.0.0.1'];
+
+// The shared PKI folder (a promise of its path). The first call makes it. Its
+// server certificate names SANS only.
 const fixture = () => {
-  if (!shared) shared = make('fog-pki-fixture-');
+  if (!shared) shared = make('fog-pki-fixture-', SANS);
   return shared;
 };
 
@@ -78,4 +84,4 @@ const copy = (dir) => {
   return to;
 };
 
-module.exports = {fixture, foreign, useFixture, copy, rootOf, setRoot};
+module.exports = {SANS, fixture, foreign, useFixture, copy, rootOf, setRoot};

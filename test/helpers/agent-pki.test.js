@@ -4,8 +4,9 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const x509 = require('@peculiar/x509');
-const {ensurePki, setupPki} = require('../../tools/setup/pki');
-const {DAY_MS, ROOT_SETTING} = require('../../api/lib/agent-pki');
+const {ensurePki} = require('../../api/lib/agent-pki-files');
+const {setupPki} = require('../../tools/setup/pki');
+const {DAY_MS, ROOT_SETTING, importPair} = require('../../api/lib/agent-pki');
 const support = require('../support/pki');
 
 // The fog-agent PKI (the CAs, CSR signing and the key fingerprint), against the
@@ -58,6 +59,10 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
 
   const fixtureDir = support.useFixture();
 
+  // A copy of the fixture keeps its server certificate only if ensurePki gets
+  // the fixture's SAN list (support.SANS).
+  const ensure = (dir, opts = {}) => ensurePki(dir, Object.assign({sans: support.SANS}, opts));
+
   // Run fn against a private copy of the fixture, then remove it.
   const withCopy = async (fn) => {
     const dir = support.copy(fixtureDir());
@@ -82,11 +87,11 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
   const sign = (csrPem, hostId = '42') => sails.helpers.agent.signCsr.with({csrPem, hostId});
 
   describe('ensurePki::', () => {
-    it('makes the five files, and the keys are 0600 (not on Windows)', () => {
-      const names = ['root.key', 'root.pem', 'agent-ca.key', 'agent-ca.pem', 'agent-ca-bundle.pem'];
+    it('makes the seven files, and the keys are 0600 (not on Windows)', () => {
+      const names = ['root.key', 'root.pem', 'agent-ca.key', 'agent-ca.pem', 'agent-ca-bundle.pem', 'server.key', 'server.pem'];
       assert.deepStrictEqual(fs.readdirSync(fixtureDir()).sort(), names.sort());
       if (process.platform !== 'win32') {
-        for (const k of ['root.key', 'agent-ca.key']) {
+        for (const k of ['root.key', 'agent-ca.key', 'server.key']) {
           assert.strictEqual(fs.statSync(path.join(fixtureDir(),k)).mode & 0o777, 0o600, k);
         }
       }
@@ -137,7 +142,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
         return [n, fs.statSync(p).mtimeMs, fs.readFileSync(p, 'utf8')];
       });
       const first = snap();
-      await ensurePki(dir);
+      await ensure(dir);
       assert.deepStrictEqual(snap(), first);
     }));
 
@@ -146,7 +151,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
       const oldCa = fs.readFileSync(path.join(dir, 'agent-ca.pem'), 'utf8');
       fs.unlinkSync(path.join(dir, 'agent-ca.pem'));
       fs.unlinkSync(path.join(dir, 'agent-ca.key'));
-      await ensurePki(dir);
+      await ensure(dir);
       assert.strictEqual(fs.readFileSync(path.join(dir, 'root.pem'), 'utf8'), rootBefore);
       const ca = cert(path.join(dir, 'agent-ca.pem'));
       assert.ok(ca.checkIssued(cert(path.join(dir, 'root.pem'))));
@@ -159,7 +164,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
       const foreign = fs.readFileSync(path.join(other, 'agent-ca.pem'), 'utf8');
       fs.writeFileSync(path.join(dir, 'agent-ca.pem'), foreign);
       const oldKey = fs.readFileSync(path.join(dir, 'agent-ca.key'), 'utf8');
-      await ensurePki(dir);
+      await ensure(dir);
       const names = fs.readdirSync(dir);
       const stamped = (base) => names.filter((n) => new RegExp(`^${base}\\.\\d{14}$`).test(n));
       assert.strictEqual(stamped('agent-ca\\.pem').length, 1);
@@ -177,7 +182,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
       const oldKey = fs.readFileSync(path.join(dir, 'root.key'), 'utf8');
       const oldRoot = fs.readFileSync(path.join(dir, 'root.pem'), 'utf8');
       fs.unlinkSync(path.join(dir, 'root.pem'));
-      await ensurePki(dir);
+      await ensure(dir);
       const kept = fs.readdirSync(dir).filter((n) => /^root\.key\.\d{14}$/.test(n));
       assert.strictEqual(kept.length, 1);
       assert.strictEqual(fs.readFileSync(path.join(dir, kept[0]), 'utf8'), oldKey);
@@ -190,11 +195,104 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
     it('throws on a re-mint when root.key is missing, and never re-makes an existing root.pem', () => withCopy(async (dir) => {
       const rootBefore = fs.readFileSync(path.join(dir, 'root.pem'), 'utf8');
       fs.unlinkSync(path.join(dir, 'root.key'));
-      await ensurePki(dir);
+      await ensure(dir);
       assert.strictEqual(fs.readFileSync(path.join(dir, 'root.pem'), 'utf8'), rootBefore);
       fs.unlinkSync(path.join(dir, 'agent-ca.pem'));
-      await assert.rejects(() => ensurePki(dir), /root\.key/);
+      await assert.rejects(() => ensure(dir), /root\.key/);
     }));
+
+    describe('server certificate::', () => {
+      const server = (dir) => cert(path.join(dir, 'server.pem'));
+      const stamped = (dir, base) => fs.readdirSync(dir).filter((n) => new RegExp(`^${base}\\.\\d{14}$`).test(n));
+      const snap = (dir) => fs.readdirSync(dir).sort().map((n) => [n, fs.readFileSync(path.join(dir, n), 'utf8')]);
+
+      it('makes the server certificate RSA 2048, SHA-256, 825 days, CA false, serverAuth, with dNSName and iPAddress SANs, signed directly by the root', () => {
+        const c = server(fixtureDir());
+        const root = cert(path.join(fixtureDir(), 'root.pem'));
+        assert.strictEqual(c.subject.split('\n').join(','), 'CN=localhost,O=FOG Project');
+        assert.strictEqual(c.issuer, root.subject);
+        assert.ok(c.checkIssued(root) && c.verify(root.publicKey));
+        assert.strictEqual(keyBits(c), 2048);
+        assert.strictEqual(days(c), 825);
+        assert.strictEqual(hashOf(c), 'SHA-256');
+        assert.strictEqual(c.ca, false);
+        const bc = ext(c, x509.BasicConstraintsExtension);
+        assert.ok(bc.critical && !bc.ca);
+        const usage = ext(c, x509.KeyUsagesExtension);
+        assert.ok(usage.critical);
+        assert.strictEqual(usage.usages, x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment);
+        assert.deepStrictEqual(Array.from(ext(c, x509.ExtendedKeyUsageExtension).usages), ['1.3.6.1.5.5.7.3.1']);
+        // A name is a dNSName entry and an address an iPAddress entry.
+        assert.strictEqual(c.subjectAltName, 'DNS:localhost, IP Address:127.0.0.1');
+        // The key belongs to the certificate.
+        const key = crypto.createPrivateKey(fs.readFileSync(path.join(fixtureDir(), 'server.key')));
+        assert.ok(crypto.createPublicKey(key).equals(c.publicKey));
+      });
+
+      it('lists the default names without a SAN list', () => withCopy(async (dir) => {
+        fs.unlinkSync(path.join(dir, 'server.pem'));
+        await ensurePki(dir);
+        const san = server(dir).subjectAltName;
+        assert.ok(san.includes('DNS:localhost') && san.includes('IP Address:127.0.0.1'));
+        assert.ok(san.toLowerCase().includes(os.hostname().toLowerCase()));
+      }));
+
+      it('makes the pair again, and renames the old one, when the SAN set changes', () => withCopy(async (dir) => {
+        const oldPem = fs.readFileSync(path.join(dir, 'server.pem'), 'utf8');
+        const oldKey = fs.readFileSync(path.join(dir, 'server.key'), 'utf8');
+        await ensure(dir, {sans: [...support.SANS, 'fog.example']});
+        assert.strictEqual(server(dir).subjectAltName, 'DNS:localhost, IP Address:127.0.0.1, DNS:fog.example');
+        assert.ok(server(dir).checkIssued(cert(path.join(dir, 'root.pem'))));
+        assert.strictEqual(fs.readFileSync(path.join(dir, stamped(dir, 'server\\.pem')[0]), 'utf8'), oldPem);
+        assert.strictEqual(fs.readFileSync(path.join(dir, stamped(dir, 'server\\.key')[0]), 'utf8'), oldKey);
+        assert.strictEqual(stamped(dir, 'server\\.pem').length, 1);
+      }));
+
+      it('keeps the pair when only the order, the case or the IPv6 spelling changes', () => withCopy(async (dir) => {
+        await ensure(dir, {sans: ['localhost', '127.0.0.1', '::1', 'Fog.Example']});
+        const before = snap(dir);
+        await ensure(dir, {sans: ['fog.example', '0:0:0:0:0:0:0:1', 'LOCALHOST', '127.0.0.1']});
+        assert.deepStrictEqual(snap(dir), before);
+        // A different address is a different set.
+        await ensure(dir, {sans: ['localhost', '127.0.0.1', '::2', 'fog.example']});
+        assert.strictEqual(stamped(dir, 'server\\.pem').length, 1);
+      }));
+
+      it('makes the pair again when fewer than 30 days remain', () => withCopy(async (dir) => {
+        // A server certificate for the same names, signed by the root, valid 10 more days.
+        const rootKeys = await importPair(crypto.createPrivateKey(fs.readFileSync(path.join(dir, 'root.key'))), 'SHA-256');
+        const keys = await importPair(crypto.createPrivateKey(fs.readFileSync(path.join(dir, 'server.key'))), 'SHA-256');
+        const near = await x509.X509CertificateGenerator.create({
+          serialNumber: '01',
+          subject: 'CN=localhost, O=FOG Project',
+          issuer: new x509.X509Certificate(fs.readFileSync(path.join(dir, 'root.pem'), 'utf8')).subjectName,
+          notBefore: new Date(Date.now() - DAY_MS),
+          notAfter: new Date(Date.now() + 10 * DAY_MS),
+          signingAlgorithm: {name: 'RSASSA-PKCS1-v1_5'},
+          publicKey: keys.publicKey,
+          signingKey: rootKeys.privateKey,
+          extensions: [new x509.SubjectAlternativeNameExtension([{type: 'dns', value: 'localhost'}, {type: 'ip', value: '127.0.0.1'}])]
+        });
+        fs.writeFileSync(path.join(dir, 'server.pem'), near.toString('pem') + '\n');
+        await ensure(dir);
+        assert.strictEqual(stamped(dir, 'server\\.pem').length, 1);
+        assert.ok(days(server(dir)) === 825 && Date.parse(server(dir).validTo) - Date.now() > 800 * DAY_MS);
+      }));
+
+      it('makes the pair again under a new root', () => withCopy(async (dir) => {
+        fs.unlinkSync(path.join(dir, 'root.pem'));
+        await ensure(dir);
+        assert.ok(server(dir).checkIssued(cert(path.join(dir, 'root.pem'))));
+        assert.ok(server(dir).verify(cert(path.join(dir, 'root.pem')).publicKey));
+      }));
+
+      it('throws on a re-issue when root.key is missing', () => withCopy(async (dir) => {
+        fs.unlinkSync(path.join(dir, 'root.key'));
+        await ensure(dir);
+        fs.unlinkSync(path.join(dir, 'server.pem'));
+        await assert.rejects(() => ensure(dir), /root\.key/);
+      }));
+    });
   });
 
   describe('signCsr::', () => {
@@ -283,7 +381,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
     });
     const recorded = async () => (await Setting.findOne({name: ROOT_SETTING})).value;
     const setup = (pkiDir, extra = {}) => setupPki(Object.assign({
-      pkiDir, newRoot: false, settings: sails.models.setting, log: () => {}, command: 'setup'
+      pkiDir, newRoot: false, settings: sails.models.setting, log: () => {}, command: 'setup', sans: support.SANS
     }, extra));
     // Run fn with an empty temp folder, then remove it.
     const withEmpty = async (fn) => {
@@ -300,7 +398,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
     it('ensurePki with the matching fingerprint changes no file and returns it', () => withCopy(async (dir) => {
       const before = snapshot(dir);
       const expectedRoot = support.rootOf(dir);
-      assert.deepStrictEqual(await ensurePki(dir, {expectedRoot}), {rootFingerprint: expectedRoot});
+      assert.deepStrictEqual(await ensure(dir, {expectedRoot}), {rootFingerprint: expectedRoot});
       assert.deepStrictEqual(snapshot(dir), before);
     }));
 
@@ -321,7 +419,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
     }));
 
     it('ensurePki with no expectedRoot makes the missing root as before', () => withEmpty(async (dir) => {
-      const {rootFingerprint} = await ensurePki(dir);
+      const {rootFingerprint} = await ensure(dir);
       assert.strictEqual(rootFingerprint, support.rootOf(dir));
     }));
 
@@ -357,7 +455,7 @@ N6M/cmtQjgdJ8gIhAOBb4zKxR50Hh3m3NWDCPQK/OG3cmj8QTzCFV8oY7LuI
       const lines = [];
       const {rootFingerprint} = await setup(dir, {newRoot: true, log: (l) => lines.push(l)});
       assert.deepStrictEqual(fs.readdirSync(dir).sort(),
-        ['agent-ca-bundle.pem', 'agent-ca.key', 'agent-ca.pem', 'root.key', 'root.pem']);
+        ['agent-ca-bundle.pem', 'agent-ca.key', 'agent-ca.pem', 'root.key', 'root.pem', 'server.key', 'server.pem']);
       assert.strictEqual(rootFingerprint, support.rootOf(dir));
       assert.notStrictEqual(rootFingerprint, support.rootOf(fixtureDir()));
       assert.strictEqual(await recorded(), rootFingerprint);

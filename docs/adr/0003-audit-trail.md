@@ -21,8 +21,13 @@ part of 7):
   adds the change table `AuditChange`.
 - A machine-originated write gets a row with a synthetic actor, `(system)`, and
   an empty `permission`, which means that no authorization ran (1.6 decision 4).
-  Only the fog-agent enrollment route does this so far. The imaging boot and task
-  paths come later.
+  Only the fog-agent enrollment route and the fog-agent renew route do this so
+  far. The renew row has the authSource `agent`; the enrollment rows have
+  `anonymous` (1.6 does the same). The imaging boot and task paths come later.
+- An `agentPrincipal` 401 on `/agent/v1/` (a missing, wrong, expired or unknown
+  client certificate) writes no `denied` row, on purpose. 1.6 audits no agent
+  authentication failure: `Principal::verify` and the gate in `Route.php` call
+  no `Audit::record`. The poll route writes no row either, as in 1.6.
 - `outcome` defaults to `unknown`, so an incomplete row never claims `allowed`.
   The other values are `allowed`, `denied`, `failed` and `partial` (1.6
   decision 11).
@@ -45,7 +50,7 @@ The events:
 |---|---|
 | `auth.login`, `auth.login.failed`, `auth.logout`, `auth.token.rejected` | `auth/login`, `auth/logout`, `policies/isLoggedIn` |
 | `access.api`, `access.page` | the request seam, `api/hooks/audit` |
-| `agent.enroll`, `agent.token` | the enrollment route, the admin decision and the token routes, with the 1.6 texts |
+| `agent.enroll`, `agent.token` | the enrollment route, the renew route, the admin decision and the token routes, with the 1.6 texts |
 
 A failed sign-in stores the attempted name and no reason, to avoid user
 enumeration (1.6 stores none either).
@@ -86,7 +91,7 @@ enumeration (1.6 stores none either).
 - The `audit.view` and `audit.manage` permissions, and the Audit Log page.
 - Retention, and the rule that shrinking the trail writes a row first (1.6
   decision 10).
-- The machine paths other than the agent enrollment route.
+- The machine paths other than the agent enrollment and renew routes.
 
 ## Consequences
 

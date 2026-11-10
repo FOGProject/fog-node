@@ -19,6 +19,11 @@ const isWebUrl = (value) => {
 // repeats.
 const toOrigins = (urls) => [...new Set(urls.map((v) => new URL(v).origin))];
 
+// The host of each URL, for the server certificate of the agent listener. The
+// URL parser keeps the brackets of an IPv6 host; the certificate lists the
+// address alone.
+const urlHosts = (urls) => urls.map((v) => new URL(v).hostname.replace(/^\[|\]$/g, ''));
+
 // This computer's name, localhost, and each external IPv4 address, on
 // fog-node's default port. FOG admins often browse by IP, so the IPs are in
 // the default. Node 18.0-18.3 reports `family` as the number 4.
@@ -36,4 +41,4 @@ const defaultImageStore = (platform = process.platform) => {
   return '/images';
 };
 
-module.exports = {splitList, isWebUrl, toOrigins, defaultUrls, defaultImageStore};
+module.exports = {splitList, isWebUrl, toOrigins, urlHosts, defaultUrls, defaultImageStore};

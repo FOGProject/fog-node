@@ -133,6 +133,40 @@ new name has a timestamp suffix. Setup then makes new CAs. Setup records the new
 fingerprint. You must then re-enroll every fog-agent by hand with the new
 `ca.cert.pem`.
 
+### Agent port
+
+fog-node runs a second, HTTPS listener for fog-agent. It uses the port in
+`custom.agentTlsPort` in `config/local.js`. The default is 8443. The agent
+proves itself with its client certificate on this port (mTLS), so it works on
+any OS with no proxy setup. The listener serves the same routes as the main
+port. An agent uses one base URL for everything: `https://<host>:<port>`, for
+example `https://fogserver:8443`.
+
+To change the port, run `npm run setup` again, or edit `custom.agentTlsPort`
+and restart fog-node. The value `0` turns the listener off. The answers file
+key is `server.agentTlsPort`. If the port is in use, fog-node logs a warning
+that names the port and runs without the listener.
+
+The listener serves `pki/server.pem`, which the root certificate `pki/root.pem`
+signed. An agent pins the root, and checks the host in the URL against the names
+and addresses in `server.pem`. Setup writes that list to `custom.agentTlsSans`:
+`localhost`, this computer's name and addresses, and the host of each browser
+URL. If agents use another name, add it to `custom.agentTlsSans`.
+
+At each start, fog-node checks the server certificate only. It makes
+`pki/server.pem` and `pki/server.key` from the existing root when they are
+missing. It makes them again when the list changes, fewer than 30 days remain,
+or the root no longer verifies them. It renames the old pair with a timestamp
+suffix. This needs `pki/root.key`. Without it, fog-node logs one warning. It
+then starts the listener with the existing `server.pem` and `server.key`. If
+either is missing, it runs without the listener.
+
+A start never makes a root or an agent CA. A new agent CA would cut off every
+enrolled agent, so only `npm run setup` (or `npm run setup:dev`) makes one. If
+`pki/root.pem` or `pki/agent-ca.pem` is missing, or the root does not verify
+the agent CA, fog-node logs one warning that names `npm run setup`. It then
+runs without the listener.
+
 ### Install without prompts
 
 To script an install, put the answers in a JSON file and run
