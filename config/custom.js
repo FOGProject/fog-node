@@ -8,7 +8,16 @@
  * https://sailsjs.com/config/custom
  */
 
+const path = require('path');
+
 module.exports.custom = {
+
+  // Certificate authority files for fog-agent enrollment: root.pem/.key,
+  // agent-ca.pem/.key and agent-ca-bundle.pem. tools/setup/pki.js makes them.
+  // The CA keys sit here, so the folder must be readable only by the user that
+  // runs fog-node. path.join keeps it valid on any OS. config/local.js may
+  // override it (the setup tools carry that override forward).
+  pkiDir: path.join(__dirname, '..', 'pki'),
 
   // Image store: one folder per image -> <imageStorePath>/<image>/<partition>.img.
   // Single source of truth for the deploy streamer, dashboard/hwinfo disk usage,

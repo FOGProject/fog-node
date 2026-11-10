@@ -74,6 +74,9 @@ module.exports.policies = {
   // iPXE boot script is public (PXE machines have no session)
   'boot':                  true,
 
+  // The CA files are public: the agent fetches them before it has a session
+  'agent/ca-file':         true,
+
   // System info
   'system/info':           true,
   'system/bandwidth':      true,
