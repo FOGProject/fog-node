@@ -31,6 +31,8 @@ const TOP = [
   ['Workflows', 'fas fa-diagram-project'],
   ['User Administration', 'fas fa-shield'],
   ['iPXE Menu', 'fas fa-list-ol'],
+  // Issue #199: the 1.6 FOG Configuration node, a leaf to FOG Settings.
+  ['FOG Configuration', 'fas fa-wrench'],
   ['Logging', 'fas fa-scroll']
 ];
 

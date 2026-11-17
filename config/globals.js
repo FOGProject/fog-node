@@ -148,7 +148,10 @@ module.exports.globals = {
         {link: '/pxemenus/create', text: 'Create New iPXE Menu'}
       ]
     },
-    // The 1.6 "Logging" group (FOGPage.php:899-902). It sits after the planned
+    // The 1.6 "FOG Configuration" node (FOGConfigurationPage.php). A leaf to
+    // FOG Settings until a second sub-page exists.
+    {order: 150, text: 'FOG Configuration', link: '/about/settings', icon: 'fas fa-wrench'},
+    // The 1.6 "Logging" group (FOGPage.php:899-902). It sits after the
     // FOG Configuration entry (150).
     {
       order: 170, text: 'Logging', icon: 'fas fa-scroll',
