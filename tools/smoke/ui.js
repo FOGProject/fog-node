@@ -93,6 +93,7 @@ const PAGES = [
   {path: '/audit', table: true},
   {path: '/activity', table: true},
   {path: '/agent-activity', table: true},
+  {path: '/logviewer'},
   {path: '/hosts/create'},
   {path: '/groups/create'},
   {path: '/images/create'},

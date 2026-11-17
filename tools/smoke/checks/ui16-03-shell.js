@@ -38,6 +38,7 @@ const HEADERS = {
   '/audit': ['Audit Log', 'Audit Log'],
   '/activity': ['Activity', 'Activity'],
   '/agent-activity': ['Agent Activity', 'Agent Activity'],
+  '/logviewer': ['Log Viewer', 'Log Viewer'],
   '/snapins': ['Snapin Management', 'All Snapins'],
   '/printers': ['Printer Management', 'All Printers'],
   '/hosts/create': ['Host Management', 'Create New Host'],

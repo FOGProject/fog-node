@@ -1,0 +1,55 @@
+<%/* The FOG 1.6 Log Viewer (LogViewerManagement.php, status/logtoview.php): the
+     File and Lines selects, the Reverse order checkbox, the Pause Reload
+     button and the <pre> of lines.
+
+     Locals (api/controllers/pages/logviewer.js): files, the names of the log
+     files that exist (fog-node.log, then .1 to .5); lineChoices and
+     defaultLines, the Lines select. The client script is
+     views/pages/partials/logviewer.js. It fills the <pre> with textContent,
+     never HTML. */%>
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h4 class="card-title">Log Viewer</h4>
+          </div>
+          <div class="card-body">
+            <div class="row g-3 align-items-end mb-3">
+              <div class="col-auto">
+                <label class="form-label" for="logviewer-file">File</label>
+                <select id="logviewer-file" class="form-select" autocomplete="off">
+                  <% files.forEach(function (name) { %>
+                  <option value="<%= name %>"><%= name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="col-auto">
+                <label class="form-label" for="logviewer-lines">Lines</label>
+                <select id="logviewer-lines" class="form-select" autocomplete="off">
+                  <% lineChoices.forEach(function (n) { %>
+                  <option value="<%= n %>"<% if (n === defaultLines) { %> selected<% } %>><%= n %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="col-auto">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="logviewer-reverse" autocomplete="off">
+                  <label class="form-check-label" for="logviewer-reverse">Reverse order</label>
+                </div>
+              </div>
+              <div class="col-auto">
+                <button type="button" class="btn btn-secondary" id="logviewer-pause">Pause Reload</button>
+              </div>
+              <div class="col-auto">
+                <span id="logviewer-status" class="text-danger"></span>
+              </div>
+            </div>
+            <pre id="logviewer-pre" class="logviewer-pre"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

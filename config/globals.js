@@ -159,7 +159,8 @@ module.exports.globals = {
         // Activity comes before Audit Log (1.6 FOGPage.php:658-661).
         {text: 'Activity', link: '/activity', icon: 'fas fa-clock-rotate-left'},
         {text: 'Audit Log', link: '/audit', icon: 'fas fa-clipboard-list'},
-        {text: 'Agent Activity', link: '/agent-activity', icon: 'fas fa-satellite-dish'}
+        {text: 'Agent Activity', link: '/agent-activity', icon: 'fas fa-satellite-dish'},
+        {text: 'Log Viewer', link: '/logviewer', icon: 'fas fa-file-lines'}
       ]
     }
   ],
