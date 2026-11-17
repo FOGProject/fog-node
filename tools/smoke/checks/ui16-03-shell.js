@@ -37,6 +37,7 @@ const HEADERS = {
   '/about/settings': ['FOG Configuration', 'FOG Settings'],
   '/audit': ['Audit Log', 'Audit Log'],
   '/activity': ['Activity', 'Activity'],
+  '/agent-activity': ['Agent Activity', 'Agent Activity'],
   '/snapins': ['Snapin Management', 'All Snapins'],
   '/printers': ['Printer Management', 'All Printers'],
   '/hosts/create': ['Host Management', 'Create New Host'],

@@ -44,6 +44,9 @@ const READ_ACTIONS = [
   'audit/datatable',
   // The Activity DataTable: the same reason as the Audit Log one.
   'activity/datatable',
+  // The Agent Activity reads: the same reason as the Audit Log one.
+  'agent-activity/summary',
+  'agent-activity/host',
   // Signs a JWT for the user and changes no record.
   'auth/token'
 ];

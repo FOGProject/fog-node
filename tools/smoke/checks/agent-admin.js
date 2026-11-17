@@ -11,6 +11,8 @@
  * runs this file (see the comment at its top).
  */
 
+const enroll = require('../lib/agent-enroll');
+
 const expect = (what, actual, expected) => {
   const a = JSON.stringify(actual);
   const e = JSON.stringify(expected);
@@ -145,13 +147,7 @@ async function markupAsText(ctx) {
 
   // An enrollment, as the agent sends it: a real CSR over HTTP (no MAC: no pending host is created).
   // The agent chooses its version, hostname and serial; each shows in its own cell.
-  const crypto = require('crypto');
-  const x509 = require('@peculiar/x509');
-  const keys = await crypto.webcrypto.subtle.generateKey({name: 'ECDSA', namedCurve: 'P-256'}, true, ['sign', 'verify']);
-  const csr = await x509.Pkcs10CertificateRequestGenerator.create({name: '', keys, signingAlgorithm: {name: 'ECDSA', hash: 'SHA-256'}});
-  const enrolled = await page.request.post(`${base}/agent/v1/enroll`, {
-    data: {protocol: 1, agent_version: img, os: 'linux', arch: 'amd64', hostname: img, identity: {macs: [], system_serial: img}, csr_pem: csr.toString('pem')}
-  });
+  const enrolled = await enroll(page, base, {hostname: img, macs: [], agentVersion: img, serial: img});
   expect('the status of POST /agent/v1/enroll', enrolled.status(), 202);
   const minted = await page.request.post(`${base}/api/v1/agent/token`, {
     headers: AJAX, data: {name: bold, uses: 1, expires: Date.now() + 3600 * 1000}

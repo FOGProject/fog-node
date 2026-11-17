@@ -12,6 +12,13 @@ module.exports.permissions = {
     activity: {
       view: false
     },
+    // The Agent Activity page (GET /agent-activity, POST /api/v1/agent-activity/summary
+    // and /host). Its own key, not audit.view: the agent rows disclose a different
+    // thing from the audit trail (1.6 Authorization.php:715-724). The key matches no
+    // model, so it opens no generic /api/v1/:model route.
+    agentactivity: {
+      view: false
+    },
     host: {
       create: false,
       destroy: false,
