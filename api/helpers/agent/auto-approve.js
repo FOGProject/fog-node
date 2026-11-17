@@ -25,7 +25,6 @@
  * Usage: let issued = await sails.helpers.agent.autoApprove.with({row, token})
  */
 const HOUR_MS = 60 * 60 * 1000;
-const DEFAULT_WINDOW_HOURS = 24;
 
 module.exports = {
   friendlyName: 'Auto-approve an agent enrollment',
@@ -63,9 +62,7 @@ module.exports = {
     }
 
     if (!via && ['known-host-no-agent', 'rebind'].includes(row.reason)) {
-      const setting = await sails.models.setting.findOne({name: 'FOG_AGENT_ENROLL_DEPLOY_WINDOW'});
-      const window = setting ? Number(setting.value) : DEFAULT_WINDOW_HOURS;
-      const hours = Number.isNaN(window) ? DEFAULT_WINDOW_HOURS : window;
+      const hours = await sails.helpers.settings.get('FOG_AGENT_ENROLL_DEPLOY_WINDOW');
       const host = hours >= 1 ? await sails.models.host.findOne({id: row.host}) : undefined;
       const deployed = host ? Date.parse(host.deployed) : NaN;
       if (!Number.isNaN(deployed) && deployed <= Date.now() && Date.now() - deployed <= hours * HOUR_MS) {

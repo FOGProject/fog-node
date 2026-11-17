@@ -94,8 +94,7 @@ module.exports = {
 
     // The Host model stores guid, serial and asset in lower case.
     let smbiosId = '';
-    const setting = await sails.models.setting.findOne({name: 'FOG_HOST_IDENTIFY_SMBIOS'});
-    const smbiosOff = setting && String(setting.value).trim().toLowerCase() === 'off';
+    const smbiosOff = (await sails.helpers.settings.get('FOG_HOST_IDENTIFY_SMBIOS')) === 'off';
     if (!smbiosOff && (smbios.guid || smbios.serial)) {
       const guid = smbios.guid.toLowerCase();
       const serial = smbios.serial.toLowerCase();

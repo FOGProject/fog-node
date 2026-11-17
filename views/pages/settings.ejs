@@ -5,8 +5,9 @@
      settings cache.
 
      Locals (api/controllers/pages/settings.js): categories
-     [{name, rows: [{key, description, reload, tip, options}]}], every row a
-     select, and canUpdate (false: every control is disabled).
+     [{name, rows: [{key, description, reload, tip, type, value, options}]}],
+     and canUpdate (false: every control is disabled). The type picks the
+     control: select (options), number (value) or checkbox (value true).
 
      The nav link carries the BS5 nav-link class beside the 1.6 li.active, so
      the active category paints as a pill. The row carries data-key,
@@ -48,11 +49,17 @@
                     <div class="form-group settings-row" data-key="<%= row.key %>" data-description="<%= row.description %>"<% if (row.reload) { %> data-reload<% } %>>
                       <label class="col-form-label settings-label" for="<%= row.key %>" data-bs-toggle="tooltip" data-bs-placement="top" title="<%= row.tip %>"><%= row.key %><% if (row.reload) { %> <i class="fas fa-arrows-rotate text-muted settings-refresh-note" aria-hidden="true"></i><% } %></label>
                       <div class="settings-control">
+                        <% if (row.type === 'number') { %>
+                        <input type="number" class="form-control" id="<%= row.key %>" name="<%= row.key %>" value="<%= row.value %>" autocomplete="off"<% if (!canUpdate) { %> disabled<% } %>>
+                        <% } else if (row.type === 'checkbox') { %>
+                        <input type="checkbox" class="form-check-input" id="<%= row.key %>" name="<%= row.key %>" value="1"<% if (row.value === true) { %> checked<% } %> autocomplete="off"<% if (!canUpdate) { %> disabled<% } %>>
+                        <% } else { %>
                         <select class="form-control" id="<%= row.key %>" name="<%= row.key %>" autocomplete="off"<% if (!canUpdate) { %> disabled<% } %>>
                           <% row.options.forEach(function (option) { %>
                           <option value="<%= option.value %>"<% if (option.selected) { %> selected<% } %>><%= option.label %></option>
                           <% }); %>
                         </select>
+                        <% } %>
                       </div>
                     </div>
                     <% }); %>

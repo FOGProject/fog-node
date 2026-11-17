@@ -16,7 +16,9 @@ describe('FOG Settings page::', function () {
   const SCROLL = 'FOG_TABLE_SCROLL_MODE';
   const SCREEN = 'FOG_VIEW_DEFAULT_SCREEN';
   // The Setting records these tests touch. Each is put back after.
-  const NAMES = [SCROLL, SCREEN, 'schema'];
+  const SMBIOS = 'FOG_HOST_IDENTIFY_SMBIOS';
+  const CHECKIN = 'FOG_CLIENT_CHECKIN_TIME';
+  const NAMES = [SCROLL, SCREEN, SMBIOS, CHECKIN, 'FOG_ENABLE_SHOW_PASSWORDS', 'FOG_AGENT_ENROLL_DEPLOY_WINDOW', 'schema'];
   const RUN = crypto.randomBytes(3).toString('hex');
   const PREFIX = 'mset' + RUN;
   const PASSWORD = 'mocha-settings-pw';
@@ -70,7 +72,8 @@ describe('FOG Settings page::', function () {
     assert.ok(start !== -1 && end > start, 'the page has no settings card');
     return html.slice(start, end);
   };
-  const selects = (html) => card(html).match(/<select\b[^>]*>/g) || [];
+  // Every control of the card: a select, or a number or checkbox input.
+  const controls = (html) => card(html).match(/<(?:select|input)\b[^>]*\sname="FOG_[^>]*>/g) || [];
 
   // Poll every 25 ms, up to 2 s, for an audit row at or after `start`
   // (audit.test.js): the hook writes after the response finishes.
@@ -126,7 +129,32 @@ describe('FOG Settings page::', function () {
       assert.ok(/data-cat="FOG View Settings">FOG View Settings <span class="badge">2<\/span>/.test(html), 'no "FOG View Settings (2)" nav item');
       for (const key of Object.keys(sails.config.fogSettings)) {
         assert.ok(html.includes(`data-key="${key}"`), `no row for ${key}`);
-        assert.ok(html.includes(`<select class="form-control" id="${key}" name="${key}"`), `no select for ${key}`);
+        // The tag is the control of the entry's type.
+        const tag = {select: '<select', number: '<input type="number"', checkbox: '<input type="checkbox"'}[sails.config.fogSettings[key].type];
+        assert.ok(new RegExp(`${tag}[^>]* id="${key}" name="${key}"`).test(html), `no ${sails.config.fogSettings[key].type} control for ${key}`);
+      }
+    });
+
+    it('shows the categories of the four moved settings, FOG Agent first', async () => {
+      const res = await admin.agent.get('/about/settings').set(...HTML).expect(200);
+      const names = (card(res.text).match(/<a href="#" class="nav-link[^"]*" data-cat="[^"]*"/g) || []).map((a) => a.match(/data-cat="([^"]*)"/)[1]);
+      assert.deepStrictEqual(names, ['FOG Agent', 'FOG Client', 'FOG View Settings', 'General Settings']);
+    });
+
+    it('renders a number as a number input and a checkbox as a checkbox, checked when true', async () => {
+      await put('FOG_ENABLE_SHOW_PASSWORDS', 1);
+      await put('FOG_AGENT_ENROLL_DEPLOY_WINDOW', 12);
+      try {
+        const res = await admin.agent.get('/about/settings').set(...HTML).expect(200);
+        const html = card(res.text);
+        assert.ok(/<input type="number"[^>]*id="FOG_AGENT_ENROLL_DEPLOY_WINDOW"[^>]*value="12"/.test(html), 'no number input with 12');
+        assert.ok(/<input type="checkbox"[^>]*id="FOG_ENABLE_SHOW_PASSWORDS"[^>]*\schecked/.test(html), 'the checkbox is not checked');
+        await Setting().destroy({name: 'FOG_ENABLE_SHOW_PASSWORDS'});
+        const off = card((await admin.agent.get('/about/settings').set(...HTML).expect(200)).text);
+        assert.ok(/<input type="checkbox"[^>]*id="FOG_ENABLE_SHOW_PASSWORDS"/.test(off) && !/<input type="checkbox"[^>]*id="FOG_ENABLE_SHOW_PASSWORDS"[^>]*\schecked/.test(off), 'the checkbox is checked with no record');
+      } finally {
+        await restore('FOG_ENABLE_SHOW_PASSWORDS');
+        await restore('FOG_AGENT_ENROLL_DEPLOY_WINDOW');
       }
     });
 
@@ -147,15 +175,15 @@ describe('FOG Settings page::', function () {
 
     it('disables every control for a user with setting.read but not setting.update', async () => {
       const res = await reader.agent.get('/about/settings').set(...HTML).expect(200);
-      const found = selects(res.text);
+      const found = controls(res.text);
       assert.strictEqual(found.length, Object.keys(sails.config.fogSettings).length);
       found.forEach((tag) => assert.ok(/\sdisabled(\s|>)/.test(tag), `not disabled: ${tag}`));
     });
 
     it('disables no control for an admin', async () => {
       const res = await admin.agent.get('/about/settings').set(...HTML).expect(200);
-      const found = selects(res.text);
-      assert.ok(found.length > 0, 'no select');
+      const found = controls(res.text);
+      assert.ok(found.length > 0, 'no control');
       found.forEach((tag) => assert.ok(!/\sdisabled(\s|>)/.test(tag), `disabled: ${tag}`));
     });
 
@@ -208,6 +236,22 @@ describe('FOG Settings page::', function () {
       const res = await save(admin, {key: SCROLL, value: 'sideways'}).expect(400);
       assert.deepStrictEqual(res.body, {error: `${SCROLL} value is not valid`, title: 'Settings Update Fail'});
       assert.strictEqual(await value(SCROLL), 'infinite');
+    });
+
+    it('answers 400 for a SMBIOS mode that is not valid, and stores nothing', async () => {
+      await Setting().destroy({name: SMBIOS});
+      const res = await save(admin, {key: SMBIOS, value: 'sideways'}).expect(400);
+      assert.deepStrictEqual(res.body, {error: `${SMBIOS} value is not valid`, title: 'Settings Update Fail'});
+      assert.strictEqual(await Setting().count({name: SMBIOS}), 0);
+    });
+
+    it('stores a number and a checkbox value, normalized', async () => {
+      await save(admin, {key: CHECKIN, value: 120}).expect(202);
+      assert.strictEqual(await value(CHECKIN), 120);
+      await save(admin, {key: 'FOG_ENABLE_SHOW_PASSWORDS', value: 1}).expect(202);
+      assert.strictEqual(await value('FOG_ENABLE_SHOW_PASSWORDS'), true);
+      await save(admin, {key: 'FOG_ENABLE_SHOW_PASSWORDS', value: 0}).expect(202);
+      assert.strictEqual(await value('FOG_ENABLE_SHOW_PASSWORDS'), false);
     });
 
     it('answers 400 for a key that is not in the catalog, and stores nothing', async () => {

@@ -9,12 +9,6 @@ function esc(s) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// A FOG setting value is on when it is truthy and not the string "0" or
-// "false". FOG stores its settings as strings, so "0" means off there.
-function settingOn(value) {
-  return !!value && value !== '0' && value !== 'false';
-}
-
 const MODES = ['create', 'create-modal', 'edit'];
 
 module.exports = {
@@ -81,8 +75,7 @@ module.exports = {
     // only for a form with a password field, and never created here.
     let showPasswords = false;
     if (Object.keys(formItems).some((k) => formItems[k].type === 'password')) {
-      let setting = await sails.models.setting.findOne({name: 'FOG_ENABLE_SHOW_PASSWORDS'});
-      showPasswords = !!setting && settingOn(setting.value);
+      showPasswords = await sails.helpers.settings.get('FOG_ENABLE_SHOW_PASSWORDS');
     }
 
     // One field row on the FOG 1.6 grid (FOGPage.php:5654-5667): the label in
