@@ -54,7 +54,7 @@
     "sails-hook-sockets": "^3.0.2",
     "sails-mongo": "fogproject/sails-mongo",
     "select2": "^4.1.0",
-    "systeminformation": "^5.33.19",
+    "systeminformation": "^5.33.22",
     "tempusdominus-core": "^5.19.0",
     "terser": "^5.51.2"
   },
