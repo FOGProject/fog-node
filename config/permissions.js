@@ -6,6 +6,12 @@ module.exports.permissions = {
     audit: {
       view: false
     },
+    // The Activity page (GET /activity, POST /api/v1/activity/datatable). The
+    // key matches no model, so it opens no generic /api/v1/:model route. An
+    // admin role gets it through api/helpers/permissions/resolve.js, as every leaf.
+    activity: {
+      view: false
+    },
     host: {
       create: false,
       destroy: false,

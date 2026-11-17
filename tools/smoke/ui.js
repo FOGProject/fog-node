@@ -87,6 +87,7 @@ const PAGES = [
   {path: '/workflows', table: true},
   {path: '/about/settings'},
   {path: '/audit', table: true},
+  {path: '/activity', table: true},
   {path: '/hosts/create'},
   {path: '/groups/create'},
   {path: '/images/create'},

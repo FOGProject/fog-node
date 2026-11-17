@@ -72,6 +72,10 @@ module.exports.routes = {
   // must precede POST /api/v1/:model/datatable, or it is read as :model=audit.
   'POST /api/v1/audit/datatable':            {action: 'audit/datatable', csrf: false},
 
+  // The Activity page rows (GET /activity). A POST read that needs activity.view;
+  // it must precede POST /api/v1/:model/datatable, or it is read as :model=activity.
+  'POST /api/v1/activity/datatable':         {action: 'activity/datatable', csrf: false},
+
   // fog-agent enrollment admin API (host permissions; must precede the :model
   // routes, or GET /api/v1/agent/tokens is read as :model=agent/:id=tokens).
   'GET /api/v1/agent/enrollments':           {action: 'agent/enrollments', csrf: false},
@@ -140,6 +144,9 @@ module.exports.routes = {
 
   // The Audit Log page (1.6 AuditManagement), read-only; it needs audit.view.
   'GET /audit':                              {action: 'pages/list/audit'},
+
+  // The Activity page (1.6 ActivityManagement), read-only; it needs activity.view.
+  'GET /activity':                           {action: 'pages/list/activity'},
 
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},
