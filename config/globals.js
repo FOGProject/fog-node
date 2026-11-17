@@ -150,7 +150,15 @@ module.exports.globals = {
     },
     // The 1.6 "FOG Configuration" node (FOGConfigurationPage.php). A leaf to
     // FOG Settings until a second sub-page exists.
-    {order: 150, text: 'FOG Configuration', link: '/about/settings', icon: 'fas fa-wrench'}
+    {order: 150, text: 'FOG Configuration', link: '/about/settings', icon: 'fas fa-wrench'},
+    // The 1.6 "Logging" group (FOGPage.php:899-902). It sits after the
+    // FOG Configuration entry (150).
+    {
+      order: 170, text: 'Logging', icon: 'fas fa-scroll',
+      children: [
+        {text: 'Audit Log', link: '/audit', icon: 'fas fa-clipboard-list'}
+      ]
+    }
   ],
   authenticationMechanisms: [
     'local'

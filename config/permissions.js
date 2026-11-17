@@ -1,5 +1,11 @@
 module.exports.permissions = {
   stock: {
+    // The Audit Log page (GET /audit, POST /api/v1/audit/datatable). The key is
+    // audit, not auditlog: a stock.auditlog entry would open the generic
+    // /api/v1/:model routes on the AuditLog model (ADR 0003).
+    audit: {
+      view: false
+    },
     host: {
       create: false,
       destroy: false,

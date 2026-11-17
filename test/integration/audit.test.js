@@ -5,6 +5,8 @@ const path = require('path');
 const supertest = require('supertest');
 const agentCsr = require('../support/agent-csr');
 const support = require('../support/pki');
+const auditWait = require('../support/audit-wait');
+const {waitFor} = auditWait;
 
 // The audit trail core (docs/adr/0003-audit-trail.md): the AuditLog model, the
 // record helper, the request seam (api/hooks/audit), the sign-in events and the
@@ -31,21 +33,10 @@ describe('Audit trail::', function () {
   let seq = 0;
   const uniq = () => PREFIX + '-' + (seq++);
   const short = () => SHORT + (seq++);
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const mac = () => '02:' + crypto.randomBytes(5).toString('hex').match(/../g).join(':');
   const bare = (m) => m.replace(/[:-]/g, '').toLowerCase();
   const LOOPBACK = ['127.0.0.1', '::ffff:127.0.0.1', '::1'];
 
-  // Poll every 25 ms, up to 2 s, for at least `count` rows at or after `start`.
-  async function waitFor(where, start, count = 1) {
-    const deadline = Date.now() + 2000;
-    for (;;) {
-      const found = await AuditLog.find(Object.assign({}, where, {createdAt: {'>=': start}})).sort('createdAt ASC');
-      if (found.length >= count) { return found; }
-      if (Date.now() > deadline) { assert.fail(`no audit row for ${JSON.stringify(where)} within 2 s`); }
-      await sleep(25);
-    }
-  }
   const rowsOf = (where, start) => AuditLog.find(Object.assign({}, where, {createdAt: {'>=': start}})).sort('createdAt ASC');
 
   // Users. `permissions` is the role's {stock: {...}}; isAdmin gives all.
@@ -94,14 +85,8 @@ describe('Audit trail::', function () {
     };
     return {get: verb('get'), post: verb('post'), put: verb('put'), del: verb('delete')};
   };
-  // A denied GET by the actor on a model that no one can read: a row for sure.
-  // Returns the row once it is stored. It proves the earlier writes landed.
-  async function sentinel(actor, start) {
-    const model = `${PREFIX}-sentinel-${seq++}`;
-    await as(actor).get(`/api/v1/${model}`).expect(403);
-    const [row] = await waitFor({permission: `${model}.read`}, start);
-    return row;
-  }
+  // A denied GET by the actor on a model that no one can read (test/support/audit-wait.js).
+  const sentinel = (actor, start) => auditWait.sentinel(as(actor).get, `${PREFIX}-sentinel-${seq++}`, start);
 
   let admin;
   let adminSession;
