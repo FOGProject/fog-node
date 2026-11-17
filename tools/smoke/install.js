@@ -185,7 +185,8 @@ async function main() {
     fs.writeFileSync(configs[0], `module.exports = {custom: {pkiDir: ${JSON.stringify(pkiDir)}}};\n`);
     writeAnswers();
     await step('the installer, from an answers file', runInstaller);
-    child = server.start({port, prod: true, env: {}, log});
+    // The log file goes into the run's work folder, not into the checkout.
+    child = server.start({port, prod: true, env: {'sails_custom__logDir': path.join(work, 'logs')}, log});
     await step('production lift with the installed config', () => server.waitForReady(child, base));
     await step('sign in through the login form', signIn);
     await step('sockets accept the installed URL', async () => {

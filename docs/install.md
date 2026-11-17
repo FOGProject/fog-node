@@ -265,6 +265,18 @@ the fog-node directory, and run `node app.js --prod` (what `npm start` runs).
 Start fog-node after MongoDB and Redis. If fog-node starts first, it fails to
 connect and exits, so set the service to restart on failure.
 
+### The log file
+
+fog-node writes each log line to the console and to the file `fog-node.log`.
+By default the file is in the `logs` folder of the fog-node directory. To move
+it, set `custom.logDir` in `config/local.js`. A setup re-run keeps that value.
+
+When `fog-node.log` passes 10 MB, fog-node renames it to `fog-node.log.1` and
+starts a new file. It keeps five old files, `fog-node.log.1` to `fog-node.log.5`.
+
+The production log level is `debug`. At that level `info`, `verbose` and
+`silly` lines are not written, because the log library ranks them below `debug`.
+
 ## Update fog-node
 
 Run these steps in the fog-node directory, in this order:

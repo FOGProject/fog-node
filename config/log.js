@@ -10,6 +10,8 @@
  * https://sailsjs.com/docs/concepts/logging
  */
 
+const path = require('path');
+
 module.exports.log = {
 
   /***************************************************************************
@@ -25,5 +27,11 @@ module.exports.log = {
   ***************************************************************************/
 
   // level: 'info'
+
+  // Each line goes to the console and to <logDir>/fog-node.log
+  // (api/lib/file-logger.js). The folder is custom.logDir, else <app>/logs.
+  // inspect is off so that the logger gets the raw arguments.
+  inspect: false,
+  custom: require('../api/lib/file-logger').create({fallbackDir: path.resolve(__dirname, '..', 'logs')})
 
 };

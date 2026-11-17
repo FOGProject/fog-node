@@ -25,9 +25,8 @@ const welcome = `Welcome to the FOG installer.\nYou will be guided through confi
 var COMPLETED = false;
 var payload = {};
 
-// Escape a value for a single-quoted JS string in a generated config file.
-// A Windows path has backslashes, which would otherwise become escapes.
-const jsStr = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+// The single-quoted JS string escaper for the generated config (tools/setup/pki.js).
+const {jsStr} = pki;
 
 // The agent CA backup passphrase (tools/setup/pki.js setupPki). purpose is
 // 'new', 'replace' or 'restore'. Returns a normalized passphrase, or null.
@@ -215,8 +214,8 @@ async.waterfall([
     // The server certificate of the agent listener names this computer and
     // the host of each URL that the installer was given.
     payload.agentTlsSans = cleanSans([...defaultSans(), ...urlHosts(splitList(payload.server.urls))]);
-    const pkiLines = pkiOverride ? `,
-    pkiDir: '${jsStr(pkiOverride)}'` : '';
+    // A kept custom.logDir goes next to it.
+    const pkiLines = pki.customLines({pkiOverride, logDir: oldLocal.logDir});
     // The kept http.trustProxy: behind a reverse proxy it makes the audit rows
     // record the client address. JSON is valid JS for a boolean, a number, a
     // string or a list.

@@ -1,4 +1,7 @@
 const assert = require('assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const sails = require('sails');
 const support = require('./support/pki');
 const {freePort} = require('./support/port');
@@ -13,6 +16,8 @@ let target;
 // for a free port (test/support/port.js).
 let pkiDir;
 let agentTlsPort;
+// The log folder of the lift (api/lib/file-logger.js), outside the repo.
+const logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fog-node-test-log-'));
 
 // The shared PKI fixture is built before the lift, so the lift-time
 // ensureServerCert (with the same SAN list) changes nothing in the read-only
@@ -36,7 +41,8 @@ before(async function() {
       datastores: {[target.datastore]: target.overrides},
       // config/bootstrap.js refuses to lift on any other database than
       // testDatabase, before its index writes.
-      custom: {pkiDir, agentTlsPort, agentTlsSans: support.SANS, testDatabase: target.database}
+      // logDir: a temporary folder, so the suite never writes into the repo.
+      custom: {pkiDir, agentTlsPort, agentTlsSans: support.SANS, testDatabase: target.database, logDir}
     }, (err) => (err ? reject(err) : resolve()));
   });
   // The guard, before any test file runs: the database the models really
@@ -64,6 +70,8 @@ after(async () => {
   // The seam writes after the response finishes, so let the last write land.
   await new Promise((resolve) => setTimeout(resolve, 200));
   await new Promise((resolve, reject) => sails.lower((err) => (err ? reject(err) : resolve())));
+  // The lift's log folder (a temporary folder, see logDir above).
+  fs.rmSync(logDir, {recursive: true, force: true});
 });
 
 describe('Basic Tests ::', () => {
