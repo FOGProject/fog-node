@@ -51,6 +51,15 @@ describe('Permissions resolve helper::', () => {
     assert.ok(leaves(result).every(([, value]) => value === false));
   });
 
+  // stock.audit.view opens the Audit Log page (issue #200). The key is audit,
+  // not auditlog, so the generic /api/v1/:model routes still refuse the model.
+  it('resolves stock.audit.view true for an admin role and false for a role with no grant', () => {
+    assert.strictEqual(resolve([{isAdmin: true, permissions: {}}]).stock.audit.view, true);
+    assert.strictEqual(resolve([B]).stock.audit.view, false);
+    assert.strictEqual(resolve([{permissions: {stock: {audit: {view: true}}}}]).stock.audit.view, true);
+    assert.strictEqual(sails.config.permissions.stock.audit.view, false);
+  });
+
   it('returns a new tree, so a change to it leaves the defaults alone', () => {
     const result = resolve([]);
     assert.notStrictEqual(result.stock, sails.config.permissions.stock);

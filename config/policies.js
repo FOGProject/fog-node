@@ -36,6 +36,9 @@ module.exports.policies = {
   'host/pending-approve':  ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
   'host/pending-delete':   ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
 
+  // The Audit Log rows (the action checks audit.view itself). It only reads.
+  'audit/datatable':       ['isLoggedIn','isAuthenticated'],
+
   // fog-agent enrollment admin routes (each action checks its host permission
   // itself). apiCsrfGuard: a cookie-authed mutation on CSRF-exempt /api/v1.
   'agent/enrollments':     ['isLoggedIn','isAuthenticated','apiCsrfGuard'],

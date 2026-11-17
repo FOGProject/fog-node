@@ -19,10 +19,11 @@ module.exports = {
     if (!sails.helpers.audit.can(req, 'host.read')) {
       return res.forbidden();
     }
-    const body = req.body || {};
-    const start = Math.max(0, parseInt(body.start, 10) || 0);
-    const length = parseInt(body.length, 10);
-    const text = String(_.get(body, 'search.value', '')).trim().toLowerCase();
+    // Safe for any JSON value (api/helpers/datatables/parse-request.js).
+    const parsed = sails.helpers.datatables.parseRequest.with({body: req.body});
+    const start = parsed.start;
+    const length = parsed.length;
+    const text = parsed.search.toLowerCase();
     const macText = text.replace(/[:\-. ]/g, '');
 
     const pending = await sails.models.host.find({pending: true}).sort('name ASC');
@@ -41,7 +42,7 @@ module.exports = {
       return /^[0-9a-f]{12}$/i.test(first) ? first.toLowerCase().match(/../g).join(':') : first;
     };
     return res.json({
-      draw: parseInt(body.draw, 10) || 0,
+      draw: parsed.draw,
       recordsTotal: pending.length,
       recordsFiltered: found.length,
       data: page.map((host) => ({id: host.id, name: host.name, mac: show(host), description: host.description || ''}))

@@ -56,6 +56,10 @@ The events:
 A failed sign-in stores the attempted name and no reason, to avoid user
 enumeration (1.6 stores none either).
 
+- `audit.view` is the key `stock.audit.view`, not `auditlog`, so the generic
+  `:model` routes stay closed. It gates the Audit Log page (`GET /audit`) and
+  `POST /api/v1/audit/datatable`, which reads at most 500 rows per request.
+
 ## Differences from 1.6
 
 - The correlation id is set per request. A middleware in `config/http.js` puts
@@ -90,7 +94,7 @@ enumeration (1.6 stores none either).
 
 - Change rows with redaction (1.6 decisions 5 to 7): `AuditChange`, the
   before and after values, and the redaction of a credential field.
-- The `audit.view` and `audit.manage` permissions, and the Audit Log page.
+- The `audit.manage` permission, with retention.
 - Retention, and the rule that shrinking the trail writes a row first (1.6
   decision 10).
 - The machine paths other than the agent enrollment and renew routes.

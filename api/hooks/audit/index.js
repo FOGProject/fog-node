@@ -39,6 +39,9 @@ const READ_ACTIONS = [
   'task-history',
   // The pending hosts DataTable (a POST read, like general/datatable).
   'host/pending-datatable',
+  // The Audit Log DataTable. Without it, every page load and scroll of the
+  // audit page would write an AuditLog row.
+  'audit/datatable',
   // Signs a JWT for the user and changes no record.
   'auth/token'
 ];

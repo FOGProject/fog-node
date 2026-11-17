@@ -68,6 +68,10 @@ module.exports.routes = {
   'POST /api/v1/host/pending/approve':       {action: 'host/pending-approve', csrf: false},
   'DELETE /api/v1/host/pending':             {action: 'host/pending-delete', csrf: false},
 
+  // The Audit Log page rows (GET /audit). A POST read that needs audit.view; it
+  // must precede POST /api/v1/:model/datatable, or it is read as :model=audit.
+  'POST /api/v1/audit/datatable':            {action: 'audit/datatable', csrf: false},
+
   // fog-agent enrollment admin API (host permissions; must precede the :model
   // routes, or GET /api/v1/agent/tokens is read as :model=agent/:id=tokens).
   'GET /api/v1/agent/enrollments':           {action: 'agent/enrollments', csrf: false},
@@ -127,6 +131,9 @@ module.exports.routes = {
   'GET /hosts/pending':                      {action: 'pages/list/pending-hosts'},
   'GET /hosts/pendingAgents':                {action: 'pages/list/pending-agents'},
   'GET /hosts/agentTokens':                  {action: 'pages/list/agent-tokens'},
+
+  // The Audit Log page (1.6 AuditManagement), read-only; it needs audit.view.
+  'GET /audit':                              {action: 'pages/list/audit'},
 
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},

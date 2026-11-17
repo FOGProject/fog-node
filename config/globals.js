@@ -147,6 +147,14 @@ module.exports.globals = {
       subLinks: [
         {link: '/pxemenus/create', text: 'Create New iPXE Menu'}
       ]
+    },
+    // The 1.6 "Logging" group (FOGPage.php:899-902). It sits after the planned
+    // FOG Configuration entry (150).
+    {
+      order: 170, text: 'Logging', icon: 'fas fa-scroll',
+      children: [
+        {text: 'Audit Log', link: '/audit', icon: 'fas fa-clipboard-list'}
+      ]
     }
   ],
   authenticationMechanisms: [

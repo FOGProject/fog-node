@@ -30,7 +30,8 @@ const TOP = [
   ['Tasks', 'fas fa-bars-progress'],
   ['Workflows', 'fas fa-diagram-project'],
   ['User Administration', 'fas fa-shield'],
-  ['iPXE Menu', 'fas fa-list-ol']
+  ['iPXE Menu', 'fas fa-list-ol'],
+  ['Logging', 'fas fa-scroll']
 ];
 
 // What the sidebar on screen shows.
@@ -98,6 +99,14 @@ async function checkCreate({page, checkPage}) {
   await checkActive(page, '/hosts/create', ['Create New Host']);
 }
 
+// The Logging group holds Audit Log, and the link is active and open on /audit (issue #200).
+async function checkAudit({page, checkPage}) {
+  await checkPage(page, {path: '/audit', table: true});
+  const got = await sidebar(page);
+  expect('/audit: the active sub-links', got.activeSubs, ['Audit Log']);
+  expect('/audit: the open items', got.open, ['Logging']);
+}
+
 // The edit page of the host that the round trip created (ctx.created.host).
 async function checkEdit({page, checkPage, created}) {
   const name = created.host;
@@ -119,6 +128,7 @@ module.exports = {
   run: async (ctx) => {
     await checkShape(ctx);
     await checkCreate(ctx);
+    await checkAudit(ctx);
     await checkEdit(ctx);
   }
 };
