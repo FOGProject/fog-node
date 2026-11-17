@@ -65,6 +65,9 @@ config.json
 images
 # The agent CA keys and certificates (custom.pkiDir). Never commit the keys.
 /pki
+# The fog-node log file and its rotated copies (api/lib/file-logger.js). The
+# *.log rule above does not match fog-node.log.1 to .5.
+/logs
 
 ################################################
 # Dependencies

@@ -196,13 +196,13 @@ const setupPki = async ({pkiDir, newRoot, settings, log, command, sans, escrows,
 
 /**
  * What the setup tools keep from an existing config/local.js: custom.pkiDir
- * (the CA keys are there) and http.trustProxy. Both are undefined without the
- * file. The setup tools carry them into the local.js they write, so a re-run
- * keeps them.
+ * (the CA keys are there), custom.logDir and http.trustProxy. All are
+ * undefined without the file. The setup tools carry them into the local.js
+ * they write, so a re-run keeps them.
  */
 const readOldLocal = (appPath) => {
   const localCfg = path.join(appPath, 'config', 'local.js');
-  if (!exists(localCfg)) return {pkiDir: undefined, trustProxy: undefined};
+  if (!exists(localCfg)) return {pkiDir: undefined, logDir: undefined, trustProxy: undefined};
   const local = require(localCfg) || {};
   // The installer writes a new local.js after this read. Left in the require
   // cache, the old file is what its later steps (schema, Sails config,
@@ -210,9 +210,21 @@ const readOldLocal = (appPath) => {
   delete require.cache[require.resolve(localCfg)];
   return {
     pkiDir: local.custom ? local.custom.pkiDir : undefined,
+    logDir: local.custom ? local.custom.logDir : undefined,
     trustProxy: local.http ? local.http.trustProxy : undefined
   };
 };
+
+// Escape a value for a single-quoted JS string in a generated config file.
+// A Windows path has backslashes, which would otherwise become escapes.
+const jsStr = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+
+// The custom: {...} override lines of the local.js that setup writes: a kept
+// pkiDir and a kept logDir, each only when there is one. Each line starts with
+// a comma, so the text follows the last fixed key.
+const customLines = ({pkiOverride, logDir}) => (pkiOverride ? `,
+    pkiDir: '${jsStr(pkiOverride)}'` : '') + (logDir ? `,
+    logDir: '${jsStr(logDir)}'` : '');
 
 // The default PKI folder, <app>/pki, as config/custom.js.
 const defaultPkiDir = (appPath) => path.join(appPath, 'pki');
@@ -237,7 +249,7 @@ const printPassphrase = (words) => {
 const readPassphraseFile = (file) => escrow.normalize(fs.readFileSync(file, 'utf8').split(/\r?\n/)[0]);
 
 module.exports = {
-  setupPki, isRootError, readOldLocal, defaultPkiDir, pkiDirFor, printPassphrase, readPassphraseFile, INTERACTIVE_TRIES,
+  setupPki, isRootError, readOldLocal, customLines, jsStr, defaultPkiDir, pkiDirFor, printPassphrase, readPassphraseFile, INTERACTIVE_TRIES,
   // For tools/setup/agent-ca-lib.js.
   saveBackup, restoreBackup, findEscrow, settingValue, writeSetting, fingerprintIn
 };

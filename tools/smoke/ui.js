@@ -46,6 +46,7 @@
  */
 const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const {chromium} = require('playwright');
 const server = require('./lib/server');
@@ -61,6 +62,9 @@ const password = crypto.randomBytes(12).toString('hex');
 // bundles (issue #115 broke that build, and nothing noticed).
 const prod = process.argv.includes('--prod');
 const outDir = path.join(root, 'ui-smoke-out');
+// The server log file (api/lib/file-logger.js) goes to a temporary folder, so
+// the run never writes a logs/ folder into the checkout.
+const logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fog-ui-smoke-log-'));
 
 // Every page in config/routes.js that renders the layout, except the edit
 // pages, which need a record id (checkRoundTrip opens them). The sidebar hides
@@ -249,6 +253,7 @@ async function main() {
     env: {
       'sails_sockets__onlyAllowOrigins': JSON.stringify([base]),
       'sails_custom__testDatabase': target.database,
+      'sails_custom__logDir': logDir,
       ...datastoreEnv
     }
   });
@@ -319,6 +324,7 @@ async function main() {
   } finally {
     if (browser) await browser.close();
     server.stop(child);
+    fs.rmSync(logDir, {recursive: true, force: true});
   }
   if (failed) {
     console.log(`\n${failed} check(s) failed. Last fog-node output:\n${serverLog.slice(-40).join('\n')}`);
