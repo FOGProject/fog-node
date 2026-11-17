@@ -14,6 +14,9 @@ const FILE = 'fog-node.log';
 const MAX_BYTES = 10 * 1024 * 1024;
 // The number of old files kept: fog-node.log.1 to fog-node.log.5.
 const KEEP = 5;
+// The folder when custom.logDir is not set: <app>/logs. config/log.js and the
+// Log Viewer (api/helpers/log/files.js) both use it.
+const FALLBACK_DIR = path.resolve(__dirname, '..', '..', 'logs');
 // These levels go to stderr on the console, the rest to stdout.
 const STDERR_LEVELS = new Set(['error', 'warn', 'crit']);
 const LEVELS = ['log', 'error', 'warn', 'info', 'verbose', 'debug', 'silly', 'crit'];
@@ -109,4 +112,4 @@ const create = ({fallbackDir, logDir, maxBytes = MAX_BYTES} = {}) => {
   return logger;
 };
 
-module.exports = {resolveDir, create};
+module.exports = {FILE, KEEP, FALLBACK_DIR, resolveDir, create};

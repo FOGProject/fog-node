@@ -47,6 +47,8 @@ const READ_ACTIONS = [
   // The Agent Activity reads: the same reason as the Audit Log one.
   'agent-activity/summary',
   'agent-activity/host',
+  // The Log Viewer polls this every 10 seconds: a row for each read would flood the trail.
+  'log/tail',
   // Signs a JWT for the user and changes no record.
   'auth/token'
 ];

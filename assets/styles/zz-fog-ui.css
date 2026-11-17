@@ -1678,3 +1678,13 @@ body.fog-col-resizing {
   --fog-chart-grid:   rgba(255,255,255,0.12);
   --fog-chart-empty:  var(--bs-secondary-color);
 }
+
+/* The Log Viewer <pre> (views/pages/logviewer.ejs): a scrolling box of lines. */
+.logviewer-pre {
+  max-height: 70vh;
+  min-height: 12rem;
+  overflow: auto;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--bs-border-color);
+}

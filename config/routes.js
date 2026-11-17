@@ -82,6 +82,11 @@ module.exports.routes = {
   'POST /api/v1/agent-activity/summary':     {action: 'agent-activity/summary', csrf: false},
   'POST /api/v1/agent-activity/host':        {action: 'agent-activity/host', csrf: false},
 
+  // The Log Viewer page (GET /logviewer) reads the fog-node log files. It is a
+  // POST read that needs setting.read; it must precede POST /api/v1/:model/...,
+  // or it is read as :model=log.
+  'POST /api/v1/log/tail':                   {action: 'log/tail', csrf: false},
+
   // fog-agent enrollment admin API (host permissions; must precede the :model
   // routes, or GET /api/v1/agent/tokens is read as :model=agent/:id=tokens).
   'GET /api/v1/agent/enrollments':           {action: 'agent/enrollments', csrf: false},
@@ -156,6 +161,9 @@ module.exports.routes = {
 
   // The Agent Activity page (1.6 AgentActivityManagement), read-only; it needs agentactivity.view.
   'GET /agent-activity':                     {action: 'pages/list/agent-activity'},
+
+  // The Log Viewer page (1.6 LogViewerManagement), read-only; it needs setting.read.
+  'GET /logviewer':                          {action: 'pages/logviewer'},
 
   // Group Views
   'GET /groups':                             {action: 'pages/list/groups'},

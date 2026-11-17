@@ -46,6 +46,9 @@ module.exports.policies = {
   'agent-activity/summary': ['isLoggedIn','isAuthenticated'],
   'agent-activity/host':    ['isLoggedIn','isAuthenticated'],
 
+  // The Log Viewer lines (the action checks setting.read itself). It only reads.
+  'log/tail':              ['isLoggedIn','isAuthenticated'],
+
   // fog-agent enrollment admin routes (each action checks its host permission
   // itself). apiCsrfGuard: a cookie-authed mutation on CSRF-exempt /api/v1.
   'agent/enrollments':     ['isLoggedIn','isAuthenticated','apiCsrfGuard'],

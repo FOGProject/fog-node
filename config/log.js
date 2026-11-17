@@ -10,7 +10,7 @@
  * https://sailsjs.com/docs/concepts/logging
  */
 
-const path = require('path');
+const fileLogger = require('../api/lib/file-logger');
 
 module.exports.log = {
 
@@ -32,6 +32,6 @@ module.exports.log = {
   // (api/lib/file-logger.js). The folder is custom.logDir, else <app>/logs.
   // inspect is off so that the logger gets the raw arguments.
   inspect: false,
-  custom: require('../api/lib/file-logger').create({fallbackDir: path.resolve(__dirname, '..', 'logs')})
+  custom: fileLogger.create({fallbackDir: fileLogger.FALLBACK_DIR})
 
 };
