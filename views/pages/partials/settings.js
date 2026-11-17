@@ -47,7 +47,7 @@
     let fields = [
       $row.attr('data-key') || '',
       $row.attr('data-description') || '',
-      String($row.find('.settings-control :input').val() || '').slice(0, 200)
+      String(current($row.find('.settings-control :input')) || '').slice(0, 200)
     ];
     if ($row.is('[data-reload]')) { fields.push(RELOAD_WORDS); }
     return fields.some((field) => field.toLowerCase().indexOf(term) !== -1);
@@ -80,33 +80,58 @@
     $('.settings-noresults').toggleClass('d-none', anyVisible);
   }
 
+  // The current value of a control: a checkbox is true or false, any other
+  // control gives its text. 'saved' holds the last stored one.
+  function current($el) {
+    return $el.is(':checkbox') ? $el.prop('checked') : $el.val();
+  }
+  function setCurrent($el, value) {
+    if ($el.is(':checkbox')) { $el.prop('checked', value); } else { $el.val(value); }
+  }
+
   // Save one control. A good save remembers the value, toasts the server's
   // reply and, for a reload row, the reload reminder. A failed save puts the
   // control back to its last stored value and toasts the error.
   function save(el) {
     let $el = $(el);
+    let value = current($el);
+    if ($el.is(':checkbox')) {
+      // 1.6 JS:191-200 sends 1 or 0.
+      value = value ? 1 : 0;
+    } else if ($el.is('[type=number]')) {
+      // Send nothing for an empty or non-numeric field. Number('') is 0, so
+      // a cleared deploy-window field would otherwise switch off deploy
+      // auto-approval in one edit. The server's normalize() decides the rest.
+      let text = String(value).trim();
+      if (text === '' || !Number.isFinite(Number(text))) {
+        setCurrent($el, $el.data('saved'));
+        window.fogToast('error', 'Enter a number.', 'Settings Update Fail');
+        return;
+      }
+      value = Number(text);
+    }
     $.ajax({
       url: '/api/v1/setting/save',
       type: 'POST',
       contentType: 'application/json',
       dataType: 'json',
-      data: JSON.stringify({key: el.name, value: $el.val()}),
+      data: JSON.stringify({key: el.name, value}),
       success: function(body) {
-        $el.data('saved', $el.val());
+        $el.data('saved', current($el));
         window.fogToast('success', body.msg, body.title);
         if ($el.closest('.settings-row').is('[data-reload]')) {
           window.fogToast('info', 'This setting takes effect after you reload the page.', 'Reload required');
         }
       },
       error: function(xhr) {
-        $el.val($el.data('saved'));
+        setCurrent($el, $el.data('saved'));
         window.fogToast('error', window.fogErrorOf(xhr), (xhr.responseJSON && xhr.responseJSON.title) || 'Settings Update Fail');
       }
     });
   }
 
   $('#settings-content .settings-control :input').each(function() {
-    $(this).data('saved', $(this).val());
+    $(this).data('saved', current($(this)));
   }).on('change', function() {
     save(this);
   });

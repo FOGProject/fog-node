@@ -9,9 +9,9 @@ const path = require('path');
 // saves on change through POST /api/v1/setting/save
 // (api/controllers/setting/save.js, views/pages/partials/settings.js).
 
-// The control types this page renders. Both catalog keys are `select`. The
-// change that adds the first number, text or checkbox key adds its control.
-const RENDERED_TYPES = ['select'];
+// The control types this page renders. A `text` entry has no control yet: the
+// change that adds the first text key adds it.
+const RENDERED_TYPES = ['select', 'number', 'checkbox'];
 
 // The 1.6 reload note, added to the label tooltip of a `reload: true` row
 // (FOGConfigurationPage.php _renderSettings, $refreshtip).
@@ -66,7 +66,12 @@ module.exports = {
         reload: entry.reload,
         // One tooltip on the label: the description, then the reload note.
         tip: entry.reload ? `${entry.description}  —  ${RELOAD_TIP}` : entry.description,
-        options: selectOptions(entry, value)
+        // The view picks the control off the type. A select has options with
+        // the stored value selected; a number shows the value; a checkbox is
+        // checked when the value is true.
+        type: entry.type,
+        value,
+        options: entry.type === 'select' ? selectOptions(entry, value) : []
       });
     }
     return {

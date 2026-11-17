@@ -341,6 +341,23 @@ describe('Agent mTLS::', function () {
         if (saved) { await sails.models.setting.create(saved); }
       }
     });
+
+    // Issue #201: the FOG Settings page route stores the value, and the next
+    // poll reads it through the settings catalog.
+    it('answers the poll_interval saved through POST /api/v1/setting/save', async () => {
+      const a = await enrolled();
+      const name = 'FOG_CLIENT_CHECKIN_TIME';
+      const saved = await sails.models.setting.findOne({name});
+      try {
+        await sails.models.setting.destroy({name});
+        await admin.agent.post('/api/v1/setting/save').set(...AJAX).set('X-CSRF-Token', admin.csrf)
+          .set('Accept', 'application/json').send({key: name, value: 120}).expect(202);
+        assert.strictEqual((await poll(a)).json.poll_interval, 120);
+      } finally {
+        await sails.models.setting.destroy({name});
+        if (saved) { await sails.models.setting.create(saved); }
+      }
+    });
   });
 
   describe('POST /agent/v1/renew', () => {
