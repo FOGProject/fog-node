@@ -13,7 +13,7 @@
     "admin-lte": "^4.10.0",
     "animate.css": "^4.1.1",
     "bcryptjs": "^3.0.3",
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.9",
     "chalk": "^6.0.1",
     "chart.js": "^4.6.1",
     "check-disk-space": "^4.0.0",
