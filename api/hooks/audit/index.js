@@ -42,6 +42,8 @@ const READ_ACTIONS = [
   // The Audit Log DataTable. Without it, every page load and scroll of the
   // audit page would write an AuditLog row.
   'audit/datatable',
+  // The Activity DataTable: the same reason as the Audit Log one.
+  'activity/datatable',
   // Signs a JWT for the user and changes no record.
   'auth/token'
 ];

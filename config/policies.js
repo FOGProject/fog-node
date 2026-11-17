@@ -39,6 +39,9 @@ module.exports.policies = {
   // The Audit Log rows (the action checks audit.view itself). It only reads.
   'audit/datatable':       ['isLoggedIn','isAuthenticated'],
 
+  // The Activity rows (the action checks activity.view itself). It only reads.
+  'activity/datatable':    ['isLoggedIn','isAuthenticated'],
+
   // fog-agent enrollment admin routes (each action checks its host permission
   // itself). apiCsrfGuard: a cookie-authed mutation on CSRF-exempt /api/v1.
   'agent/enrollments':     ['isLoggedIn','isAuthenticated','apiCsrfGuard'],

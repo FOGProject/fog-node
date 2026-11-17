@@ -36,6 +36,7 @@ const HEADERS = {
   // Issue #199: 1.6 FOGConfigurationPage name and settings() title.
   '/about/settings': ['FOG Configuration', 'FOG Settings'],
   '/audit': ['Audit Log', 'Audit Log'],
+  '/activity': ['Activity', 'Activity'],
   '/snapins': ['Snapin Management', 'All Snapins'],
   '/printers': ['Printer Management', 'All Printers'],
   '/hosts/create': ['Host Management', 'Create New Host'],

@@ -49,7 +49,9 @@ const sidebar = (page) => page.evaluate(() => {
   const top = [...main.querySelectorAll(':scope > li.nav-item')];
   const group = top.find((li) => link(li).text === 'User Administration');
   const hosts = top.find((li) => link(li).text === 'Hosts');
+  const logging = top.find((li) => link(li).text === 'Logging');
   return {
+    loggingChildren: logging ? [...logging.querySelectorAll(':scope > ul.nav-treeview > li.nav-item')].map((li) => link(li).text) : null,
     top: top.map((li) => [link(li).text, link(li).icon]),
     headers: [...document.querySelectorAll('.app-sidebar .nav-header')].map(text),
     pluginLists: document.querySelectorAll('.app-sidebar ul.plugin-options').length,
@@ -83,6 +85,8 @@ async function checkShape({page, base, checkPage}) {
   expect('the sidebar headers', got.headers, ['MAIN NAVIGATION', 'RESOURCES']);
   expect('the number of ul.plugin-options', got.pluginLists, 0);
   expect('the User Administration children', got.groupChildren, [['Users', 'fas fa-users'], ['Roles', 'fas fa-user-shield']]);
+  // Issue #206: Activity comes before Audit Log (1.6 FOGPage.php:658-661).
+  expect('the Logging children', got.loggingChildren, ['Activity', 'Audit Log']);
   // Pending MACs, Export Hosts and Import Hosts have no route, so the sidebar hides them.
   expect('the Hosts sub-links', got.hostsSubs, ['List All Hosts', 'Create New Host', 'Pending Hosts', 'Pending Agents', 'Agent Tokens']
     .map((text) => [text, 'nav-icon far fa-circle']));
