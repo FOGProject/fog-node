@@ -30,7 +30,9 @@ const TOP = [
   ['Tasks', 'fas fa-bars-progress'],
   ['Workflows', 'fas fa-diagram-project'],
   ['User Administration', 'fas fa-shield'],
-  ['iPXE Menu', 'fas fa-list-ol']
+  ['iPXE Menu', 'fas fa-list-ol'],
+  // Issue #199: the 1.6 FOG Configuration node, a leaf to FOG Settings.
+  ['FOG Configuration', 'fas fa-wrench']
 ];
 
 // What the sidebar on screen shows.

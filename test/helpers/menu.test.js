@@ -77,7 +77,8 @@ describe('Sidebar menu helpers::', () => {
         ['Tasks', 'fas fa-bars-progress'],
         ['Workflows', 'fas fa-diagram-project'],
         ['User Administration', 'fas fa-shield'],
-        ['iPXE Menu', 'fas fa-list-ol']
+        ['iPXE Menu', 'fas fa-list-ol'],
+        ['FOG Configuration', 'fas fa-wrench']
       ]);
       assert.deepStrictEqual(menu.filter((n) => n.pluginOption), []);
       const admin = menu.find((n) => n.text === 'User Administration');
@@ -126,6 +127,15 @@ describe('Sidebar menu helpers::', () => {
       assert.strictEqual(hosts.open, true);
       assert.strictEqual(hosts.active, true);
       assert.deepStrictEqual(entries(menu).filter((n) => n.active).map((n) => n.text), ['Hosts']);
+    });
+
+    // Issue #199: the FOG Configuration leaf opens FOG Settings.
+    it('on /about/settings, makes the FOG Configuration leaf the one active item', () => {
+      const menu = build('/about/settings');
+      const node = find(menu, 'FOG Configuration');
+      assert.strictEqual(node.type, 'leaf');
+      assert.strictEqual(node.link, '/about/settings');
+      assert.deepStrictEqual(entries(menu).filter((n) => n.active).map((n) => n.text), ['FOG Configuration']);
     });
 
     it('on /hosts, makes "List All Hosts" the active sub-link', () => {

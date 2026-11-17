@@ -147,7 +147,10 @@ module.exports.globals = {
       subLinks: [
         {link: '/pxemenus/create', text: 'Create New iPXE Menu'}
       ]
-    }
+    },
+    // The 1.6 "FOG Configuration" node (FOGConfigurationPage.php). A leaf to
+    // FOG Settings until a second sub-page exists.
+    {order: 150, text: 'FOG Configuration', link: '/about/settings', icon: 'fas fa-wrench'}
   ],
   authenticationMechanisms: [
     'local'

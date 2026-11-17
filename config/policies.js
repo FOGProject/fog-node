@@ -44,6 +44,10 @@ module.exports.policies = {
   'agent/mint-token':      ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
   'agent/revoke-token':    ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
 
+  // The FOG Settings save (checks setting.update itself). apiCsrfGuard: a
+  // cookie-authed mutation on CSRF-exempt /api/v1.
+  'setting/save':          ['isLoggedIn','isAuthenticated','apiCsrfGuard'],
+
   // Image Policies
   'image/capture':         ['isLoggedIn','isAuthenticated', 'image/capture'],
   'image/deploy':          ['isLoggedIn','isAuthenticated', 'image/deploy'],

@@ -33,6 +33,8 @@ const HEADERS = {
   '/tasks': ['Task Management', 'All Tasks'],
   '/users': ['User Management', 'All Users'],
   '/workflows': ['Workflow Management', 'All Workflows'],
+  // Issue #199: 1.6 FOGConfigurationPage name and settings() title.
+  '/about/settings': ['FOG Configuration', 'FOG Settings'],
   '/snapins': ['Snapin Management', 'All Snapins'],
   '/printers': ['Printer Management', 'All Printers'],
   '/hosts/create': ['Host Management', 'Create New Host'],

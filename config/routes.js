@@ -79,6 +79,12 @@ module.exports.routes = {
   // Global search (must precede the :model routes).
   'GET /api/v1/search':                      {action: 'search', csrf: false},
 
+  // The FOG Settings page saves one setting per request (setting.update).
+  // Grouped above the :model routes with the other explicit /api/v1 routes.
+  // A cookie-authed mutation on CSRF-exempt /api/v1, so apiCsrfGuard guards
+  // it (config/policies.js).
+  'POST /api/v1/setting/save':               {action: 'setting/save', csrf: false},
+
   // General API elements.
   'POST /api/v1/image/scan':                 {action: 'image/scan', csrf: false},
   'POST /api/v1/:model':                     {action: 'general/create', csrf: false},
@@ -156,6 +162,10 @@ module.exports.routes = {
   'GET /pxemenus':                           {action: 'pages/list/pxemenus'},
   'GET /pxemenus/create':                    {action: 'pages/create/pxemenus'},
   'POST /pxemenus/create':                   {action: 'general/save'},
+
+  // FOG Configuration Views, at the FOG 1.6 node and sub names
+  // (FOGConfigurationPage::settings, about&sub=settings)
+  'GET /about/settings':                     {action: 'pages/settings'},
 
   // Edit Views (generic edit page + save)
   'GET /hosts/edit/:id':                      {action: 'pages/edit'},

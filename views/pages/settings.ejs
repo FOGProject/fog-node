@@ -1,0 +1,70 @@
+<%/* The FOG 1.6 FOG Settings page (FOGConfigurationPage.php:5638-5870,
+     settings() and _renderSettings()): one card with the search box in its
+     header, the category nav on the left and one panel per category on the
+     right. The 1.6 cache buttons and stats are left out: fog-node has no
+     settings cache.
+
+     Locals (api/controllers/pages/settings.js): categories
+     [{name, rows: [{key, description, reload, tip, options}]}], every row a
+     select, and canUpdate (false: every control is disabled).
+
+     The nav link carries the BS5 nav-link class beside the 1.6 li.active, so
+     the active category paints as a pill. The row carries data-key,
+     data-description and, for a reload setting, data-reload: the client
+     script matches the search against them and the current value, and
+     toasts the reload reminder off data-reload (1.6 renders one data-search
+     string, and reloads the body after each save to refresh it). The client script is
+     views/pages/partials/settings.js; the styles are the FOG Settings block
+     of assets/styles/zz-fog-ui.css. */%>
+<div class="app-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h4 class="card-title">FOG Settings</h4>
+            <div class="card-tools float-end">
+              <div class="input-group input-group-sm settings-search-box">
+                <input type="text" id="settings-search" class="form-control" placeholder="Search settings" autocomplete="off">
+                <button type="button" id="settings-search-clear" class="btn btn-secondary" title="Clear"><i class="fas fa-xmark"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body" id="settings-content">
+            <div class="row settings-layout">
+              <div class="col-md-3 col-sm-4 settings-nav-col">
+                <ul class="nav nav-pills flex-column" id="settings-nav">
+                  <% categories.forEach(function (cat, i) { %>
+                  <li class="nav-item settings-nav-item<%= i === 0 ? ' active' : '' %>"><a href="#" class="nav-link<%= i === 0 ? ' active' : '' %>" data-cat="<%= cat.name %>"><%= cat.name %> <span class="badge"><%= cat.rows.length %></span></a></li>
+                  <% }); %>
+                </ul>
+              </div>
+              <div class="col-md-9 col-sm-8 settings-panel-col">
+                <% categories.forEach(function (cat, i) { %>
+                <div class="settings-panel<%= i === 0 ? ' active' : '' %>" data-cat="<%= cat.name %>">
+                  <h4 class="settings-panel-title" data-cat="<%= cat.name %>"><span><%= cat.name %></span><i class="fas fa-chevron-down settings-panel-caret"></i></h4>
+                  <div class="settings-panel-body">
+                    <% cat.rows.forEach(function (row) { %>
+                    <div class="form-group settings-row" data-key="<%= row.key %>" data-description="<%= row.description %>"<% if (row.reload) { %> data-reload<% } %>>
+                      <label class="col-form-label settings-label" for="<%= row.key %>" data-bs-toggle="tooltip" data-bs-placement="top" title="<%= row.tip %>"><%= row.key %><% if (row.reload) { %> <i class="fas fa-arrows-rotate text-muted settings-refresh-note" aria-hidden="true"></i><% } %></label>
+                      <div class="settings-control">
+                        <select class="form-control" id="<%= row.key %>" name="<%= row.key %>" autocomplete="off"<% if (!canUpdate) { %> disabled<% } %>>
+                          <% row.options.forEach(function (option) { %>
+                          <option value="<%= option.value %>"<% if (option.selected) { %> selected<% } %>><%= option.label %></option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+                    <% }); %>
+                  </div>
+                </div>
+                <% }); %>
+                <div class="settings-noresults d-none text-muted">No settings match your search.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
