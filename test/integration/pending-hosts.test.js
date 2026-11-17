@@ -125,6 +125,15 @@ describe('Pending hosts::', function () {
       assert.strictEqual(res.body.recordsFiltered, 2);
     });
 
+    // A JSON body can hold any value: String() or parseInt() on an object with
+    // a toString key throws, and a start of 1e20 is not a safe integer.
+    it('answers 200 for a JSON body with a toString object and a start of 1e20', async () => {
+      const post = (body) => admin.agent.post('/api/v1/host/pending/datatable').set(...AJAX).send(body);
+      await post({draw: 1, start: 0, length: 5, search: {value: {toString: 1}}}).expect(200);
+      await post({draw: {toString: 1}, start: {toString: 1}, length: {toString: 1}}).expect(200);
+      await post({draw: 1, start: '99999999999999999999', length: 5}).expect(200);
+    });
+
     it('answers 403 without host.read', async () => {
       const none = await limited('rows-none', {update: true, destroy: true});
       await rows(none).expect(403);

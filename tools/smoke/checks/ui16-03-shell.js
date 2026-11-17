@@ -33,6 +33,7 @@ const HEADERS = {
   '/tasks': ['Task Management', 'All Tasks'],
   '/users': ['User Management', 'All Users'],
   '/workflows': ['Workflow Management', 'All Workflows'],
+  '/audit': ['Audit Log', 'Audit Log'],
   '/snapins': ['Snapin Management', 'All Snapins'],
   '/printers': ['Printer Management', 'All Printers'],
   '/hosts/create': ['Host Management', 'Create New Host'],

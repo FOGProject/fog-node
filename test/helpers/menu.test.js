@@ -77,7 +77,8 @@ describe('Sidebar menu helpers::', () => {
         ['Tasks', 'fas fa-bars-progress'],
         ['Workflows', 'fas fa-diagram-project'],
         ['User Administration', 'fas fa-shield'],
-        ['iPXE Menu', 'fas fa-list-ol']
+        ['iPXE Menu', 'fas fa-list-ol'],
+        ['Logging', 'fas fa-scroll']
       ]);
       assert.deepStrictEqual(menu.filter((n) => n.pluginOption), []);
       const admin = menu.find((n) => n.text === 'User Administration');
