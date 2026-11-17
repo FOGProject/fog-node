@@ -92,6 +92,7 @@ const PAGES = [
   {path: '/about/settings'},
   {path: '/audit', table: true},
   {path: '/activity', table: true},
+  {path: '/agent-activity', table: true},
   {path: '/hosts/create'},
   {path: '/groups/create'},
   {path: '/images/create'},

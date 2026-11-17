@@ -86,7 +86,7 @@ async function checkShape({page, base, checkPage}) {
   expect('the number of ul.plugin-options', got.pluginLists, 0);
   expect('the User Administration children', got.groupChildren, [['Users', 'fas fa-users'], ['Roles', 'fas fa-user-shield']]);
   // Issue #206: Activity comes before Audit Log (1.6 FOGPage.php:658-661).
-  expect('the Logging children', got.loggingChildren, ['Activity', 'Audit Log']);
+  expect('the Logging children', got.loggingChildren, ['Activity', 'Audit Log', 'Agent Activity']);
   // Pending MACs, Export Hosts and Import Hosts have no route, so the sidebar hides them.
   expect('the Hosts sub-links', got.hostsSubs, ['List All Hosts', 'Create New Host', 'Pending Hosts', 'Pending Agents', 'Agent Tokens']
     .map((text) => [text, 'nav-icon far fa-circle']));

@@ -32,10 +32,12 @@ const TOOLBARS = {
   // The Audit Log is not selectable (1.6 AuditManagement $selectable = false).
   '/audit': SHARED,
   // The Activity page is not selectable either (1.6 ActivityManagement $selectable = false).
-  '/activity': SHARED
+  '/activity': SHARED,
+  // The Agent Activity page is not selectable either (1.6 AgentActivityManagement $selectable = false).
+  '/agent-activity': SHARED
 };
 // The 1.6 title of a list that does not start with "All " (HostManagement::agentTokens).
-const TITLES = {'/hosts/agentTokens': 'Agent Enrollment Tokens', '/audit': 'Audit Log', '/activity': 'Activity'};
+const TITLES = {'/hosts/agentTokens': 'Agent Enrollment Tokens', '/audit': 'Audit Log', '/activity': 'Activity', '/agent-activity': 'Agent Activity'};
 
 // The 1.6 paged length menu (1.6 fog.common.js lengthMenu).
 const LENGTH_MENU = ['10', '25', '50', '100', '250', '500', 'All'];
