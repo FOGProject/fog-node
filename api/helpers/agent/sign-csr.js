@@ -24,7 +24,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const x509 = require('@peculiar/x509');
+const x509 = require('../../lib/x509');
 const pki = require('../../lib/agent-pki');
 
 module.exports = {

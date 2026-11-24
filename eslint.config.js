@@ -144,6 +144,20 @@ module.exports = [
   },
 
   {
+    // @peculiar/x509 3.x needs the reflect-metadata polyfill loaded first.
+    // api/lib/x509.js loads it, so every other file must require that module.
+    // A direct require works only when another file loaded the wrapper first.
+    files: ['**/*.js'],
+    ignores: ['api/lib/x509.js'],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: 'CallExpression[callee.name="require"][arguments.0.value="@peculiar/x509"]',
+        message: 'Require api/lib/x509.js, not @peculiar/x509: it loads reflect-metadata first.'
+      }]
+    }
+  },
+
+  {
     // Front-end code in `assets/` and `views/` runs in the browser, so it gets a
     // different set of globals — `window` and friends instead of `process` and
     // `sails`.  Ported from the old `assets/.eslintrc`.

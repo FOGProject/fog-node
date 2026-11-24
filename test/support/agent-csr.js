@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const x509 = require('@peculiar/x509');
+const x509 = require('../../api/lib/x509');
 
 // A CSR as the fog-agent builds it: an ECDSA P-256 key and an empty subject
 // (contract 4.3). Returns {pem, fingerprint, keys}. `fingerprint` is the key

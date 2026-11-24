@@ -10,7 +10,7 @@
  * unset.
  */
 const crypto = require('crypto');
-const x509 = require('@peculiar/x509');
+const x509 = require('../../../api/lib/x509');
 
 module.exports = async function enroll(page, base, {hostname, macs = [], agentVersion = '1.0.0', serial}) {
   const keys = await crypto.webcrypto.subtle.generateKey({name: 'ECDSA', namedCurve: 'P-256'}, true, ['sign', 'verify']);
