@@ -22,6 +22,12 @@ updates:
       datatables:
         patterns:
           - "datatables.net*"
+    ignore:
+      # 3.x is ESM-only and needs a reflect polyfill; fog-node is CommonJS
+      # (PR #215 failed every job). Issue #219 tracks the move. Remove this
+      # rule in the PR that closes it.
+      - dependency-name: "@peculiar/x509"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
