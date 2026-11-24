@@ -56,7 +56,7 @@
     "select2": "^4.1.0",
     "systeminformation": "^5.33.23",
     "tempusdominus-core": "^5.19.0",
-    "terser": "^5.51.2"
+    "terser": "^5.51.4"
   },
   "devDependencies": {
     "eslint": "10.5.0",
