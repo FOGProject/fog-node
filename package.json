@@ -35,7 +35,7 @@
     "grunt-terser": "^2.0.0",
     "icheck-bootstrap": "^3.0.1",
     "inputmask": "^5.0.10",
-    "inquirer": "^14.2.5",
+    "inquirer": "^14.3.0",
     "joi": "^18.3.2",
     "jquery": "^4.0.0",
     "jsonwebtoken": "~>9.0.0",
