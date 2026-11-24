@@ -29,7 +29,7 @@ const fs = require('fs');
 const net = require('net');
 const os = require('os');
 const path = require('path');
-const x509 = require('@peculiar/x509');
+const x509 = require('./x509');
 const shared = require('./agent-pki');
 
 const DAYS = 10950;

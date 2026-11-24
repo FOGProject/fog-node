@@ -9,7 +9,7 @@
  *
  * Usage: let csr = await sails.helpers.agent.verifyCsr(csrPem)
  */
-const x509 = require('@peculiar/x509');
+const x509 = require('../../lib/x509');
 const pki = require('../../lib/agent-pki');
 
 module.exports = {

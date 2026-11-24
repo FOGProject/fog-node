@@ -11,7 +11,7 @@
  * Usage: let fp = sails.helpers.agent.keyFingerprint(pem)  (sync)
  */
 const crypto = require('crypto');
-const x509 = require('@peculiar/x509');
+const x509 = require('../../lib/x509');
 const pki = require('../../lib/agent-pki');
 
 module.exports = {

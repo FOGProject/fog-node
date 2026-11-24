@@ -7,7 +7,7 @@
  * imported RSA key carries its hash (see importPair).
  */
 const crypto = require('crypto');
-const x509 = require('@peculiar/x509');
+const x509 = require('./x509');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CLIENT_AUTH = '1.3.6.1.5.5.7.3.2';
