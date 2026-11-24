@@ -197,10 +197,11 @@ jobs:
       # Redis has no official Windows build. Memurai is a Redis-compatible
       # Windows service, and its installer starts it on port 6379.
       # The Chocolatey community feed sometimes answers 503 or 504, so retry.
-      # Each pass checks the port, not choco's exit code: on a feed 503,
-      # choco prints "installed 0/0 packages" and exits 0, so an exit-code
-      # check stops after one failed pass. The final check fails here and
-      # not later as ECONNREFUSED in setup:dev.
+      # Each pass checks the port, not choco's exit code. On a feed 503,
+      # choco prints "installed 0/0 packages" and exits 0.
+      # The final check fails here and not later as ECONNREFUSED in
+      # setup:dev. The pwsh wrapper exits with $LASTEXITCODE, so a passing
+      # port check clears choco's code (for example 3010, reboot required).
       - name: Install Redis (Memurai)
         shell: pwsh
         run: |
@@ -212,6 +213,7 @@ jobs:
           if (-not (Test-NetConnection 127.0.0.1 -Port 6379 -InformationLevel Quiet)) {
             throw 'Memurai is not listening on port 6379.'
           }
+          $global:LASTEXITCODE = 0
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
